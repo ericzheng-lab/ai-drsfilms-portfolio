@@ -1752,6 +1752,7 @@ main {
   .sidebar {
     position: sticky;
     top: 0;
+    z-index: 80;
     width: 100%;
     height: auto;
     border-right: 0;
@@ -1767,13 +1768,20 @@ main {
     display: flex;
     overflow-x: auto;
     padding: 0 12px;
+    scrollbar-width: none;
+  }
+
+  .sidebar nav::-webkit-scrollbar {
+    display: none;
   }
 
   .sidebar nav a {
     flex: 0 0 auto;
-    padding: 16px 14px;
+    padding: 14px 12px;
     border-left: 0;
     border-bottom: 2px solid transparent;
+    font-size: 10px;
+    white-space: nowrap;
   }
 
   .sidebar nav a.is-active {
@@ -1782,11 +1790,50 @@ main {
 
   .hero {
     min-height: calc(100vh - 52px);
-    padding: 96px 22px 36px;
+    justify-content: flex-end;
+    padding: 84px 20px 34px;
   }
 
   .hero h1 {
-    font-size: clamp(52px, 17vw, 86px);
+    margin: 28px 0 22px;
+    font-size: clamp(46px, 15vw, 72px);
+    line-height: 0.92;
+  }
+
+  .hero p,
+  .contact p,
+  .studio-copy > p,
+  .agent-detail > p {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .hero__content {
+    max-width: 100%;
+  }
+
+  .hero__content::after {
+    right: -12vw;
+    top: -12%;
+    font-size: 190px;
+  }
+
+  .hero__visual {
+    top: 76px;
+    right: -22vw;
+    width: 88vw;
+    opacity: 0.18;
+    filter: saturate(0.75) brightness(0.58) contrast(1.05);
+  }
+
+  .hero-ticker {
+    top: 52px;
+    opacity: 0.45;
+  }
+
+  .corner {
+    width: 42px;
+    height: 42px;
   }
 
   .hero__dashboard,
@@ -1803,23 +1850,90 @@ main {
   }
 
   .section {
-    padding: 72px 22px;
+    padding: 64px 20px;
   }
 
   .section-header {
+    grid-template-columns: 1fr;
     margin-bottom: 40px;
   }
 
   .section-header span {
-    font-size: 64px;
+    font-size: 52px;
   }
 
   .section-header h2 {
-    font-size: 38px;
+    font-size: 34px;
+    line-height: 1.05;
+  }
+
+  .section-header > p {
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .project-card__media {
+    aspect-ratio: 16 / 9;
+  }
+
+  .project-card__body {
+    padding: 18px 18px 20px;
+  }
+
+  .project-card__meta {
+    gap: 8px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+
+  .project-card h3 {
+    font-size: 26px;
+  }
+
+  .project-card p {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .proof-note {
+    margin-top: 14px;
+    padding: 12px 14px;
+  }
+
+  .proof-note p {
+    font-size: 14px;
+  }
+
+  .tag-list span,
+  .workflow-list span {
+    padding: 5px 9px;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+
+  .stack-card {
+    padding: 22px;
+  }
+
+  .stack-card h3 {
+    font-size: 24px;
+  }
+
+  .studio-copy h3 {
+    font-size: 34px;
+  }
+
+  .studio-points {
+    grid-template-columns: 1fr;
   }
 
   .canvas-demo {
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .canvas-demo__panel {
+    padding: 16px;
   }
 
   .canvas-demo__panel:first-child,
@@ -1831,11 +1945,164 @@ main {
     display: none;
   }
 
+  .prompt-box {
+    min-height: 112px;
+    font-size: 10px;
+  }
+
+  .output-frame {
+    min-height: 180px;
+  }
+
   .openclaw-intro p:first-child {
-    font-size: 28px;
+    font-size: 26px;
+    line-height: 1.35;
+  }
+
+  .openclaw-intro p:last-child {
+    font-size: 16px;
+    line-height: 1.65;
   }
 
   .agent-diagram {
-    min-height: 320px;
+    min-height: 0;
+    aspect-ratio: 1 / 0.88;
+  }
+
+  .agent-detail {
+    padding: 16px;
+  }
+
+  .workflow-row,
+  .pipeline-row {
+    gap: 12px;
+    padding: 15px 4px;
+  }
+
+  .workflow-row p,
+  .pipeline-row p,
+  .pipeline-module > p {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .pipeline-module {
+    margin-top: 30px;
+    padding-top: 30px;
+  }
+
+  .repo-list a {
+    padding: 20px 18px;
+  }
+
+  .repo-list h3 {
+    font-size: 23px;
+  }
+
+  .contact {
+    min-height: auto;
+  }
+
+  .contact h2 {
+    font-size: 34px;
+  }
+
+  .contact__actions .button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: calc(100svh - 48px);
+    padding: 74px 16px 28px;
+  }
+
+  .sidebar nav {
+    padding: 0 8px;
+  }
+
+  .sidebar nav a {
+    padding: 12px 10px;
+  }
+
+  .sidebar nav a span {
+    display: none;
+  }
+
+  .eyebrow,
+  .micro-label {
+    gap: 9px;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 16vw, 62px);
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .hero__dashboard {
+    margin-top: 30px;
+  }
+
+  .metric {
+    padding: 18px;
+  }
+
+  .metric strong {
+    font-size: 22px;
+  }
+
+  .metric span {
+    font-size: 9px;
+  }
+
+  .section {
+    padding: 54px 16px;
+  }
+
+  .section-header span {
+    font-size: 44px;
+  }
+
+  .section-header h2,
+  .studio-copy h3,
+  .contact h2 {
+    font-size: 30px;
+  }
+
+  .project-card__meta {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .project-card h3 {
+    font-size: 24px;
+  }
+
+  .project-card p,
+  .stack-card p,
+  .studio-copy > p,
+  .workflow-row p,
+  .pipeline-row p,
+  .openclaw-intro p:last-child {
+    font-size: 15px;
+  }
+
+  .openclaw-intro {
+    margin-bottom: 42px;
+  }
+
+  .openclaw-intro p:first-child {
+    font-size: 23px;
+  }
+
+  .agent-node text {
+    font-size: 7px;
   }
 }
