@@ -880,8 +880,8 @@ function ContactSection() {
         <a className="button" href="https://github.com/ericzheng-lab" rel="noreferrer" target="_blank">
           GitHub <Github size={15} />
         </a>
-        <a className="button" href="mailto:info@drsfilms.com">
-          Email <ArrowUpRight size={15} />
+        <a className="button" href="mailto:eric.zheng@drsfilms.com">
+          eric.zheng@drsfilms.com <ArrowUpRight size={15} />
         </a>
       </div>
     </section>
