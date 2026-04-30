@@ -1564,6 +1564,12 @@ main {
   border-top: 1px solid var(--border);
 }
 
+.governance-module {
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+
 .pipeline-module h3 {
   margin: 0 0 16px;
   font-family: var(--serif);
@@ -1572,12 +1578,54 @@ main {
   font-weight: 300;
 }
 
-.pipeline-module > p {
+.pipeline-module > p,
+.governance-module > p {
   margin: 0 0 24px;
   color: var(--fg2);
   font-family: var(--serif);
   font-size: 16px;
   line-height: 1.75;
+}
+
+.governance-module h3 {
+  margin: 0 0 16px;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-style: italic;
+  font-weight: 300;
+}
+
+.governance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.governance-card {
+  min-height: 168px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, oklch(0.75 0.18 210 / 0.055), transparent 58%),
+    var(--bg2);
+}
+
+.governance-card strong {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--accent2);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.governance-card p {
+  margin: 0;
+  color: var(--fg2);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .repo-list {
@@ -1981,14 +2029,24 @@ main {
 
   .workflow-row p,
   .pipeline-row p,
-  .pipeline-module > p {
+  .pipeline-module > p,
+  .governance-module > p {
     font-size: 16px;
     line-height: 1.55;
   }
 
-  .pipeline-module {
+  .pipeline-module,
+  .governance-module {
     margin-top: 30px;
     padding-top: 30px;
+  }
+
+  .governance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .governance-card {
+    min-height: auto;
   }
 
   .repo-list a {
@@ -2090,6 +2148,7 @@ main {
   .studio-copy > p,
   .workflow-row p,
   .pipeline-row p,
+  .governance-card p,
   .openclaw-intro p:last-child {
     font-size: 15px;
   }

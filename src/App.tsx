@@ -609,6 +609,24 @@ function OpenClawSection() {
       desc: "Discord channels and threads act as the control surface, separating HARNESS, AI content, Career-Ops, and film-production contexts.",
     },
   ];
+  const governance = [
+    {
+      label: "Rule Loading",
+      desc: "Agents start from TEAM-RULEBOOK, TEAM-DIRECTORY, SKILL-REGISTRY, SOUL.md, and AGENTS.md instead of relying on hidden chat memory.",
+    },
+    {
+      label: "Role Boundaries",
+      desc: "Each agent has a defined scope, handoff behavior, stop condition, and channel/thread context.",
+    },
+    {
+      label: "Error Blocking",
+      desc: "Critical upstream errors such as wrong project names, wrong files, or wrong scope stop the workflow before downstream writing.",
+    },
+    {
+      label: "Memory Writeback",
+      desc: "Outputs enter Obsidian with frontmatter, double links, source paths, project scope, and review boundaries.",
+    },
+  ];
 
   return (
     <section className="section section--tinted" id="openclaw">
@@ -659,6 +677,24 @@ function OpenClawSection() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="governance-module">
+            <div className="openclaw-kicker">Agent Governance / HARNESS</div>
+            <h3>System reliability for multi-agent work.</h3>
+            <p>
+              HARNESS is the governance layer that keeps multi-agent work from becoming unmanaged
+              chat: rules load predictably, agents know their boundaries, bad upstream output is
+              blocked, and useful work is written back into a durable project memory.
+            </p>
+            <div className="governance-grid">
+              {governance.map((item) => (
+                <article className="governance-card" key={item.label}>
+                  <strong>{item.label}</strong>
+                  <p>{item.desc}</p>
+                </article>
+              ))}
+            </div>
           </div>
 
           <div className="pipeline-module">
