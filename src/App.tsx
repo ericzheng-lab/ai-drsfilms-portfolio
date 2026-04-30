@@ -8,7 +8,6 @@ import {
   Layers3,
   Sparkles,
 } from "lucide-react";
-import { CanvasDemo } from "./components/CanvasDemo";
 import { agents, navItems, projects, repositories, stackGroups } from "./data/site";
 
 const sectionIds = navItems.map((item) => item.id);
@@ -542,9 +541,29 @@ function StudioSection() {
             ))}
           </div>
         </div>
-        <CanvasDemo />
+        <StudioVideo />
       </div>
     </section>
+  );
+}
+
+function StudioVideo() {
+  return (
+    <div className="studio-video" aria-label="AI Canvas Studio demo video">
+      <div className="canvas-demo__topline studio-video__topline">
+        <span>Live Prototype</span>
+        <small>AI Canvas Demo</small>
+      </div>
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        src="/media/ai-canvas-web.mp4"
+      />
+      <div className="studio-video__caption">Browser-native interface study / prompt to generated frame</div>
+    </div>
   );
 }
 

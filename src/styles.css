@@ -976,6 +976,53 @@ main {
   line-height: 1.65;
 }
 
+.studio-video {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid oklch(0.22 0.015 260);
+  background:
+    radial-gradient(circle at 50% 50%, oklch(0.75 0.18 210 / 0.055), transparent 45%),
+    oklch(0.045 0.018 260);
+}
+
+.studio-video::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, oklch(0.04 0.018 260 / 0.16), transparent 28%, oklch(0.04 0.018 260 / 0.36)),
+    linear-gradient(to right, oklch(0.04 0.018 260 / 0.24), transparent 24%, transparent 74%, oklch(0.04 0.018 260 / 0.2));
+}
+
+.studio-video__topline {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 16px;
+  z-index: 2;
+}
+
+.studio-video video {
+  width: 100%;
+  aspect-ratio: 1600 / 914;
+  object-fit: cover;
+  filter: saturate(0.95) brightness(0.86) contrast(1.06);
+}
+
+.studio-video__caption {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  z-index: 2;
+  color: oklch(0.5 0.01 240);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .button {
   display: inline-flex;
   gap: 10px;
@@ -1975,6 +2022,12 @@ main {
     grid-template-columns: 1fr;
   }
 
+  .studio-video__topline {
+    left: 14px;
+    right: 14px;
+    top: 12px;
+  }
+
   .canvas-demo {
     grid-template-columns: 1fr;
     min-height: 0;
@@ -2163,5 +2216,9 @@ main {
 
   .agent-node text {
     font-size: 7px;
+  }
+
+  .studio-video__caption {
+    display: none;
   }
 }
