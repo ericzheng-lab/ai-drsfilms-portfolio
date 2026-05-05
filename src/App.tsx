@@ -92,7 +92,15 @@ function Hero({ featuredCount }: { featuredCount: number }) {
       <div className="corner corner--top" />
       <div className="corner corner--bottom" />
       <div className="hero__visual" aria-hidden="true">
-        <img src="/generated/hero-command-center.png" alt="" />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster="/generated/hero-command-center.png"
+          src="/media/hero-loop.mp4"
+        />
       </div>
       <div className="hero__content">
         <div className="eyebrow">
@@ -531,7 +539,7 @@ function StudioSection() {
           <div className="studio-points">
             {[
               ["Prompt to frame", "Turn visual intent into a repeatable shot-development process."],
-              ["Model routing", "Expose choices across image, video, style, and edit modes."],
+              ["API stack", "Custom-curated and self-built API stack for model selection, routing, and output handling."],
               ["Production memory", "Preserve decisions so experiments become reusable pipeline knowledge."],
             ].map(([title, text]) => (
               <div key={title}>
