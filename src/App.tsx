@@ -6,6 +6,8 @@ import {
   Film,
   Github,
   Layers3,
+  Maximize2,
+  Minimize2,
   Sparkles,
 } from "lucide-react";
 import { agents, navItems, projects, repositories, stackGroups } from "./data/site";
@@ -40,6 +42,7 @@ export function App() {
       <Sidebar active={active} />
       <main>
         <Hero featuredCount={featured.length} />
+        <ShowreelSection />
         <WorkGrid />
         <StudioSection />
         <StackSection />
@@ -92,15 +95,7 @@ function Hero({ featuredCount }: { featuredCount: number }) {
       <div className="corner corner--top" />
       <div className="corner corner--bottom" />
       <div className="hero__visual" aria-hidden="true">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          poster="/generated/hero-command-center.png"
-          src="/media/hero-loop.mp4"
-        />
+        <img src="/generated/hero-command-center.png" alt="" />
       </div>
       <div className="hero__content">
         <div className="eyebrow">
@@ -133,6 +128,63 @@ function Hero({ featuredCount }: { featuredCount: number }) {
         <Metric value="Tools" label="Creative systems" />
         <Metric value="Agents" label="Automation layer" />
       </div>
+    </section>
+  );
+}
+
+function ShowreelSection() {
+  const [expanded, setExpanded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [expanded]);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play();
+  }, [expanded]);
+
+  return (
+    <section className="section showreel" id="showreel">
+      <div className="showreel__layout">
+        <header className="showreel__meta">
+          <p>00 / Reel</p>
+          <h2>AI-Native Creative Portfolio Reel</h2>
+          <span>Small ambient preview. Expand only when needed.</span>
+        </header>
+        <div className={`showreel__frame ${expanded ? "is-expanded" : ""}`}>
+          <button
+            aria-label={expanded ? "Close expanded video" : "Expand video"}
+            className="showreel__toggle"
+            onClick={() => setExpanded((value) => !value)}
+            type="button"
+          >
+            {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            {expanded ? "Close" : "Play Full"}
+          </button>
+          <video
+            ref={videoRef}
+            autoPlay
+            controls={expanded}
+            loop
+            muted={!expanded}
+            playsInline
+            preload="metadata"
+            poster="/generated/hero-command-center.png"
+            src="/media/drs-films-reel-withaudio.mp4"
+          />
+        </div>
+      </div>
+      {expanded ? <button className="showreel__backdrop is-visible" onClick={() => setExpanded(false)} type="button" /> : null}
     </section>
   );
 }
