@@ -130,7 +130,7 @@ export const projects: Project[] = [
     proof: "Shows AI-assisted design translated into maintainable code, structured content, local preview, and Cloudflare Pages deployment readiness.",
     tags: ["React", "Vite", "Cloudflare Pages", "AI Design"],
     image: "/uploads/pasted-1776995493459-0.png",
-    repo: "https://github.com/ericzheng-lab",
+    repo: "https://github.com/ericzheng-lab/ai-drsfilms-portfolio",
   },
 ];
 
@@ -173,32 +173,32 @@ export const repositories = [
     description:
       "AI video generation workspace with web UI, Discord path, API workflow, and Obsidian documentation.",
     tags: ["AI Video", "API", "Workflow"],
+    language: "JavaScript",
+    url: "https://github.com/ericzheng-lab/videoagent-studio",
+  },
+  {
+    name: "AI-Canvas-Studio",
+    description:
+      "Browser-native generative canvas for AI image and video development: prompt, generate, remix, and document creative decisions.",
+    tags: ["Next.js", "ReactFlow", "Generative AI"],
     language: "TypeScript",
-    url: "https://github.com/ericzheng-lab",
+    url: "https://github.com/ericzheng-lab/AI-Canvas-Studio",
   },
   {
-    name: "cv-jd-generator",
+    name: "cv-vault-9cv",
     description:
-      "AI resume and job-description matching system for targeted applications.",
-    tags: ["Automation", "LLM", "Workflow"],
-    language: "Node.js",
-    url: "https://github.com/ericzheng-lab",
+      "Structured resume generation and job application system with scoring, tracking, and targeted CV outputs.",
+    tags: ["Automation", "LLM", "Career Ops"],
+    language: "HTML",
+    url: "https://github.com/ericzheng-lab/cv-vault-9cv",
   },
   {
-    name: "OpenClaw Creative OS",
+    name: "ai-drsfilms-portfolio",
     description:
-      "Private multi-agent creative operations workspace connecting Discord, Obsidian, Codex, and role-based AI agents.",
-    tags: ["OpenClaw", "Agents", "Obsidian"],
-    language: "Markdown / Node.js",
-    url: "https://github.com/ericzheng-lab",
-  },
-  {
-    name: "Ericportfoliostructuredesign",
-    description:
-      "The earlier Figma-to-code structure for the traditional Eric portfolio site.",
-    tags: ["Portfolio", "Figma", "React"],
+      "This site. A maintainable AI-native portfolio built with React, Vite, and deployed on Cloudflare Pages.",
+    tags: ["React", "Vite", "Cloudflare Pages"],
     language: "TypeScript",
-    url: "https://github.com/ericzheng-lab/Ericportfoliostructuredesign",
+    url: "https://github.com/ericzheng-lab/ai-drsfilms-portfolio",
   },
 ];
 
