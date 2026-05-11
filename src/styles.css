@@ -214,6 +214,14 @@ main {
   color: var(--fg);
 }
 
+.sidebar__cta {
+  display: block;
+  text-align: center;
+  margin-bottom: 16px;
+  border-bottom: none;
+  justify-content: center;
+}
+
 .hero {
   position: relative;
   min-height: 100vh;
@@ -351,6 +359,15 @@ main {
   font-family: var(--serif);
   font-size: 19px;
   line-height: 1.85;
+}
+
+.hero__identity {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  color: var(--fg2);
+  letter-spacing: 0.04em;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .hero__actions {

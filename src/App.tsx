@@ -72,6 +72,9 @@ function Sidebar({ active }: { active: string }) {
       </nav>
 
       <div className="sidebar__footer">
+        <a className="button button--primary sidebar__cta" href="#contact">
+          Get in Touch
+        </a>
         <div className="availability">
           <span />
           Open to AI film, product, and creative technology roles
@@ -109,6 +112,7 @@ function Hero({ featuredCount }: { featuredCount: number }) {
           <br />
           <span>I connect both.</span>
         </h1>
+        <p className="hero__identity">Eric Zheng &middot; Film Producer &amp; AI Systems Builder</p>
         <p>
           A proof-of-work portfolio for AI filmmaking, creative tools, multi-agent workflows,
           and production automation grounded in real film and commercial production.
