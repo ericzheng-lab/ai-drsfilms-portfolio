@@ -72,13 +72,10 @@ function Sidebar({ active }: { active: string }) {
       </nav>
 
       <div className="sidebar__footer">
-        <a className="button button--primary sidebar__cta" href="#contact">
+        <a className="availability" href="#contact">
+          <span />
           Get in Touch
         </a>
-        <div className="availability">
-          <span />
-          Open to AI film, product, and creative technology roles
-        </div>
         <a href="https://www.drsfilms.com" rel="noreferrer" target="_blank">
           DRS Films <ArrowUpRight size={14} />
         </a>
