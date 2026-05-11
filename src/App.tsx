@@ -105,6 +105,7 @@ function Hero({ featuredCount }: { featuredCount: number }) {
           <span className="live-dot" />
           ai.drsfilms.com / 2026 / AI portfolio
         </div>
+        <p className="hero__identity">Eric Zheng &middot; Film Producer &amp; AI Systems Builder</p>
         <h1>
           I produce films.
           <br />
@@ -112,7 +113,6 @@ function Hero({ featuredCount }: { featuredCount: number }) {
           <br />
           <span>I connect both.</span>
         </h1>
-        <p className="hero__identity">Eric Zheng &middot; Film Producer &amp; AI Systems Builder</p>
         <p>
           A proof-of-work portfolio for AI filmmaking, creative tools, multi-agent workflows,
           and production automation grounded in real film and commercial production.
