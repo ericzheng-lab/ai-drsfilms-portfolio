@@ -593,6 +593,32 @@
   .timecode .bar {
     width: 120px;
   }
+
+  .hud__identity {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 5px 12px 5px 10px;
+    gap: 8px;
+  }
+
+  .hud__identity::before {
+    width: 14px;
+    height: 1.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hud__identity {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    padding: 4px 10px 4px 8px;
+    gap: 6px;
+  }
+
+  .hud__identity::before {
+    width: 10px;
+    height: 1.5px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
