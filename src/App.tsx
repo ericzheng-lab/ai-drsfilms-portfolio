@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import type { HeroMode } from "./three/createCinematicHero";
 import {
   ArrowUpRight,
   Braces,
@@ -12,11 +13,23 @@ import {
 } from "lucide-react";
 import { agents, navItems, projects, repositories, stackGroups } from "./data/site";
 
+const CinematicHero = lazy(() => import("./components/CinematicHero"));
+
 const sectionIds = navItems.map((item) => item.id);
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
+const smoothstep = (edge0: number, edge1: number, value: number) => {
+  const t = clamp01((value - edge0) / (edge1 - edge0));
+  return t * t * (3 - 2 * t);
+};
+const mapRange = (inMin: number, inMax: number, outMin: number, outMax: number, value: number) => {
+  const t = clamp01((value - inMin) / (inMax - inMin));
+  return outMin + (outMax - outMin) * t;
+};
 
 export function App() {
   const [active, setActive] = useState("work");
 
+  // Nav active section observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -35,13 +48,54 @@ export function App() {
     return () => observer.disconnect();
   }, []);
 
-  const featured = useMemo(() => projects.filter((project) => project.featured), []);
+  // Scroll fade-in observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+          }
+        });
+      },
+      { threshold: 0.08 },
+    );
+
+    document.querySelectorAll(".fade-in").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const targetId = new URLSearchParams(window.location.search).get("heroDebugJump");
+    if (!targetId) return;
+    const timer = window.setTimeout(() => {
+      const target = document.getElementById(targetId);
+      if (target) window.scrollTo(0, target.offsetTop);
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const hero = document.querySelector(".hero-wrap");
+      const isOverHero = hero
+        ? e.clientY >= hero.getBoundingClientRect().top && e.clientY <= hero.getBoundingClientRect().bottom
+        : false;
+      document.body.classList.toggle("spotlight-off", isOverHero);
+      if (!isOverHero) {
+        document.body.style.setProperty("--spotlight-x", `${e.clientX}px`);
+        document.body.style.setProperty("--spotlight-y", `${e.clientY}px`);
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   return (
     <div className="site-shell">
       <Sidebar active={active} />
       <main>
-        <Hero featuredCount={featured.length} />
+        <Hero />
         <ShowreelSection />
         <WorkGrid />
         <StudioSection />
@@ -87,47 +141,164 @@ function Sidebar({ active }: { active: string }) {
   );
 }
 
-function Hero({ featuredCount }: { featuredCount: number }) {
-  return (
-    <section className="hero" id="top">
-      <NeuralCanvas />
-      <HeroTicker />
-      <div className="corner corner--top" />
-      <div className="corner corner--bottom" />
-      <div className="hero__visual" aria-hidden="true">
-        <img src="/generated/hero-command-center.png" alt="" />
-      </div>
-      <div className="hero__content">
-        <div className="eyebrow">
-          <span className="live-dot" />
-          ai.drsfilms.com / 2026 / AI portfolio
-        </div>
-        <p className="hero__identity">Eric Zheng &middot; Film Producer &amp; AI Systems Builder</p>
-        <h1>
-          I produce films.
-          <br />
-          I build AI systems.
-          <br />
-          <span>I connect both.</span>
-        </h1>
-        <p>
-          A proof-of-work portfolio for AI filmmaking, creative tools, multi-agent workflows,
-          and production automation grounded in real film and commercial production.
-        </p>
-        <div className="hero__actions">
-          <a className="button button--primary" href="#work">
-            <Sparkles size={16} /> View Work
-          </a>
-          <a className="button" href="https://www.drsfilms.com" rel="noreferrer" target="_blank">
-            DRS Films <ExternalLink size={15} />
-          </a>
-        </div>
-      </div>
+function Hero() {
+  const heroRef = useRef<HTMLElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [hoverMode, setHoverMode] = useState<HeroMode>("default");
+  const reducedMotion = useMemo(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+  const debugProgress = useMemo(() => {
+    const raw = new URLSearchParams(window.location.search).get("heroDebugProgress");
+    if (!raw) return null;
+    const value = Number(raw);
+    return Number.isFinite(value) ? clamp01(value) : null;
+  }, []);
+  const debugMode = useMemo<HeroMode | null>(() => {
+    const raw = new URLSearchParams(window.location.search).get("heroDebugMode");
+    return raw === "film" || raw === "tools" || raw === "agents" ? raw : null;
+  }, []);
 
-      <div className="hero__dashboard">
-        <Metric value="Film" label="Production foundation" />
-        <Metric value="Tools" label="Creative systems" />
-        <Metric value="Agents" label="Automation layer" />
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!heroRef.current) return;
+      const rect = heroRef.current.getBoundingClientRect();
+      const total = heroRef.current.offsetHeight - window.innerHeight;
+      const progress = Math.max(0, Math.min(1, -rect.top / Math.max(total, 1)));
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const effectiveProgress = debugProgress ?? scrollProgress;
+  const copyExit = smoothstep(0.54, 0.78, effectiveProgress);
+  const buttonsReveal = smoothstep(0.72, 0.88, effectiveProgress);
+  const buttonsLive = buttonsReveal > 0.12 && effectiveProgress < 0.995;
+  const sceneMode: HeroMode = debugMode ?? (buttonsLive ? hoverMode : "default");
+  const phase = effectiveProgress < 0.54 ? "copy" : effectiveProgress < 0.72 ? "transition" : effectiveProgress < 0.94 ? "buttons" : "handoff";
+  const heroVars = {
+    "--copy-shift": `${copyExit * -160}px`,
+    "--copy-opacity": `${1 - copyExit}`,
+    "--buttons-opacity": buttonsReveal.toFixed(3),
+    "--buttons-shift": `${(1 - buttonsReveal) * 42}px`,
+  } as CSSProperties;
+
+  const handleModeEnter = (mode: HeroMode) => setHoverMode(mode);
+  const resetMode = () => setHoverMode("default");
+
+  return (
+    <section className="hero-wrap" id="top" ref={heroRef} data-hero-phase={phase} data-scene-mode={sceneMode} style={heroVars}>
+      <div className="hero" id="hero">
+        <Suspense fallback={null}>
+          <CinematicHero progress={effectiveProgress} mode={sceneMode} reducedMotion={reducedMotion} />
+        </Suspense>
+
+        <div className="node-labels" id="nodeLabels">
+          <div className="node-label" data-node="0">
+            <div className="tag">
+              <span className="idx">N.01</span>
+              <span className="name">OPENCLAW</span>
+            </div>
+            <span className="sub">multi-agent operations</span>
+          </div>
+          <div className="node-label" data-node="1">
+            <div className="tag">
+              <span className="idx">N.02</span>
+              <span className="name">CANVAS</span>
+            </div>
+            <span className="sub">prompt → frame interface</span>
+          </div>
+          <div className="node-label" data-node="2">
+            <div className="tag">
+              <span className="idx">N.03</span>
+              <span className="name">PIPELINE</span>
+            </div>
+            <span className="sub">publishing matrix</span>
+          </div>
+          <div className="node-label" data-node="3">
+            <div className="tag">
+              <span className="idx">N.04</span>
+              <span className="name">MEMORY</span>
+            </div>
+            <span className="sub">obsidian writeback</span>
+          </div>
+        </div>
+
+        <div className="hud">
+          <div className="hud__copy">
+            <p className="hud__identity">Eric Zheng · Film Producer & AI Systems Builder</p>
+            <h1 className="hud__title">
+              <span className="br">I produce films.</span>
+              <span className="br">I build AI systems.</span>
+              <span className="br">
+                <em>I connect both.</em>
+              </span>
+            </h1>
+            <p className="hud__desc">
+              A proof-of-work portfolio for AI filmmaking, creative tools, multi-agent workflows, and production
+              automation — grounded in real film and commercial production.
+            </p>
+            <div className="hud__cta">
+              <a className="btn btn--primary" href="#work">
+                View Work <span>→</span>
+              </a>
+              <a className="btn" href="https://www.drsfilms.com" rel="noreferrer" target="_blank">
+                DRS Films <span>↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="hero-mode-stage" data-visible={buttonsLive ? "true" : "false"} data-mode={sceneMode}>
+          <div className="hero-mode-stage__eyebrow">Phase hook · buttons</div>
+          <div className="hero-mode-stage__grid" onMouseLeave={resetMode}>
+            <button
+              className={`hero-mode-card${sceneMode === "film" ? " is-active" : ""}`}
+              onFocus={() => handleModeEnter("film")}
+              onMouseEnter={() => handleModeEnter("film")}
+              type="button"
+            >
+              <span className="hero-mode-card__label">Film</span>
+              <span className="hero-mode-card__meta">direction · production energy</span>
+            </button>
+            <button
+              className={`hero-mode-card${sceneMode === "tools" ? " is-active" : ""}`}
+              onFocus={() => handleModeEnter("tools")}
+              onMouseEnter={() => handleModeEnter("tools")}
+              type="button"
+            >
+              <span className="hero-mode-card__label">Tools</span>
+              <span className="hero-mode-card__meta">interfaces · workflow systems</span>
+            </button>
+            <button
+              className={`hero-mode-card${sceneMode === "agents" ? " is-active" : ""}`}
+              onBlur={resetMode}
+              onFocus={() => handleModeEnter("agents")}
+              onMouseEnter={() => handleModeEnter("agents")}
+              type="button"
+            >
+              <span className="hero-mode-card__label">Agents</span>
+              <span className="hero-mode-card__meta">automation · orchestration layer</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="scroll-hint" id="scrollHint">
+          <span>Scroll · engage</span>
+          <span className="line" />
+        </div>
+
+        <div className="timecode">
+          <span>TC</span>
+          <span className="bar" id="tcBar" />
+          <span id="tcText">00 / 100</span>
+        </div>
+
+        <div className="hero-exit" />
       </div>
     </section>
   );
@@ -155,7 +326,7 @@ function ShowreelSection() {
   }, [expanded]);
 
   return (
-    <section className="section showreel" id="showreel">
+    <section className="section showreel fade-in" id="showreel">
       <div className="showreel__layout">
         <header className="showreel__meta">
           <p>00 / Reel</p>
@@ -443,7 +614,7 @@ function SectionHeader({
 
 function WorkGrid() {
   return (
-    <section className="section" id="work">
+    <section className="section fade-in" id="work">
       <SectionHeader
         id="Selected Work"
         number="01"
@@ -545,7 +716,7 @@ function ProjectVisual({ project }: { project: (typeof projects)[number] }) {
             <span key={item}>{item}</span>
           ))}
         </div>
-        <div className="visual-caption">Film production foundation</div>
+        <div className="visual-caption">drsfilms.com &rarr;</div>
       </div>
     );
   }
@@ -572,7 +743,7 @@ function ProjectVisual({ project }: { project: (typeof projects)[number] }) {
 
 function StudioSection() {
   return (
-    <section className="section section--split" id="studio">
+    <section className="section section--split fade-in" id="studio">
       <SectionHeader
         id="AI Studio"
         number="02"
@@ -630,7 +801,7 @@ function StudioVideo() {
 
 function StackSection() {
   return (
-    <section className="section" id="stack">
+    <section className="section fade-in" id="stack">
       <SectionHeader
         id="AI Production Stack"
         number="03"
@@ -658,6 +829,7 @@ function StackSection() {
 
 function OpenClawSection() {
   const [selected, setSelected] = useState(agents[0].id);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const activeAgent = agents.find((agent) => agent.id === selected) ?? agents[0];
   const workflows = [
     {
@@ -709,7 +881,7 @@ function OpenClawSection() {
   ];
 
   return (
-    <section className="section section--tinted" id="openclaw">
+    <section className="section section--tinted fade-in" id="openclaw">
       <SectionHeader
         id="OpenClaw"
         number="04"
@@ -717,20 +889,20 @@ function OpenClawSection() {
         summary=""
       />
 
-      <div className="openclaw-intro">
-        <p>
-          "I did not want AI to be another scattered chat log. I wanted a creative operating
-          system with memory, roles, review, and handoff."
-        </p>
-        <p>
-          OpenClaw is my multi-agent operations layer. Eight specialized agents coordinate through
-          Discord, write structured knowledge into Obsidian, and use Codex as a governance layer
-          for audits, refactors, and handoffs. This is where the site proves agentic AI ability:
-          delegation, role boundaries, memory, browser/API workflows, and real production tasks.
-        </p>
-      </div>
-
       <div className="openclaw-grid">
+        <div className="openclaw-intro">
+          <p>
+            "I did not want AI to be another scattered chat log. I wanted a creative operating
+            system with memory, roles, review, and handoff."
+          </p>
+          <p>
+            OpenClaw is my multi-agent operations layer. Eight specialized agents coordinate through
+            Discord, write structured knowledge into Obsidian, and use Codex as a governance layer
+            for audits, refactors, and handoffs. This is where the site proves agentic AI ability:
+            delegation, role boundaries, memory, browser/API workflows, and real production tasks.
+          </p>
+        </div>
+
         <div>
           <div className="openclaw-kicker">8-Agent Architecture - click to explore</div>
           <AgentDiagram activeAgent={selected} setActive={setSelected} />
@@ -744,64 +916,79 @@ function OpenClawSection() {
             <p>{activeAgent.description}</p>
           </div>
         </div>
+      </div>
 
-        <div>
-          <div className="openclaw-kicker">Automated Workflows</div>
-          <div className="workflow-stack">
-            {workflows.map((workflow) => (
-              <div className="workflow-row" key={workflow.label}>
-                <span>◆</span>
-                <div>
-                  <strong>{workflow.label}</strong>
-                  <p>{workflow.desc}</p>
+      <button
+        className="openclaw-toggle"
+        onClick={() => setDetailsOpen(!detailsOpen)}
+      >
+        {detailsOpen ? "Hide System Details" : "View System Details"}
+      </button>
+
+      {detailsOpen && (
+        <div className="openclaw-details">
+          <div className="openclaw-grid">
+            <div>
+              <div className="openclaw-kicker">Automated Workflows</div>
+              <div className="workflow-stack">
+                {workflows.map((workflow) => (
+                  <div className="workflow-row" key={workflow.label}>
+                    <span>◆</span>
+                    <div>
+                      <strong>{workflow.label}</strong>
+                      <p>{workflow.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="governance-module">
+                <div className="openclaw-kicker">Agent Governance / HARNESS</div>
+                <h3>System reliability for multi-agent work.</h3>
+                <p>
+                  HARNESS is the governance layer that keeps multi-agent work from becoming unmanaged
+                  chat: rules load predictably, agents know their boundaries, bad upstream output is
+                  blocked, and useful work is written back into a durable project memory.
+                </p>
+                <div className="governance-grid">
+                  {governance.map((item) => (
+                    <article className="governance-card" key={item.label}>
+                      <strong>{item.label}</strong>
+                      <p>{item.desc}</p>
+                    </article>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
 
-          <div className="governance-module">
-            <div className="openclaw-kicker">Agent Governance / HARNESS</div>
-            <h3>System reliability for multi-agent work.</h3>
-            <p>
-              HARNESS is the governance layer that keeps multi-agent work from becoming unmanaged
-              chat: rules load predictably, agents know their boundaries, bad upstream output is
-              blocked, and useful work is written back into a durable project memory.
-            </p>
-            <div className="governance-grid">
-              {governance.map((item) => (
-                <article className="governance-card" key={item.label}>
-                  <strong>{item.label}</strong>
-                  <p>{item.desc}</p>
-                </article>
-              ))}
+              <div className="pipeline-module">
+                <div className="openclaw-kicker">Module</div>
+                <h3>AI Filmmaking Pipeline</h3>
+                <p>
+                  A dedicated AI filmmaking workspace inside Obsidian, connecting prompt systems,
+                  model comparison, character/storyboard references, generation paths, and publishing
+                  workflows.
+                </p>
+                {[
+                  ["Platform Research", "Model and workflow comparison across tools such as Runway, Kling, Veo, Flux, Midjourney, and related video/image systems."],
+                  ["Prompt Library", "Structured prompt templates organized by shot type, style, model target, and repeatable production need."],
+                  ["Character & Storyboard", "Reusable character references, storyboard templates, and continuity notes for multi-shot generation."],
+                  ["Publishing Matrix", "A documented path from finished video to platform-specific releases, technical breakdowns, and retrospectives."],
+                ].map(([label, desc]) => (
+                  <div className="pipeline-row" key={label}>
+                    <span>◆</span>
+                    <div>
+                      <strong>{label}</strong>
+                      <p>{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-
-          <div className="pipeline-module">
-            <div className="openclaw-kicker">Module</div>
-            <h3>AI Filmmaking Pipeline</h3>
-            <p>
-              A dedicated AI filmmaking workspace inside Obsidian, connecting prompt systems,
-              model comparison, character/storyboard references, generation paths, and publishing
-              workflows.
-            </p>
-            {[
-              ["Platform Research", "Model and workflow comparison across tools such as Runway, Kling, Veo, Flux, Midjourney, and related video/image systems."],
-              ["Prompt Library", "Structured prompt templates organized by shot type, style, model target, and repeatable production need."],
-              ["Character & Storyboard", "Reusable character references, storyboard templates, and continuity notes for multi-shot generation."],
-              ["Publishing Matrix", "A documented path from finished video to platform-specific releases, technical breakdowns, and retrospectives."],
-            ].map(([label, desc]) => (
-              <div className="pipeline-row" key={label}>
-                <span>◆</span>
-                <div>
-                  <strong>{label}</strong>
-                  <p>{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
@@ -949,7 +1136,7 @@ function AgentDiagram({
 
 function GithubSection() {
   return (
-    <section className="section" id="github">
+    <section className="section fade-in" id="github">
       <SectionHeader
         id="GitHub"
         number="05"
@@ -979,7 +1166,7 @@ function GithubSection() {
 
 function ContactSection() {
   return (
-    <section className="section contact" id="contact">
+    <section className="section contact fade-in" id="contact">
       <div>
         <span className="micro-label">Connected Sites</span>
         <h2>AI portfolio now. Traditional portfolio later.</h2>

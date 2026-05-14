@@ -105,8 +105,8 @@ export const projects: Project[] = [
   {
     id: "production-bridge",
     number: "006",
-    title: "Film Production Bridge",
-    eyebrow: "Traditional production foundation",
+    title: "15 Years of Film Production",
+    eyebrow: "Traditional portfolio at drsfilms.com",
     type: "film",
     year: "2026",
     status: "Archive",

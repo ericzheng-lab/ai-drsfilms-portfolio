@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursor Options</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0c0a08;
+      color: rgba(244, 237, 225, 0.9);
+      font-family: "Space Mono", monospace;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+    h1 {
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 32px;
+    }
+    .option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .canvas {
+      width: 180px;
+      height: 180px;
+      border: 1px solid rgba(244, 237, 225, 0.12);
+      background: #0c0a08;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .canvas svg {
+      width: 120px;
+      height: 120px;
+    }
+    .label {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+    .combined {
+      margin-top: 24px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(244, 237, 225, 0.12);
+    }
+    .combined .canvas {
+      width: 240px;
+      height: 240px;
+    }
+    .combined .canvas svg {
+      width: 160px;
+      height: 160px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cursor Elements — Separate</h1>
+
+  <div class="grid">
+    <div class="option">
+      <div class="canvas">
+        <svg viewBox="0 0 32 32">
+          <line x1="16" y1="2" x2="16" y2="30" stroke="rgba(244,237,225,0.7)" stroke-width="1"/>
+          <line x1="2" y1="16" x2="30" y2="16" stroke="rgba(244,237,225,0.7)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="label">1. Crosshair</div>
+    </div>
+
+    <div class="option">
+      <div class="canvas">
+        <svg viewBox="0 0 32 32">
+          <circle cx="16" cy="16" r="10" stroke="rgba(244,237,225,0.18)" stroke-width="0.5" fill="none"/>
+        </svg>
+      </div>
+      <div class="label">2. Focus Ring</div>
+    </div>
+
+    <div class="option">
+      <div class="canvas">
+        <svg viewBox="0 0 32 32">
+          <circle cx="16" cy="16" r="3" fill="#e3a868"/>
+          <circle cx="16" cy="16" r="1.5" fill="#fff4dc"/>
+        </svg>
+      </div>
+      <div class="label">3. Focus Dot</div>
+    </div>
+
+    <div class="option">
+      <div class="canvas">
+        <svg viewBox="0 0 32 32">
+          <path d="M4,4 L4,10 M4,4 L10,4" stroke="rgba(244,237,225,0.5)" stroke-width="1.5" fill="none"/>
+          <path d="M28,4 L28,10 M28,4 L22,4" stroke="rgba(244,237,225,0.5)" stroke-width="1.5" fill="none"/>
+          <path d="M4,28 L4,22 M4,28 L10,28" stroke="rgba(244,237,225,0.5)" stroke-width="1.5" fill="none"/>
+          <path d="M28,28 L28,22 M28,28 L22,28" stroke="rgba(244,237,225,0.5)" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <div class="label">4. Crop Marks</div>
+    </div>
+
+    <div class="option">
+      <div class="canvas">
+        <svg viewBox="0 0 32 32">
+          <circle cx="26" cy="6" r="3" fill="#c0392b"/>
+          <circle cx="26" cy="6" r="1.5" fill="#e74c3c"/>
+        </svg>
+      </div>
+      <div class="label">5. REC Dot</div>
+    </div>
+  </div>
+
+  <div class="combined">
+    <h1>Combined — Full Viewfinder</h1>
+    <div class="grid" style="justify-content: center;">
+      <div class="option">
+        <div class="canvas">
+          <svg viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="10" stroke="rgba(244,237,225,0.18)" stroke-width="0.5" fill="none"/>
+            <line x1="16" y1="2" x2="16" y2="10" stroke="rgba(244,237,225,0.7)" stroke-width="1"/>
+            <line x1="16" y1="22" x2="16" y2="30" stroke="rgba(244,237,225,0.7)" stroke-width="1"/>
+            <line x1="2" y1="16" x2="10" y2="16" stroke="rgba(244,237,225,0.7)" stroke-width="1"/>
+            <line x1="22" y1="16" x2="30" y2="16" stroke="rgba(244,237,225,0.7)" stroke-width="1"/>
+            <circle cx="16" cy="16" r="2" fill="#e3a868"/>
+            <circle cx="16" cy="16" r="1" fill="#fff4dc"/>
+            <path d="M4,4 L4,8 M4,4 L8,4" stroke="rgba(244,237,225,0.5)" stroke-width="1" fill="none"/>
+            <path d="M28,4 L28,8 M28,4 L24,4" stroke="rgba(244,237,225,0.5)" stroke-width="1" fill="none"/>
+            <path d="M4,28 L4,24 M4,28 L8,28" stroke="rgba(244,237,225,0.5)" stroke-width="1" fill="none"/>
+            <path d="M28,28 L28,24 M28,28 L24,28" stroke="rgba(244,237,225,0.5)" stroke-width="1" fill="none"/>
+            <circle cx="26" cy="6" r="2" fill="#c0392b"/>
+          </svg>
+        </div>
+        <div class="label">All Combined</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
