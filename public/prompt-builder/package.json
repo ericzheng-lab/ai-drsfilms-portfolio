@@ -1,0 +1,43 @@
+{
+  "name": "prompt-builder",
+  "version": "0.3.0",
+  "private": true,
+  "description": "A production-minded prompt builder for AI image generation.",
+  "bin": {
+    "prompt-builder": "./bin/prompt-builder.js"
+  },
+  "scripts": {
+    "start": "node ./bin/prompt-builder.js open",
+    "serve": "node ./bin/prompt-builder.js serve"
+  },
+  "files": [
+    "bin",
+    "index.html",
+    "prompt-builder.html",
+    "landing-bundle.jsx",
+    "tweaks-panel.jsx",
+    "manifest.json",
+    "sw.js",
+    "favicon.svg",
+    "release-package/web-shots/landing-homepage.png",
+    "release-package/web-shots/builder-direct-mode.png",
+    "release-package/PICS/showcase-creative-range-what-can-you-build.jpg",
+    "release-package/PICS/audience-who-uses-prompt-builder.jpg",
+    "release-package/PICS/preset-library-100-plus-catalog-infographic.jpg",
+    "release-package/PICS/before-after-blank-box-to-chips.jpg",
+    "release-package/PICS/one-scene-four-formats-model-comparison.jpg",
+    "release-package/social-cards/post-launch.png",
+    "Prompt_USED_CASES",
+    "README.md"
+  ],
+  "keywords": [
+    "ai-image",
+    "prompt-builder",
+    "pwa",
+    "midjourney",
+    "flux",
+    "gpt-image"
+  ],
+  "author": "Eric Zheng",
+  "license": "UNLICENSED"
+}

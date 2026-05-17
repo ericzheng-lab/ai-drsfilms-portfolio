@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Builder Post Cards</title>
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef2f1;
+    --panel: rgba(255,255,255,0.72);
+    --ink: #20242c;
+    --muted: #66727b;
+    --line: rgba(38,48,58,0.16);
+    --teal: #537f8c;
+    --copper: #a5774f;
+    --violet: #756996;
+    --green: #5f836d;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --sans: "Josefin Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #dfe6e4;
+    color: var(--ink);
+    font-family: var(--sans);
+  }
+  body {
+    display: grid;
+    place-items: center;
+  }
+  .card {
+    display: none;
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(235,241,241,0.96) 56%, rgba(224,231,228,0.98) 100%);
+    border: 1px solid rgba(30,38,45,0.1);
+  }
+  .card.active { display: block; }
+  .grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.11;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .frame {
+    position: absolute;
+    inset: 42px;
+    display: grid;
+    grid-template-columns: 1fr 0.9fr;
+    gap: 34px;
+  }
+  .stack {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .mark {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--ink);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 18px;
+  }
+  h1 {
+    max-width: 650px;
+    margin: 0;
+    font-size: 72px;
+    line-height: 0.98;
+    letter-spacing: 0;
+    font-weight: 300;
+  }
+  h1 strong {
+    color: var(--teal);
+    font-weight: 500;
+  }
+  .sub {
+    max-width: 600px;
+    margin-top: 24px;
+    color: var(--muted);
+    font-size: 25px;
+    line-height: 1.32;
+    font-weight: 300;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .tag {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.7);
+    border-radius: 999px;
+    padding: 8px 13px 7px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .tag b { color: var(--teal); font-weight: 500; }
+  .visual {
+    position: relative;
+    min-width: 0;
+  }
+  .shot {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 26px 60px rgba(39,52,62,0.13);
+  }
+  .shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .shot::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 160px;
+    background: linear-gradient(transparent, rgba(17,23,28,0.82));
+  }
+  .caption {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 22px;
+    z-index: 1;
+    color: white;
+  }
+  .caption .k {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    opacity: 0.78;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+  .caption .v {
+    font-size: 24px;
+    line-height: 1.18;
+    font-weight: 500;
+  }
+  .prompt {
+    position: absolute;
+    left: 38px;
+    right: 38px;
+    bottom: 34px;
+    padding: 18px 21px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.76);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .prompt b { color: var(--teal); font-weight: 500; }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .metric {
+    padding: 19px 18px 17px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.68);
+  }
+  .metric .num {
+    font-family: var(--mono);
+    font-size: 34px;
+    color: var(--teal);
+    margin-bottom: 4px;
+  }
+  .metric .label {
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.25;
+  }
+  .flow {
+    display: grid;
+    gap: 12px;
+    align-content: center;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.68);
+    font-size: 22px;
+  }
+  .step span {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: rgba(83,127,140,0.12);
+    color: var(--teal);
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  .proof-panel {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 18px;
+  }
+  .code {
+    height: 390px;
+    padding: 22px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(31,39,46,0.92);
+    color: #d8e5e4;
+    font-family: var(--mono);
+    font-size: 16px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow: hidden;
+    box-shadow: 0 26px 60px rgba(39,52,62,0.17);
+  }
+  .code b { color: #88c7c9; font-weight: 500; }
+  .mini-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .mini {
+    padding: 13px 10px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.72);
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .mini b {
+    display: block;
+    color: var(--teal);
+    font-size: 16px;
+    margin-bottom: 3px;
+  }
+  .wide .frame { grid-template-columns: 0.95fr 1.05fr; }
+  .wide h1 { font-size: 66px; }
+  .wide .visual { display: grid; align-content: center; }
+  .wide .shot { position: relative; height: 428px; }
+</style>
+</head>
+<body>
+  <main class="card active" data-card="launch">
+    <div class="grain"></div>
+    <section class="frame">
+      <div class="stack">
+        <div class="brand"><div class="mark">P</div> Prompt Builder</div>
+        <div>
+          <h1>Stop writing prompts. <strong>Start directing images.</strong></h1>
+          <p class="sub">A production-minded prompt builder that turns shot language into model-ready AI image prompts.</p>
+        </div>
+        <div class="tags">
+          <span class="tag"><b>100+</b> presets</span>
+          <span class="tag"><b>4</b> model formats</span>
+          <span class="tag"><b>PWA</b> installable</span>
+          <span class="tag"><b>0</b> account</span>
+        </div>
+      </div>
+      <div class="visual">
+        <div class="shot">
+          <img src="../PICS/showcase-creative-range-what-can-you-build.jpg" alt="">
+          <div class="caption">
+            <div class="k">Built with Prompt Builder</div>
+            <div class="v">Product · film · data · storyboards · key art</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main class="card wide" data-card="thesis">
+    <div class="grain"></div>
+    <section class="frame">
+      <div class="stack">
+        <div class="brand"><div class="mark">AI</div> Product Thesis</div>
+        <div>
+          <h1>AI tools should speak <strong>the language of the craft.</strong></h1>
+          <p class="sub">Prompt Builder turns film-production vocabulary into interface primitives: shots, lenses, light, mood, layout, and model dialects.</p>
+        </div>
+        <div class="tags">
+          <span class="tag">domain-specific AI</span>
+          <span class="tag">selection before syntax</span>
+          <span class="tag">model-aware output</span>
+        </div>
+      </div>
+      <div class="visual">
+        <div class="flow">
+          <div class="step"><span>01</span> Choose a workflow</div>
+          <div class="step"><span>02</span> Select production language</div>
+          <div class="step"><span>03</span> Map to the right model</div>
+          <div class="step"><span>04</span> Copy a usable prompt</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main class="card" data-card="proof">
+    <div class="grain"></div>
+    <section class="frame">
+      <div class="stack">
+        <div class="brand"><div class="mark">V3</div> Core Product Proof</div>
+        <div>
+          <h1>Use fields directly. <strong>No LLM required.</strong></h1>
+          <p class="sub">Fields, chips, subject, scene, and model parameters update the preview live.</p>
+        </div>
+        <div class="metrics">
+          <div class="metric"><div class="num">0</div><div class="label">API calls in direct mode</div></div>
+          <div class="metric"><div class="num">4</div><div class="label">model-specific output formats</div></div>
+        </div>
+      </div>
+      <div class="proof-panel">
+        <div class="code">{<br>  "goal": <b>"high-budget science-fiction film still"</b>,<br>  "subject": <b>"present-day man on a windswept hill"</b>,<br>  "scene": <b>"immense brutalist steampunk metropolis"</b>,<br>  "style": <b>"teal-and-amber, film grain, volumetric light"</b>,<br>  "layout": {<br>    "grid": "3x3",<br>    "continuity": "same character across panels"<br>  }<br>}</div>
+        <div class="mini-row">
+          <div class="mini"><b>MJ</b>/imagine</div>
+          <div class="mini"><b>Flux</b>natural</div>
+          <div class="mini"><b>Nano</b>director note</div>
+          <div class="mini"><b>GPT</b>JSON</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main class="card wide" data-card="pwa">
+    <div class="grain"></div>
+    <section class="frame">
+      <div class="stack">
+        <div class="brand"><div class="mark">PWA</div> Lightweight Creative Utility</div>
+        <div>
+          <h1>Installable. Static. <strong>Ready to share.</strong></h1>
+          <p class="sub">No account, no backend, no setup. Publish on GitHub Pages and let users keep it like a small desktop tool.</p>
+        </div>
+        <div class="tags">
+          <span class="tag">GitHub Pages</span>
+          <span class="tag">service worker</span>
+          <span class="tag">offline-friendly</span>
+          <span class="tag">optional LLM</span>
+        </div>
+      </div>
+      <div class="visual">
+        <div class="shot">
+          <img src="../web-shots/landing-homepage.png" alt="">
+          <div class="caption">
+            <div class="k">Installable PWA</div>
+            <div class="v">Static app, serious workflow, model-aware prompts</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+  const selected = new URLSearchParams(location.search).get("card") || "launch";
+  document.querySelectorAll(".card").forEach(card => {
+    card.classList.toggle("active", card.dataset.card === selected);
+  });
+</script>
+</body>
+</html>
