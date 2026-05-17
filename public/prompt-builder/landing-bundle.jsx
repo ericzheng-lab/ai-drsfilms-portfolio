@@ -138,7 +138,7 @@ function HeroNav({ accent }) {
         <a href="#categories" className="hero-nav-text" style={{ color: 'var(--muted)' }}>Categories</a>
         <a href="#anatomy" className="hero-nav-text" style={{ color: 'var(--muted)' }}>How it works</a>
         <a href="#models" className="hero-nav-text" style={{ color: 'var(--muted)' }}>Models</a>
-        <a href="prompt-builder.html" style={{
+        <a href="prompt-builder" style={{
           padding: '7px 14px', borderRadius: 8, border: `1px solid ${accent}`, color: accent, fontWeight: 500,
         }}>Open the tool →</a>
       </div>
@@ -399,7 +399,7 @@ function Hero({ accent, rotateRole }) {
         </p>
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
-          <a href="prompt-builder.html" style={{
+          <a href="prompt-builder" style={{
             padding: '14px 26px', borderRadius: 10, background: accent, color: '#fff',
             fontWeight: 500, fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 10,
             boxShadow: '0 6px 22px rgba(138,106,170,0.32)',
@@ -1056,7 +1056,7 @@ function AuthorStrip({ accent }) {
             so you can skip the trial-and-error and just pick what you need.
           </p>
         </div>
-        <a href="prompt-builder.html" style={{
+        <a href="prompt-builder" style={{
           padding: '10px 20px', borderRadius: 8,
           border: `1px solid ${accent}`, color: accent, fontSize: 13, fontWeight: 500,
           whiteSpace: 'nowrap',
@@ -1104,7 +1104,7 @@ function CtaSection({ accent }) {
           The whole preset library in one HTML file. Works offline, no account, no setup. Add an API key if you want AI to enhance your prompts further — but great results don't need it.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'relative' }}>
-          <a href="prompt-builder.html" style={{
+          <a href="prompt-builder" style={{
             padding: '14px 30px', borderRadius: 10, background: accent, color: '#fff',
             fontWeight: 500, fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 10,
             boxShadow: '0 8px 28px rgba(138,106,170,0.34)',
