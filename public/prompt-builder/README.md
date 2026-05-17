@@ -7,6 +7,8 @@
 
 > A production-minded prompt builder for AI image generation. Pick what you want to make, choose real film/visual language, and copy a model-ready prompt for Midjourney, Flux, Nano Banana, or GPT Image.
 
+> **[→ Live demo](https://ai.drsfilms.com/prompt-builder/)** — no install, no account, just open.
+
 ![Prompt Builder landing page](release-package/web-shots/landing-homepage.png)
 
 ## The Short Version
@@ -96,7 +98,6 @@ The same creative intent can be formatted four ways:
 
 - Directors, DPs, production designers, storyboard artists, and visual creators.
 - AI image users who know what they want visually but do not want to become prompt engineers.
-- Anyone who wants better AI images without learning prompt engineering.
 
 ## Why It Matters
 
@@ -115,6 +116,8 @@ The goal is simple: help more people skip the prompt-writing headache and get st
 - Run `npx --yes github:ericzheng-lab/prompt-builder` for a GitHub CLI launch.
 - Run `bash install.sh`, then `prompt-builder`, for the local CLI install.
 - Publish the folder with GitHub Pages to make it installable as a PWA.
+
+<a href="https://github.com/ericzheng-lab/prompt-builder">View source on GitHub</a>
 
 ## Launch Materials
 
@@ -136,6 +139,6 @@ The goal is simple: help more people skip the prompt-writing headache and get st
 
 ## Author
 
-Built by **Eric Zheng**, a filmmaker building AI tools for creators.
+Built by **Eric Zheng** — 15-year film producer (Sundance Grand Jury Prize nominee, Berlinale Panorama, $8M+ commercial portfolio at Final Frontier). Now building AI-native production tools at [DRS Films](https://ai.drsfilms.com).
 
 The point of this project is simple: make AI image generation feel less like prompt hacking and more like directing.

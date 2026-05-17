@@ -138,6 +138,7 @@ function HeroNav({ accent }) {
         <a href="#categories" className="hero-nav-text" style={{ color: 'var(--muted)' }}>Categories</a>
         <a href="#anatomy" className="hero-nav-text" style={{ color: 'var(--muted)' }}>How it works</a>
         <a href="#models" className="hero-nav-text" style={{ color: 'var(--muted)' }}>Models</a>
+        <a href="https://ai.drsfilms.com" className="hero-nav-text" style={{ color: 'var(--muted)' }}>DRS Films</a>
         <a href="prompt-builder" style={{
           padding: '7px 14px', borderRadius: 8, border: `1px solid ${accent}`, color: accent, fontWeight: 500,
         }}>Open the tool →</a>
@@ -1043,18 +1044,32 @@ function AuthorStrip({ accent }) {
           <div style={{
             fontFamily: 'var(--mono)', fontSize: 10.5, letterSpacing: '0.18em',
             color: accent, textTransform: 'uppercase', fontWeight: 500, marginBottom: 8,
-          }}>Why the presets actually work</div>
+          }}>Built by a producer, not a prompt engineer</div>
           <h3 style={{
             fontSize: 22, fontWeight: 400, letterSpacing: '-0.015em',
             color: 'var(--text)', lineHeight: 1.35, marginBottom: 6,
           }}>
-            Eric Zheng — <span style={{ color: 'var(--muted)' }}>Filmmaker & AI tool builder.</span>
+            Eric Zheng — <span style={{ color: 'var(--muted)' }}>Producer & AI builder. DRS Films.</span>
           </h3>
           <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.55, maxWidth: 540 }}>
-            Built this because I got tired of writing prompts from scratch every time.
-            The presets collect real film vocabulary — shot sizes, lighting setups, lens choices —
-            so you can skip the trial-and-error and just pick what you need.
+            Producer behind Sundance nominee Brief History of A Family
+            (Berlinale Panorama, 60+ territories) and an $8M+ commercial
+            portfolio at Final Frontier. 15 years of film vocabulary — shot sizes,
+            lighting setups, lens choices — distilled into one-click presets.
           </p>
+          <div style={{
+            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.12em',
+            color: 'var(--dim)', marginTop: 8,
+          }}>
+            Sundance Nominee · Berlinale Panorama · Gold House · EMBA Quantic
+          </div>
+          <div style={{
+            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.12em',
+            color: 'var(--dim)', marginTop: 6, display: 'flex', gap: 16,
+          }}>
+            <a href="https://ai.drsfilms.com" style={{ color: 'var(--accent)' }}>AI Portfolio →</a>
+            <a href="https://www.drsfilms.com" style={{ color: 'var(--dim)' }}>Film Portfolio →</a>
+          </div>
         </div>
         <a href="prompt-builder" style={{
           padding: '10px 20px', borderRadius: 8,
@@ -1112,11 +1127,12 @@ function CtaSection({ accent }) {
             Open Prompt Builder
             <span style={{ fontFamily: 'var(--mono)', opacity: 0.8 }}>→</span>
           </a>
-          <span style={{
+          <a href="https://github.com/ericzheng-lab/prompt-builder" style={{
             padding: '14px 24px', borderRadius: 10,
             background: 'rgba(255,255,255,0.6)', color: 'var(--text-2)',
             border: '1px solid var(--border-2)', fontWeight: 500, fontSize: 15,
-          }}>Source link later</span>
+            textDecoration: 'none',
+          }}>GitHub · Source</a>
         </div>
       </div>
     </section>
@@ -1134,7 +1150,7 @@ function Footer() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <span>PROMPT BUILDER · v1.0</span>
         <span style={{ color: 'var(--muted)' }}>Static HTML · no account · no tracking</span>
-        <span>© 2026 ERIC ZHENG</span>
+        <span>© 2026 <a href="https://ai.drsfilms.com" style={{color:'var(--muted)'}}>DRS Films</a></span>
       </div>
     </footer>
   );
