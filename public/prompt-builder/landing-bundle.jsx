@@ -1082,6 +1082,46 @@ function AuthorStrip({ accent }) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Demo Video
+// ─────────────────────────────────────────────────────────────
+function DemoVideo() {
+  const videoRef = React.useRef(null);
+  const [muted, setMuted] = React.useState(true);
+  const toggle = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setMuted(videoRef.current.muted);
+    }
+  };
+  return (
+    <section style={{ padding: '48px 32px', textAlign: 'center' }}>
+      <div style={{
+        fontFamily: 'var(--mono)', fontSize: 10.5, letterSpacing: '0.18em',
+        color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 500, marginBottom: 16,
+      }}>See it in action</div>
+      <div style={{
+        maxWidth: 900, margin: '0 auto', borderRadius: 16, overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+        border: '1px solid var(--border)', position: 'relative',
+      }}>
+        <video
+          ref={videoRef}
+          src="release-package/demo.mp4"
+          autoPlay muted loop playsInline
+          style={{ width: '100%', display: 'block' }}
+        />
+        <button onClick={toggle} style={{
+          position: 'absolute', bottom: 12, right: 12,
+          background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 8,
+          color: 'white', fontSize: 12, padding: '6px 12px', cursor: 'pointer',
+          fontFamily: 'var(--mono)',
+        }}>{muted ? '🔇 Unmute' : '🔊 Mute'}</button>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Final CTA + Footer
 // ─────────────────────────────────────────────────────────────
 function CtaSection({ accent }) {
@@ -1150,7 +1190,11 @@ function Footer() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <span>PROMPT BUILDER · v1.0</span>
         <span style={{ color: 'var(--muted)' }}>Static HTML · no account · no tracking</span>
-        <span>© 2026 <a href="https://ai.drsfilms.com" style={{color:'var(--muted)'}}>DRS Films</a></span>
+        <span style={{
+          display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center', gap: 4,
+          background: 'rgba(26,30,42,0.15)', borderRadius: 8, padding: '6px 14px',
+          color: '#5a5a6a', fontWeight: 600,
+        }}>© 2026 <a href="https://ai.drsfilms.com" style={{color:'#5a5a6a'}}>DRS Films</a> · <a href="https://www.linkedin.com/in/ericzhengyue/" style={{color:'#5a5a6a'}}>LinkedIn</a> · <a href="https://x.com/EZheng66099" style={{color:'#5a5a6a'}}>X</a></span>
       </div>
     </footer>
   );
@@ -1158,7 +1202,7 @@ function Footer() {
 
 Object.assign(window, {
   SectionLabel, CategoriesSection, AnatomySection, ModelsSection,
-  AuthorStrip, CtaSection, Footer, ShowcaseSection, AudienceProofSection,
+  AuthorStrip, CtaSection, Footer, ShowcaseSection, AudienceProofSection, DemoVideo,
 });
 
 
@@ -1197,6 +1241,7 @@ function App() {
   return (
     <div>
       <Hero accent={t.accent} rotateRole={t.rotateRole} />
+      <DemoVideo />
       <ShowcaseSection accent={t.accent} />
       <CategoriesSection accent={t.accent} />
       <AudienceProofSection accent={t.accent} />
