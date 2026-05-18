@@ -1,5 +1,41 @@
 export type ProjectType = "film" | "tool" | "website" | "system" | "code";
 
+export type Tool = {
+  slug: string;
+  name: string;
+  description: string;
+  status: "Live" | "Coming Soon";
+  url: string;
+  icon: string;
+};
+
+export const tools: Tool[] = [
+  {
+    slug: "video-agent",
+    name: "VideoAgent Studio",
+    description: "AI video and image generation workspace. Kling, Runway, Midjourney, NanoBanana — one unified interface.",
+    status: "Live",
+    url: "https://videoagent-studio.vercel.app",
+    icon: "🎬",
+  },
+  {
+    slug: "ai-canvas",
+    name: "AI Canvas Studio",
+    description: "Generative canvas for AI image and video development. Prompt, generate, remix, and document creative decisions.",
+    status: "Live",
+    url: "https://video-canvas.pages.dev",
+    icon: "🎨",
+  },
+  {
+    slug: "open-video-agent",
+    name: "OpenVideoAgent",
+    description: "Open-source AI video generation. Browser-direct API connection — bring your own API key, configurable base URL.",
+    status: "Live",
+    url: "https://openvideoagent.pages.dev",
+    icon: "🔓",
+  },
+];
+
 export type Project = {
   id: string;
   number: string;
@@ -20,11 +56,12 @@ export type Project = {
 
 export const navItems = [
   { id: "work", label: "Work", number: "01" },
-  { id: "studio", label: "AI Studio", number: "02" },
-  { id: "stack", label: "AI Stack", number: "03" },
-  { id: "openclaw", label: "OpenClaw", number: "04" },
-  { id: "github", label: "GitHub", number: "05" },
-  { id: "contact", label: "Contact", number: "06" },
+  { id: "tools", label: "Tools", number: "02" },
+  { id: "studio", label: "AI Studio", number: "03" },
+  { id: "stack", label: "AI Stack", number: "04" },
+  { id: "openclaw", label: "OpenClaw", number: "05" },
+  { id: "github", label: "GitHub", number: "06" },
+  { id: "contact", label: "Contact", number: "07" },
 ];
 
 export const projects: Project[] = [
@@ -51,7 +88,7 @@ export const projects: Project[] = [
     eyebrow: "Web UI + Discord + API workflow",
     type: "tool",
     year: "2026",
-    status: "Prototype",
+    status: "Live",
     description:
       "A documented AI video creation setup with a web interface, Discord command path, API route, prompt templates, model choices, and Obsidian archival.",
     proof: "Shows AI tool-building beyond one-off prompting: multiple input paths, model routing, repeatable prompts, and project documentation.",
@@ -78,10 +115,10 @@ export const projects: Project[] = [
     id: "ai-canvas",
     number: "004",
     title: "AI Canvas Studio",
-    eyebrow: "Creative tool prototype",
+    eyebrow: "Generative canvas tool",
     type: "tool",
     year: "2026",
-    status: "Prototype",
+    status: "Live",
     description:
       "A browser-native generative canvas concept for directors and artists: prompt, choose a model, generate, save, remix, and document creative decisions.",
     proof: "Proves tool-building ability: interface logic, model routing concept, prompt input, and output state design.",

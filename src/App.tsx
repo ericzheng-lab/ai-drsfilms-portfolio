@@ -11,9 +11,19 @@ import {
   Minimize2,
   Sparkles,
 } from "lucide-react";
-import { agents, navItems, projects, repositories, stackGroups } from "./data/site";
+import { agents, navItems, projects, repositories, stackGroups, tools } from "./data/site";
 
 const CinematicHero = lazy(() => import("./components/CinematicHero"));
+
+type HashRoute = { type: "tools" } | { type: "tool-embed"; slug: string } | { type: "main" };
+
+function parseHashRoute(): HashRoute {
+  const hash = window.location.hash;
+  if (hash === "#/tools") return { type: "tools" };
+  const toolMatch = hash.match(/^#\/tools\/(.+)$/);
+  if (toolMatch) return { type: "tool-embed", slug: toolMatch[1] };
+  return { type: "main" };
+}
 
 const sectionIds = navItems.map((item) => item.id);
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
@@ -28,6 +38,15 @@ const mapRange = (inMin: number, inMax: number, outMin: number, outMax: number, 
 
 export function App() {
   const [active, setActive] = useState("work");
+  const [route, setRoute] = useState<HashRoute>(parseHashRoute);
+
+  useEffect(() => {
+    const onHashChange = () => setRoute(parseHashRoute());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  const isToolsView = route.type !== "main";
 
   // Nav active section observer
   useEffect(() => {
@@ -93,22 +112,32 @@ export function App() {
 
   return (
     <div className="site-shell">
-      <Sidebar active={active} />
+      <Sidebar active={active} isToolsView={isToolsView} />
       <main>
-        <Hero />
-        <ShowreelSection />
+        {isToolsView ? (
+          route.type === "tools" ? (
+            <ToolsHub />
+          ) : (
+            <ToolEmbed slug={route.slug} />
+          )
+        ) : (
+          <>
+            <Hero />
+            <ShowreelSection />
         <WorkGrid />
         <StudioSection />
         <StackSection />
         <OpenClawSection />
         <GithubSection />
         <ContactSection />
+          </>
+        )}
       </main>
     </div>
   );
 }
 
-function Sidebar({ active }: { active: string }) {
+function Sidebar({ active, isToolsView }: { active: string; isToolsView: boolean }) {
   return (
     <aside className="sidebar">
       <a className="identity" href="#top" aria-label="Eric Zheng AI Portfolio home">
@@ -118,7 +147,11 @@ function Sidebar({ active }: { active: string }) {
 
       <nav aria-label="Primary navigation">
         {navItems.map((item) => (
-          <a className={active === item.id ? "is-active" : ""} href={`#${item.id}`} key={item.id}>
+          <a
+            className={isToolsView ? (item.id === "tools" ? "is-active" : "") : active === item.id ? "is-active" : ""}
+            href={item.id === "tools" ? "#/tools" : `#${item.id}`}
+            key={item.id}
+          >
             <span>{item.number}</span>
             {item.label}
           </a>
@@ -1187,6 +1220,96 @@ function ContactSection() {
           eric.zheng@drsfilms.com <ArrowUpRight size={15} />
         </a>
       </div>
+    </section>
+  );
+}
+
+function ToolsHub() {
+  return (
+    <section className="section tools-hub" id="tools">
+      <SectionHeader
+        id="AI Tools"
+        number="02"
+        title="Live tools, not mockups."
+        summary="Each tool is a working product. Click to launch."
+      />
+      <div className="tools-grid">
+        {tools.map((tool) => (
+          <article className="tool-card" key={tool.slug}>
+            <div className="tool-card__icon">{tool.icon}</div>
+            <div className="tool-card__body">
+              <div className="tool-card__meta">
+                <span className={`tool-card__status ${tool.status === "Live" ? "is-live" : "is-soon"}`}>
+                  {tool.status}
+                </span>
+              </div>
+              <h3>{tool.name}</h3>
+              <p>{tool.description}</p>
+              <div className="tool-card__links">
+                {tool.status === "Live" ? (
+                  <a className="button button--primary" href={`#/tools/${tool.slug}`}>
+                    Launch <ArrowUpRight size={14} />
+                  </a>
+                ) : (
+                  <span className="button button--disabled">Coming Soon</span>
+                )}
+                {tool.url && (
+                  <a className="button" href={tool.url} rel="noreferrer" target="_blank">
+                    Open in New Tab <ExternalLink size={14} />
+                  </a>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ToolEmbed({ slug }: { slug: string }) {
+  const [loading, setLoading] = useState(true);
+  const tool = tools.find((t) => t.slug === slug);
+
+  if (!tool) {
+    return (
+      <section className="section tools-embed" id="tools">
+        <div className="tools-embed__header">
+          <a className="tools-embed__back" href="#/tools">← Back to Tools</a>
+          <span>Tool not found</span>
+        </div>
+        <div className="tools-embed__error">
+          <p>No tool found for "{slug}".</p>
+          <a href="#/tools">Return to Tools Hub</a>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="section tools-embed" id="tools">
+      <div className="tools-embed__header">
+        <a className="tools-embed__back" href="#/tools">← Back to Tools</a>
+        <span>{tool.icon} {tool.name}</span>
+        {tool.url && (
+          <a className="tools-embed__external" href={tool.url} rel="noreferrer" target="_blank">
+            Open in New Tab <ExternalLink size={14} />
+          </a>
+        )}
+      </div>
+      {loading && (
+        <div className="tools-embed__loading">
+          <div className="spinner" />
+          <p>Loading {tool.name}...</p>
+        </div>
+      )}
+      <iframe
+        className="tools-embed__frame"
+        src={tool.url}
+        title={tool.name}
+        onLoad={() => setLoading(false)}
+        style={{ display: loading ? "none" : "block" }}
+      />
     </section>
   );
 }
