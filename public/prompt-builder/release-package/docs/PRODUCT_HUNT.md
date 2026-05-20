@@ -17,7 +17,7 @@ Pick visual language, get a model-ready prompt. No prompt engineering required.
 Most AI image tools give you a blank box. Prompt Builder gives you a visual workflow.
 
 **What it does:**
-- Choose what you're making (mood board, storyboard, key art, character turnaround, panorama, UI mockup...)
+- Choose what you're making (mood board, storyboard, key art, character sheet, panorama, UI mockup...)
 - Select from 100+ curated presets: shot size, camera angle, lens, lighting, mood, style, aspect ratio
 - Pick your model — Midjourney, Flux, Nano Banana, or GPT Image
 - Copy a prompt already formatted for that model

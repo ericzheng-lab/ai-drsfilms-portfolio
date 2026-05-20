@@ -25,7 +25,7 @@ const PRODUCT_CATEGORIES = [
     group: 'Character',
     items: [
       { name: 'Character Design', desc: 'Full character concept sheet', presets: 1, glyph: '◉' },
-      { name: 'Turnaround', desc: 'Multi-angle consistency sheet', presets: 1, glyph: '⟳', llm: true },
+      { name: 'Character Sheet', desc: 'Multi-angle consistency sheet', presets: 1, glyph: '⟳', llm: true },
       { name: 'Expression Sheet', desc: 'Emotional range reference', presets: 1, glyph: '◔' },
     ],
   },

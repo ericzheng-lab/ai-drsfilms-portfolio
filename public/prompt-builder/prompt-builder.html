@@ -408,7 +408,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <!-- Preset breadcrumb -->
     <div class="preset-breadcrumb" id="presetBreadcrumb" style="display:none">
       <span id="presetBreadcrumbText" class="bc-name"></span>
-      <button class="bc-back" onclick="goToStep(1)">← Change</button>
+      <button class="bc-back" onclick="confirmBack()">← Change</button>
     </div>
 
     <!-- Model Switcher -->
@@ -428,7 +428,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <!-- Actions -->
     <div class="actions">
       <button class="btn primary" onclick="copyPrompt()">Copy Prompt ⌘C</button>
-      <button class="btn btn-enhance" onclick="openEnhanceModal()">✦ Freeform Prompt</button>
+      <button class="btn btn-enhance" onclick="openEnhanceModal()" title="跳过表单，用自然语言直接描述想法，AI 格式化为 prompt">✦ AI Rewrite</button>
       <button class="btn" onclick="exportMd()">Export .md</button>
       <button class="btn btn-danger" onclick="confirmClearAll()">Clear All</button>
     </div>
@@ -487,13 +487,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- LLM Enhance Modal -->
 <div class="modal-overlay" id="enhanceModal">
   <div class="modal">
-    <h2><span>Freeform</span> Prompt</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Describe any idea in plain language — the LLM formats it into a production-ready prompt for your chosen model.</p>
-    <div class="field-row"><label class="field-label">API Provider</label><select id="enhanceProvider" onchange="toggleApiKeyHint()"><option value="openai">OpenAI Compatible</option><option value="anthropic">Anthropic (Claude)</option><option value="local">Local (fallback templates)</option></select></div>
-    <div id="apiConfigFields">
-      <div class="field-row"><label class="field-label">Base URL</label><input type="text" id="enhanceBaseUrl" placeholder="https://api.openai.com/v1" style="font-family:monospace"></div>
-      <div class="field-row"><label class="field-label">Model</label><input type="text" id="enhanceModelName" placeholder="gpt-4o" style="font-family:monospace"></div>
-      <div class="field-row"><label class="field-label">API Key</label><input type="password" id="enhanceApiKey" placeholder="sk-..." style="font-family:monospace"><div style="font-size:10px;color:var(--dim);margin-top:4px">Stored in localStorage only.</div></div>
+    <h2><span>✦ AI Rewrite</span> (Freeform)</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      跳过表单字段，直接用自然语言描述你的想法。AI 会自动格式化为目标模型的 prompt。
+    </p>
+    <div id="enhanceApiStatus" style="font-size:11px;padding:6px 10px;border-radius:6px;margin-bottom:12px;background:rgba(90,138,154,0.08);color:var(--muted)">
+      API: 使用全局设置 (⚙ Settings) · <a href="#" onclick="event.preventDefault();closeEnhanceModal();openSettings()" style="color:var(--blue)">修改配置</a>
     </div>
     <div class="field-row"><label class="field-label">Your Idea</label><textarea id="enhanceInput" rows="3" placeholder="a cat in a cyberpunk city..."></textarea></div>
     <div class="field-row"><label class="field-label">Target Image Model</label><select id="enhanceModel"><option value="midjourney">Midjourney</option><option value="flux">Flux 2 Max</option><option value="nano">Nano Banana (Google Gemini)</option><option value="gptimage">GPT Image 2</option></select></div>
@@ -548,14 +547,39 @@ const PRESET_CATEGORIES=[
 {id:"custom",icon:"✨",name:"Custom (AI Generate)",desc:"Describe what you need and let AI build a preset",group:"creative",isCustom:true}
 ];
 
+const CATEGORY_CONCEPT_WRAPPERS = {
+  "product": { prefix: "A premium commercial studio product photograph of ", suffix: ", commercial advertising style, high-end product presentation" },
+  "poster": { prefix: "A highly stylized brand campaign poster showcasing ", suffix: ", title-safe graphic composition, poster presentation" },
+  "branding": { prefix: "A professional branding packaging mockup of ", suffix: ", corporate brand identity showcase" },
+  "grid-collage": { prefix: "A clean multi-grid collage layout showcasing ", suffix: ", organized panel design, catalog presentation" },
+  "portrait": { prefix: "A professional environmental portrait photograph of ", suffix: ", character studio profile" },
+  "avatar": { prefix: "A clean 3D character avatar icon of ", suffix: ", die-cut sticker visual asset, game avatar style" },
+  "scene": { prefix: "A beautiful artistic concept scene illustration of ", suffix: ", atmospheric narrative illustration" },
+  "storyboard": { prefix: "A multi-panel storyboard sequence detailing ", suffix: ", cinematic storyboard flow sheet" },
+  "ui-mockup": { prefix: "A sleek modern app user interface UI mockup of ", suffix: ", high-fidelity landing page mockup, digital design representation" },
+  "typography": { prefix: "A highly stylized creative typographic graphic showing ", suffix: ", clean visual lettering layout" },
+  "infographic": { prefix: "A professional bento-grid infographic displaying ", suffix: ", clean modular data visualization sheet" },
+  "map": { prefix: "A highly detailed illustrated visual map showing ", suffix: ", visual route map, cartographic design representation" },
+  "tech-diagram": { prefix: "A clean technical diagram illustrating ", suffix: ", precise engineering schematic drawing" },
+  "academic": { prefix: "A professional scientific academic figure detailing ", suffix: ", vector paper diagram, academic research visualization" },
+  "slides": { prefix: "A professional presentation slide deck showing ", suffix: ", clean slide document layout" },
+  "assets": { prefix: "A clean visual asset icon of ", suffix: ", game prop asset illustration" },
+  "editing": { prefix: "A photo editing manipulation showing ", suffix: ", inpainting retouch workflow" }
+};
+
 // Shared systemPrompt template — filled at runtime with preset-specific data
 function buildSystemPrompt(catName,templateName,fields,constraints,model){
 const fieldList=fields.map(f=>'- '+f.label+': '+f.placeholder).join(String.fromCharCode(10));
 const br=String.fromCharCode(10);
 const mk=constraints.must_keep.length?br+'Must keep:'+br+constraints.must_keep.map(s=>'  '+s).join(br):'';
 const av=constraints.avoid.length?br+'Avoid:'+br+constraints.avoid.map(s=>'  '+s).join(br):'';
-const modelHints={midjourney:"\nFormat as Midjourney /imagine prompt. Comma-separated terms. Include --ar, --s, --style raw.",flux:"\nNatural language sentences. Include camera/lens specs. No negative prompts.",nano:"\nConversational natural language. No SDXL syntax. No emphasis weights.",gptimage:"\nOutput as JSON object with type, goal, subject, scene, style, camera, layout, details, constraints."};
-return `You are a professional visual prompt generator specializing in ${catName}.` + br + br+ `Generate a detailed JSON prompt for creating a \"${templateName}\" image.`+ br + br+ `## Template Structure\nThe output MUST be a valid JSON object with these top-level keys: type, goal, subject, scene, style, layout, details, constraints.`+ br + br+ `## User Parameters\n${fieldList}`+ br + br+ `## Rules\n1. Output ONLY valid JSON, no markdown fences\n2. Fill in all fields using the user's inputs above\n3. If the user doesn't provide a value, use a sensible default\n4. The \"constraints\" object MUST have \"must_keep\" (array) and \"avoid\" (array)\n5. Keep descriptions concise but specific\n6. Use the user's language (Chinese if they write Chinese, English otherwise)`+ mk + av + (modelHints[model]||"")+ `;`
+const modelHints={midjourney:"\nFormat as Midjourney /imagine prompt. Comma-separated terms. Include --ar, --s, --style raw.",flux:"\nNatural language sentences. Include camera/lens specs. No negative prompts.",nano:"\nConversational natural language. No SDXL syntax. No emphasis weights."};
+
+if (model === "gptimage") {
+return `You are a professional visual prompt generator specializing in ${catName}.` + br + br+ `Generate a detailed JSON prompt for creating a \"${templateName}\" image.`+ br + br+ `## Template Structure\nThe output MUST be a valid JSON object with these top-level keys: type, goal, subject, scene, style, layout, details, constraints.`+ br + br+ `## User Parameters\n${fieldList}`+ br + br+ `## Rules\n1. Output ONLY valid JSON, no markdown fences\n2. Fill in all fields using the user's inputs above\n3. If the user doesn't provide a value, use a sensible default\n4. The \"constraints\" object MUST have \"must_keep\" (array) and \"avoid\" (array)\n5. Keep descriptions concise but specific\n6. Use the user's language (Chinese if they write Chinese, English otherwise)`+ mk + av + `;`
+} else {
+return `You are a professional visual prompt generator specializing in ${catName}.` + br + br+ `Generate an optimized, production-ready image prompt text for creating a \"${templateName}\" image.`+ br + br+ `## User Parameters\n${fieldList}`+ br + br+ `## Rules\n1. Output ONLY the raw prompt text itself. No JSON, no markdown, no explanation.\n2. Incorporate the user's parameters above seamlessly.\n3. If the user doesn't provide a value, use a sensible default.\n4. Strictly adhere to the target model style constraints.` + mk + av + (modelHints[model]||"") + `\n5. Use the user's language (Chinese if they write Chinese, English otherwise) for the core description but keep technical parameters in English.`;
+}
 }
 
 const LLM_PRESETS=[
@@ -774,20 +798,20 @@ const FILM_CATEGORIES=[
 {id:"moodboard",icon:"🎨",name:"Mood Board",desc:"Visual tone & atmosphere reference",group:"preproduction",presetType:"tag"},
 {id:"styleframe",icon:"🖼️",name:"Style Frame",desc:"Key moment visual — look & feel",group:"preproduction",presetType:"tag"},
 {id:"colorscript",icon:"🌈",name:"Color Script",desc:"Color progression across scenes",group:"preproduction",presetType:"tag"},
-{id:"storyboard",icon:"📖",name:"Storyboard",desc:"Sequential shot-by-shot breakdown",group:"preproduction",presetType:"tag"},
+{id:"storyboard",icon:"📖",name:"Storyboard",desc:"Sequential shot-by-shot breakdown",group:"preproduction",presetType:"llm",presetId:"storyboard-cinematic-storyboard-grid"},
 // Character
-{id:"char-design",icon:"👤",name:"Character Design",desc:"Full character concept sheet",group:"character",presetType:"tag"},
-{id:"char-turnaround",icon:"🔄",name:"Turnaround",desc:"Multi-angle consistency sheet",group:"character",presetType:"llm",presetId:"char-turnaround"},
-{id:"char-expression",icon:"😃",name:"Expression Sheet",desc:"Emotional range reference",group:"character",presetType:"tag"},
+{id:"char-design",icon:"👤",name:"Character Design",desc:"Full character concept sheet",group:"character",presetType:"llm",presetId:"char-design"},
+{id:"char-sheet",icon:"🔄",name:"Character Sheet",desc:"Multi-angle consistency sheet",group:"character",presetType:"llm",presetId:"char-sheet"},
+{id:"char-expression",icon:"😃",name:"Expression Sheet",desc:"Emotional range reference",group:"character",presetType:"llm",presetId:"char-expression"},
 // Environment
 {id:"env-concept",icon:"🏔️",name:"Scene Concept",desc:"Environment concept art",group:"environment",presetType:"llm",presetId:"env-concept"},
 {id:"env-panorama",icon:"🌅",name:"Panorama / Establishing",desc:"Wide establishing shot (panorama-first)",group:"environment",presetType:"llm",presetId:"env-panorama"},
 {id:"env-lighting",icon:"💡",name:"Lighting Study",desc:"Lighting variation reference",group:"environment",presetType:"tag"},
 // Storyboard & Sequence
-{id:"sb-sequence",icon:"🎞️",name:"Shot Sequence",desc:"Multi-shot narrative sequence",group:"storyboard",presetType:"tag"},
+{id:"sb-sequence",icon:"🎞️",name:"Shot Sequence",desc:"Multi-shot narrative sequence",group:"storyboard",presetType:"llm",presetId:"sb-sequence-llm"},
 {id:"sb-comic",icon:"📖",name:"Comic / Manga Page",desc:"Panel-based visual storytelling",group:"storyboard",presetType:"llm",presetId:"sb-comic"},
 // Production
-{id:"prop-design",icon:"🗡️",name:"Prop / Costume Design",desc:"Detailed prop or costume reference",group:"production",presetType:"tag"},
+{id:"prop-design",icon:"🗡️",name:"Prop / Costume Design",desc:"Detailed prop or costume reference",group:"production",presetType:"llm",presetId:"prop-design"},
 {id:"vfx-ref",icon:"✨",name:"VFX Reference",desc:"Visual effects breakdown",group:"production",presetType:"tag"},
 {id:"film-poster",icon:"🎬",name:"Film Poster / Key Art",desc:"Marketing key visual",group:"production",presetType:"llm",presetId:"film-poster"},
 // General (bridge)
@@ -826,7 +850,7 @@ const FILM_PRESETS=[
 // Character
 {name:"Character — Noir Detective",desc:"Film noir protagonist",category:"char-design",data:{subject:"Weathered male detective, late 40s, trench coat, fedora, scar on left cheek, tired but sharp eyes, 1940s Los Angeles aesthetic",style:["photorealistic","cinematic"],camera:"medium shot",lighting:["dramatic lighting","rim light"],mood:["gritty","mysterious"],color:["monochrome"],detail:["film grain","depth of field"]}},
 {name:"Expression — Alien Creature",desc:"Non-human emotional range",category:"char-expression",data:{subject:"Alien creature with bioluminescent skin patterns, showing 6 expressions: curious, afraid, angry, sad, joyful, threatening. Consistent proportions across all",style:["concept art","digital art"],camera:"close-up",lighting:["studio softbox"],mood:["mysterious"],detail:["highly detailed"]}},
-{name:"Turnaround — Sci-Fi Pilot",desc:"Multi-angle character sheet",category:"char-turnaround",data:{subject:"Female space pilot, 30s, practical flight suit with mission patches, short practical hair, confident posture. Front, 3/4, side, back views.",style:["photorealistic"],camera:"full body",lighting:["studio softbox"],detail:["highly detailed"]}},
+{name:"Character Sheet — Sci-Fi Pilot",desc:"Multi-angle character sheet",category:"char-sheet",data:{subject:"Female space pilot, 30s, practical flight suit with mission patches, short practical hair, confident posture. Front, 3/4, side, back views.",style:["photorealistic"],camera:"full body",lighting:["studio softbox"],detail:["highly detailed"]}},
 // Environment
 {name:"Scene — Abandoned Station",desc:"Decayed sci-fi interior",category:"env-concept",data:{subject:"Abandoned space station corridor, emergency lights flickering, plants growing through cracked panels, floating debris in zero gravity",style:["cinematic","photorealistic"],camera:"wide shot",lens:"24mm",lighting:["dramatic lighting","neon glow"],mood:["eerie","desolate"],color:["cool tones"],detail:["highly detailed","volumetric"]}},
 {name:"Panorama — Coastal Cliff",desc:"Wide establishing panorama",category:"env-panorama",data:{subject:"Dramatic coastal cliffs at golden hour, waves crashing against rocks below, winding path along cliff edge, distant lighthouse, seabirds",style:["photorealistic","cinematic"],camera:"wide shot",lens:"24mm",lighting:["golden hour"],mood:["epic","serene"],color:["warm tones"],detail:["8K resolution","depth of field"]}},
@@ -841,7 +865,7 @@ const FILM_PRESETS=[
 
 const FILM_LLM_PRESETS=[
 {
-id:"char-turnaround",name:"Character Turnaround",desc:"Multi-angle character consistency sheet for film production",category:"char-turnaround",icon:"🔄",
+id:"char-sheet",name:"Character Sheet",desc:"Multi-angle character consistency sheet for film production",category:"char-sheet",icon:"🔄",
 compatibleModels:["midjourney","flux","gptimage"],
 fields:[
 {id:"charName",label:"Character Name",type:"text",required:true,placeholder:"e.g., Kai"},
@@ -856,11 +880,11 @@ fields:[
 fieldOptions:{
 personality:["Calm","Observant","Melancholic","Fierce","Cunning","Warm","Cold","Reckless","Methodical","Charismatic","Brooding","Eccentric","Stoic","Volatile","Wise","Playful"]
 },
-systemPrompt:`You are a character turnaround sheet generator for film production. Generate a multi-angle character consistency reference sheet.
+systemPrompt:`You are a character sheet generator for film production. Generate a multi-angle character consistency reference sheet.
 
 The image MUST include:
 1. CHARACTER TITLE: name, age, height, build, role, style keywords.
-2. TURNAROUND: front, 3/4 front, side, back full-body views. All views must maintain identical face, proportions, costume, accessories.
+2. CHARACTER SHEET (TURNAROUND): front, 3/4 front, side, back full-body views. All views must maintain identical face, proportions, costume, accessories.
 3. HEAD STUDY: front neutral, 3/4 personality, profile, looking down, dynamic intense expression.
 4. CINEMATIC PORTRAIT: larger half-body in meaningful environment, 50mm/85mm lens feel, shallow DOF.
 5. WARDROBE BREAKDOWN: fabric, stitching, wrinkles, wear marks, materials.
@@ -1017,6 +1041,134 @@ OUTPUT FORMAT: Valid JSON only. No markdown fences. No explanation. Exactly this
 }
 
 RULES: 1) Valid JSON only. 2) Panels must vary in size (hero panel + medium + small detail). 3) Character design stays consistent across panels. 4) Every panel needs scene description AND dialogue/narration. 5) Screentone/halftone must be specified for B&W styles.`
+}
+,{
+id:"storyboard-cinematic-storyboard-grid",name:"Cinematic Storyboard Sheet",desc:"Cinematic storyboards, narrative contact sheets, shot progression layout",category:"storyboard",icon:"📖",
+compatibleModels:["midjourney","flux","gptimage"],
+fields:[
+{id:"primary_subject",label:"Primary Subject",type:"text",required:true,placeholder:"e.g., a small futuristic spacecraft descending into a massive canyon"},
+{id:"secondary_subject",label:"Secondary Subject / Focus",type:"text",placeholder:"e.g., an enormous ancient leviathan silhouette hidden in the shadows"},
+{id:"mood",label:"Atmosphere / Mood",type:"chips",placeholder:"Custom mood..."},
+{id:"cinematic_style",label:"Cinematic Style",type:"select",options:["Photorealistic dark sci-fi","High-contrast film noir","Gritty cinematic realism","Vibrant futuristic cyberpunk","Epic fantasy illustration","Classic anime layout"]},
+{id:"per_panel_ratio",label:"Per-Panel Aspect Ratio",type:"select",options:["16:9 widescreen (cinematic)","2.39:1 anamorphic (cinematic)","4:3 television (classic)"]},
+{id:"panels_count",label:"Panels count",type:"select",options:["4-panel grid","6-panel grid","9-panel grid"]}
+],
+fieldOptions:{
+mood:["Oppressive","Catastrophic","Awe-struck","High tension","Eerie","Mysterious","Epic","Heroic","Desolate","Calm"]
+},
+systemPrompt:`You are a professional cinematic storyboard artist and illustrator for high-budget films. Generate a multi-panel narrative storyboard sheet.
+
+The image MUST include:
+1. LAYOUT: A organized grid or contact sheet of storyboard panels (e.g., 2x2 for 4-panel, 3x2 for 6-panel) on a clean, solid dark gray or charcoal backdrop.
+2. CONTINUITY: The sequence must tell a clear chronological story progression:
+   - Panel 1: Wide establishing shot introducing the primary subject and setting the scene.
+   - Panel 2: Medium tracking shot focusing on secondary details or character action.
+   - Panel 3: High-tension dramatic close-up or action beat.
+   - Panel 4/Remaining: Narrative resolution or wide epic conclusion.
+3. VISUAL STYLE: Hand-drawn pencil storyboard sketch with charcoal shading, clean white borders separating each panel, and handwritten camera direction annotations beneath each panel (e.g., "PANEL 1: ESTABLISHING SHOT - CRANE DOWN", "PANEL 2: MCU - HIGH ANGLE").
+4. SHOT COMPOSITION: Dynamic camera angles (canted angles, low-angle perspective, Dutch tilt) that convey maximum narrative drama and mood.
+
+QUALITY: Crisp hand-illustrated movie storyboard sheet, high contrast, clean line art, professional production designer sketchbook page layout.`
+},
+{
+id:"char-design",name:"Character Design",desc:"Full character concept sheet, key features, and costume reference",category:"char-design",icon:"👤",
+compatibleModels:["midjourney","flux","gptimage"],
+fields:[
+{id:"charName",label:"Character Name",type:"text",required:true,placeholder:"e.g., Captain Thorne"},
+{id:"age",label:"Age & Gender",type:"text",placeholder:"e.g., 40s male"},
+{id:"build",label:"Build & Stature",type:"chips",placeholder:"Custom build..."},
+{id:"wardrobe",label:"Costume & Clothing",type:"textarea",placeholder:"e.g., Weathered brown leather trenchcoat, high-collar officer uniform, brass buckles"},
+{id:"props",label:"Key Props / Weapons",type:"textarea",placeholder:"e.g., A brass-hilted saber at hip, glowing mechanical eye piece"},
+{id:"personality",label:"Vibe / Facial Expression",type:"chips",placeholder:"Custom vibe..."},
+{id:"charStyle",label:"Visual Style",type:"select",options:["Photorealistic cinematic","Gritty cinematic realism","High-end concept art","Stylized anime/manga"]},
+{id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What story does their look tell? e.g., battle-hardened commander, weary survivor..."}
+],
+fieldOptions:{
+build:["Athletic","Tall & Lean","Muscular","Stocky","Slender","Weathered","Imposing","Petite","Towering","Wiry"],
+personality:["Grim","Stoic","Cunning","Jovial","Weary","Menacing","Regal","Haunted","Arrogant","Sardonic"]
+},
+systemPrompt:`You are a leading film concept artist and character designer. Generate a highly detailed character design concept board.
+
+The image MUST include:
+1. CHARACTER PORTRAIT: A central, highly detailed full-body character model sheet showing front and 3/4 front views.
+2. DETAIL CALLOUTS: Close-up insets of key costume elements, fabrics, materials (leather, metal, embroidery, dirt, wear).
+3. KEY EQUIPMENT: Detailed render of their signature gear or weapons in the margins.
+4. EXPRESSION VIBE: Neutral but character-appropriate posture, emphasizing the specified director's vision and emotional vibe.
+
+LAYOUT: Professional concept design portfolio sheet, textured off-white or charcoal background with neat annotation markings, technical lines, and elegant presentation.`
+},
+{
+id:"char-expression",name:"Expression Sheet",desc:"Emotional range, facial micro-expressions, and consistency reference",category:"char-expression",icon:"😃",
+compatibleModels:["midjourney","flux","gptimage"],
+fields:[
+{id:"charName",label:"Character Name",type:"text",required:true,placeholder:"e.g., Lyra"},
+{id:"charAppearance",label:"Character Appearance",type:"textarea",required:true,placeholder:"e.g., Short silver hair, prominent freckles, bright green eyes, young female, high-collar jacket"},
+{id:"expressions",label:"Key Expressions",type:"chips",placeholder:"Custom expression..."},
+{id:"charStyle",label:"Art Style",type:"select",options:["Photorealistic cinematic","Semi-realistic 3D","Hand-drawn anime/manga","2D concept sketch"]},
+{id:"consistency",label:"Consistency Markers",type:"textarea",placeholder:"e.g., Always has the signature cheek scar and green eyes across all expressions"}
+],
+fieldOptions:{
+expressions:["Joyful","Angry/Furious","Timid/Fearful","Inquisitive/Curious","Devastated/Sad","Smug/Arrogant","Shocked/Surprised","Skeptical","Wry Smile","Intense Focus"]
+},
+systemPrompt:`You are a character designer and expression sheet specialist. Generate a character facial expression reference board.
+
+The image MUST include:
+1. CENTERPIECE: A high-fidelity neutral-expression portrait of the character.
+2. EXPRESSION MATRIX: A clean grid showing the character expressing different emotional ranges.
+3. VISUAL CONSISTENCY: Every single expression MUST maintain absolute structural facial consistency (hair color/cut, bone structure, eye shape/color, distinguishing marks, clothing style).
+4. MICRO-EXPRESSIONS: Dynamic facial muscle movements (furrowed brow, tensed jaw, crinkled eyes) that convey intense emotional authenticity.
+
+LAYOUT: Standard model sheet layout, clean light gray studio background, subtle white grid borders separating expressions, professional lighting.`
+},
+{
+id:"sb-sequence-llm",name:"Shot Sequence",desc:"Multi-shot cinematic storyboard sequence representing sequential action and camera flow",category:"sb-sequence",icon:"🎞️",
+compatibleModels:["midjourney","flux","gptimage"],
+fields:[
+{id:"sceneDescription",label:"Scene Narrative",type:"textarea",required:true,placeholder:"e.g., A thief sneaks into a museum, triggers a laser alarm, and escapes through the window"},
+{id:"shotCount",label:"Number of Shots",type:"select",options:["3-shot timeline","6-shot grid","8-shot sequence"]},
+{id:"narrativeArc",label:"Sequence Flow",type:"chips",placeholder:"Custom flow step..."},
+{id:"cameraMovement",label:"Camera Flow / Angles",type:"chips",placeholder:"Custom camera style..."},
+{id:"mood",label:"Mood & Atmosphere",type:"chips",placeholder:"Custom mood..."}
+],
+fieldOptions:{
+narrativeArc:["Establishing wide shot","Medium tracking shot","Extreme close-up beat","Dynamic low-angle action shot","POV tracking shot","High-angle resolution"],
+cameraMovement:["Dolly Zoom","Whip Pan","Dutch Tilt","Drone Crane Shot","Steadicam OTS","Static Lock-off","Low-angle Tilt-up"],
+mood:["Suspenseful","High-octane action","Eerie & Quiet","Comedic & Playful","Melodramatic","Claustrophobic"]
+},
+systemPrompt:`You are a professional cinematographer and cinematic storyboard director. Generate a highly sequential, narrative-driven storyboard panel sheet.
+
+The image MUST include:
+1. CHRONOLOGICAL PANELS: A horizontal timeline or grid layout showing sequential shots from the described narrative, reading left-to-right, top-to-bottom.
+2. CAMERA PERSPECTIVES: Highly dynamic camera angles (low-angle hero shot, high-angle surveillance, wide tracking shot, extreme close-up detail shot) that tell a clear visual story.
+3. MOTION ARROWS & ANNOTATIONS: Technical director overlays (subtle camera motion arrows, lens designations, handwritten camera directions beneath each frame, e.g. "SHOT 1: ELS - ESTABLISHING", "SHOT 2: MCU - OTS TRACKING").
+4. CONTINUITY: Characters, environments, lighting, and timeline of actions must remain consistent across the sequence.
+
+LAYOUT: Classic cinematic sequence layout, charcoal gray mounting board, clean white borders, professional hand-sketched art style with charcoal shading and clean inks.`
+},
+{
+id:"prop-design",name:"Prop & Costume Design",desc:"Highly detailed physical props, weapons, tools, or costume specifications",category:"prop-design",icon:"🗡️",
+compatibleModels:["midjourney","flux","gptimage"],
+fields:[
+{id:"propName",label:"Prop / Costume Name",type:"text",required:true,placeholder:"e.g., Steampunk Chronometer"},
+{id:"era",label:"Era / Genre / Aesthetic",type:"chips",placeholder:"Custom genre..."},
+{id:"materials",label:"Key Materials",type:"chips",placeholder:"Custom material..."},
+{id:"wearLevel",label:"Wear & Aging",type:"select",options:["Pristine / Brand New","Lightly Used / Well Maintained","Battle-Worn & Scratched","Ancient / Rusted / Decayed"]},
+{id:"details",label:"Key Details / Features",type:"textarea",placeholder:"e.g., Glowing vacuum tubes, gold filigree engraving, leather wrist strap with brass gears"},
+{id:"artStyle",label:"Art Style",type:"select",options:["Photorealistic studio render","Highly detailed concept art","Stylized illustration/sketch","Patent blueprint style"]}
+],
+fieldOptions:{
+era:["Steampunk","Dieselpunk","Cyberpunk","Medieval Fantasy","Sci-Fi Space Opera","Post-Apocalyptic","Historical Victorian","Ancient Relic"],
+materials:["Brass","Polished Gold","Damascus Steel","Weathered Leather","Carbon Fiber","Bioluminescent Glass","Carved Obsidian","Forged Iron","Oak Wood"]
+},
+systemPrompt:`You are a leading film production prop master and conceptual designer. Generate a highly detailed production-grade prop/costume design sheet.
+
+The image MUST include:
+1. PRIMARY SHOWCASE: A large, crystal-clear beauty shot of the item under studio light, highlighting its design, shape, and proportions.
+2. MATERIAL CALLOUTS: Visible close-up bubbles or side panels demonstrating the texture, finish, and details of materials (grain of leather, brushed metal, weathered edges, intricate engravings).
+3. EXPLAINER DIAGRAM: Subtle callout lines pointing to key features with technical annotations.
+4. CONTEXT / PRESENTATION: Showcase the item in pristine orthographic views (front, side, isometric angle).
+
+LAYOUT: High-end production catalog sheet, clean technical grid background, neat text labels, museum-grade display presentation.`
 }
 ];
 
@@ -1252,8 +1404,10 @@ function addEnhanceButtonForPreset(preset){
   if(existing)existing.remove();
   const btn=document.createElement("button");
   btn.id="presetEnhanceBtn";
-  btn.className="btn";
-  btn.textContent="✦ Freeform Prompt";
+  btn.className="btn btn-enhance";
+  btn.style.cssText="font-weight:700";
+  btn.innerHTML="✦ AI Rewrite <span style='font-size:10px;opacity:0.7;margin-left:4px'>(用自然语言描述)</span>";
+  btn.title="此分类支持 AI 自由描述生成：跳过标签选择，直接描述你想要的画面";
   btn.onclick=()=>{document.getElementById("enhanceInput").value=preset.data.subject||"";openEnhanceModal()};
   actions.prepend(btn);
 }
@@ -1515,7 +1669,13 @@ function switchModel(newModel){
   renderFormula();
   document.querySelectorAll(".gpt-only").forEach(el=>{el.style.display=currentModel==="gptimage"?"":"none"});
   document.getElementById("sec-negative").style.display=currentModel==="midjourney"?"":"none";
-  if(assemblyMode==="llm"&&currentLLMPreset){toast("Model changed. Click Generate Prompt to use it.");return}
+  if(assemblyMode==="llm"&&currentLLMPreset){
+    const modelNames={midjourney:"Midjourney",flux:"Flux 2 Max",nano:"Nano Banana",gptimage:"GPT Image 2"};
+    const niceName=modelNames[newModel]||newModel;
+    document.getElementById("previewEditor").value=`[⚠ Model changed to ${niceName}. Click "⚡ Generate Prompt" to generate the correct format.]`;
+    toast("Model changed. Click Generate Prompt to use it.");
+    return;
+  }
   updatePreview();
 }
 
@@ -1569,7 +1729,12 @@ function updateSliderVal(el){document.getElementById(el.id+"-val").textContent=e
 
 function buildPrompt(){
   const parts=[];
-  const subject=gv("subject"),scene=gv("scene");
+  let subject=gv("subject");
+  const scene=gv("scene");
+  if(currentLLMPreset && currentLLMPreset.category && CATEGORY_CONCEPT_WRAPPERS[currentLLMPreset.category]){
+    const wrapper=CATEGORY_CONCEPT_WRAPPERS[currentLLMPreset.category];
+    if(subject)subject=wrapper.prefix+subject+wrapper.suffix;
+  }
   if(subject)parts.push(subject);if(scene)parts.push(scene);
 
   if(currentMode==="film"){
@@ -1803,7 +1968,11 @@ function buildDirectPreview(){
   const data=collectPromptData();
   if(!hasDirectContent(data))return"";
   if(currentModel==="gptimage")return buildDirectGPTJSON(data);
-  const brief=directBriefParts(data).join(", ");
+  let brief=directBriefParts(data).join(", ");
+  if(data.preset && data.preset.category && CATEGORY_CONCEPT_WRAPPERS[data.preset.category]){
+    const wrapper=CATEGORY_CONCEPT_WRAPPERS[data.preset.category];
+    brief=wrapper.prefix+brief+wrapper.suffix;
+  }
   if(currentModel==="midjourney"){
     let text="/imagine prompt: "+brief;
     if(data.params)text+=" "+data.params;
@@ -1841,7 +2010,8 @@ function normalizeCategoryId(raw,mode){
   const filmMap={
     character:"char-design",portrait:"char-design",scene:"env-concept",environment:"env-concept",
     cinematic:"styleframe",poster:"film-poster",storyboard:"storyboard",sequence:"sb-sequence",
-    prop:"prop-design",costume:"prop-design",vfx:"vfx-ref",custom:"moodboard"
+    prop:"prop-design",costume:"prop-design",vfx:"vfx-ref",custom:"moodboard",
+    sheet:"char-sheet",turnaround:"char-sheet"
   };
   const map=mode==="film"?filmMap:generalMap;
   const found=Object.keys(map).find(k=>value.includes(k));
@@ -1920,6 +2090,11 @@ function clearAll(){
   document.querySelectorAll(".gpt-only select").forEach(el=>el.selectedIndex=0);
   // Clear LLM fields
   document.querySelectorAll("[id^=llm-]").forEach(el=>{if(el.tagName==="SELECT")el.selectedIndex=0;else el.value=""});
+  document.querySelectorAll(".llm-custom-input").forEach(w=>{
+    w.style.display="none";
+    const inp=w.querySelector("input");
+    if(inp)inp.value="";
+  });
   llmFieldValues={};currentLLMPreset=null;assemblyMode="standard";
   const llmSec=document.getElementById("llmFieldsSection");if(llmSec)llmSec.style.display="none";
   setBuilderFormVisible(true);
@@ -2096,28 +2271,62 @@ function saveSettings(){
 }
 
 function openEnhanceModal(){
-  const cfg=loadApiConfig();document.getElementById("enhanceModal").classList.add("open");
+  const cfg=loadApiConfig();
+  document.getElementById("enhanceModal").classList.add("open");
   document.getElementById("enhanceModel").value=currentModel;
-  document.getElementById("enhanceProvider").value=cfg.provider||"openai";
-  document.getElementById("enhanceBaseUrl").value=cfg.baseUrl||"https://api.openai.com/v1";
-  document.getElementById("enhanceModelName").value=cfg.modelName||"gpt-4o";
-  document.getElementById("enhanceApiKey").value=cfg.apiKey||"";
-  toggleApiKeyHint();document.getElementById("enhanceOutput").textContent="Enhanced prompt will appear here...";document.getElementById("enhanceOutput").classList.add("loading");
+  
+  const status=document.getElementById("enhanceApiStatus");
+  if(cfg.apiKey){
+    const prov=cfg.provider==="anthropic"?"Anthropic":"OpenAI";
+    const model=cfg.modelName||"default";
+    status.innerHTML=`API: ${prov} · ${model} · <span style="color:var(--green)">已配置 ✓</span> · <a href="#" onclick="event.preventDefault();closeEnhanceModal();openSettings()" style="color:var(--blue)">修改</a>`;
+  }else{
+    status.innerHTML=`<span style="color:var(--danger)">⚠ 未配置 API Key</span> · <a href="#" onclick="event.preventDefault();closeEnhanceModal();openSettings()" style="color:var(--blue)">前往 Settings 配置</a>`;
+  }
+  document.getElementById("enhanceOutput").textContent="Enhanced prompt will appear here...";
+  document.getElementById("enhanceOutput").classList.add("loading");
 }
 function closeEnhanceModal(){document.getElementById("enhanceModal").classList.remove("open")}
-function toggleApiKeyHint(){const provider=document.getElementById("enhanceProvider").value;const fields=document.getElementById("apiConfigFields");if(provider==="local"){fields.style.display="none"}else{fields.style.display="";if(provider==="anthropic"){document.getElementById("enhanceBaseUrl").value="https://api.anthropic.com";document.getElementById("enhanceModelName").value="claude-sonnet-4-20250514";document.getElementById("enhanceApiKey").placeholder="sk-ant-..."}else{document.getElementById("enhanceBaseUrl").placeholder="https://api.openai.com/v1";document.getElementById("enhanceModelName").placeholder="gpt-4o";document.getElementById("enhanceApiKey").placeholder="sk-..."}}}
 
 async function runEnhance(){
   const idea=document.getElementById("enhanceInput").value.trim();if(!idea){toast("Enter an idea");return}
-  const model=document.getElementById("enhanceModel").value,mode=document.getElementById("enhanceMode").value,provider=document.getElementById("enhanceProvider").value,apiKey=document.getElementById("enhanceApiKey").value.trim(),baseUrl=document.getElementById("enhanceBaseUrl").value.trim(),modelName=document.getElementById("enhanceModelName").value.trim(),out=document.getElementById("enhanceOutput"),btn=document.getElementById("enhanceBtn");
-  saveApiConfig({provider,apiKey,baseUrl,modelName});
-  if(provider==="local"){const t=LOCAL_TEMPLATES[model];if(t&&t[mode]){enhancedPromptText=t[mode](idea);out.classList.remove("loading");out.textContent=enhancedPromptText}return}
-  if(!apiKey){toast("Enter API key");return}
+  const model=document.getElementById("enhanceModel").value,mode=document.getElementById("enhanceMode").value,out=document.getElementById("enhanceOutput"),btn=document.getElementById("enhanceBtn");
+  const cfg=loadApiConfig();
+  const provider=cfg.provider||"openai";
+  const apiKey=cfg.apiKey||"";
+  const baseUrl=cfg.baseUrl||"";
+  const modelName=cfg.modelName||"";
+
+  if(provider==="local"||!apiKey){
+    if(!apiKey){
+      toast("No API Key. Running local template fallback.");
+    }
+    const t=LOCAL_TEMPLATES[model];
+    if(t&&t[mode]){
+      enhancedPromptText=t[mode](idea);
+      out.classList.remove("loading");
+      out.textContent=enhancedPromptText;
+    }
+    return;
+  }
   const modes={expand:"Expand and detail this idea into a full image prompt.",creative:"Take this in a creative, artistic direction with unexpected elements.",photoreal:"Make this photorealistic with specific camera gear and lighting.",anime:"Transform into anime/illustration style.",cinematic:"Make this cinematic — like a still from a high-budget film."};
   const modeContext=currentMode==="film"?"\n\nContext: This is for Film & TV production stills. Use film-industry terminology: shot sizes (ECU, CU, MCU, MS, WS), camera angles, lens choices, film lighting setups, aspect ratios (2.39:1, 1.85:1), and director style references. Do NOT include camera movements — these are static images, not video.":"";
   const userMsg=`${modes[mode]||modes.expand}\n\nIdea: "${idea}"`;
   btn.textContent="Generating...";btn.disabled=true;out.classList.remove("loading");out.textContent="Calling LLM...";
-  try{let result="";const sys=LLM_SYSTEM_PROMPTS[model]+modeContext;if(provider==="openai")result=await callOpenAI(apiKey,baseUrl,modelName,sys,userMsg);else if(provider==="anthropic")result=await callAnthropic(apiKey,baseUrl,modelName,sys,userMsg);enhancedPromptText=result.trim();out.textContent=enhancedPromptText}catch(err){out.textContent=`Error: ${err.message}`;enhancedPromptText=""}finally{btn.textContent="Generate";btn.disabled=false}
+  try{
+    let result="";
+    const sys=LLM_SYSTEM_PROMPTS[model]+modeContext;
+    if(provider==="openai")result=await callOpenAI(apiKey,baseUrl,modelName,sys,userMsg);
+    else if(provider==="anthropic")result=await callAnthropic(apiKey,baseUrl,modelName,sys,userMsg);
+    enhancedPromptText=result.trim();
+    out.textContent=enhancedPromptText;
+  }catch(err){
+    out.textContent=`Error: ${err.message}`;
+    enhancedPromptText="";
+  }finally{
+    btn.textContent="Generate";
+    btn.disabled=false;
+  }
 }
 
 async function callOpenAI(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal){
@@ -2138,7 +2347,19 @@ function applyEnhanced(){
   if(!enhancedPromptText){toast("Generate first");return}
   const model=document.getElementById("enhanceModel").value;
   let fullPromptOverride="";
-  if(model==="gptimage"){try{let clean=enhancedPromptText.replace(/^```json?\s*/i,"").replace(/\s*```$/i,"").trim();const json=JSON.parse(clean);
+
+  let isJson=false;
+  let parsedJson=null;
+  try{
+    let clean=enhancedPromptText.replace(/^```json?\s*/i,"").replace(/\s*```$/i,"").trim();
+    if(clean.startsWith("{") && clean.endsWith("}")){
+      parsedJson=JSON.parse(clean);
+      isJson=true;
+    }
+  }catch(e){}
+
+  if(isJson && parsedJson){
+    const json=parsedJson;
     if(json.subject)document.getElementById("subject").value=json.subject;
     if(json.scene)document.getElementById("scene").value=json.scene;
     if(json.type)document.getElementById("gpt-type").value=json.type;
@@ -2156,10 +2377,24 @@ function applyEnhanced(){
       if(json.camera){const cam=json.camera.split(",")[0].trim();const sel=document.getElementById("shotType");for(const opt of sel.options){if(opt.value===cam){sel.value=cam;break}}}
       if(json.details){const ds=json.details.toLowerCase();selectedDetail.clear();DETAILS.forEach(d=>{if(ds.includes(d.toLowerCase()))selectedDetail.add(d)});renderChips("detailChips",DETAILS,selectedDetail)}
     }
-  }catch{document.getElementById("subject").value=enhancedPromptText}}
-  else if(model==="nano"){const lines=enhancedPromptText.split("\n");const pl=lines.find(l=>!l.toLowerCase().startsWith("negative"))||lines[0];const nl=lines.find(l=>l.toLowerCase().startsWith("negative"));document.getElementById("subject").value=pl.replace(/^Negative:\s*/i,"").trim();if(nl)document.getElementById("negativePrompt").value=nl.replace(/^Negative:\s*/i,"").trim()}
-  else if(model==="midjourney"&&/^\/imagine\b/i.test(enhancedPromptText.trim())){fullPromptOverride=enhancedPromptText.trim()}
-  else{document.getElementById("subject").value=enhancedPromptText}
+  }else{
+    if(model==="gptimage"){
+      document.getElementById("subject").value=enhancedPromptText;
+    }
+    else if(model==="nano"){
+      const lines=enhancedPromptText.split("\n");
+      const pl=lines.find(l=>!l.toLowerCase().startsWith("negative"))||lines[0];
+      const nl=lines.find(l=>l.toLowerCase().startsWith("negative"));
+      document.getElementById("subject").value=pl.replace(/^Negative:\s*/i,"").trim();
+      if(nl)document.getElementById("negativePrompt").value=nl.replace(/^Negative:\s*/i,"").trim();
+    }
+    else if(model==="midjourney"&&/^\/imagine\b/i.test(enhancedPromptText.trim())){
+      fullPromptOverride=enhancedPromptText.trim();
+    }
+    else{
+      document.getElementById("subject").value=enhancedPromptText;
+    }
+  }
   // Switch model to match enhance target
   if(model!==currentModel){
     currentModel=model;
@@ -2201,6 +2436,7 @@ function confirmBack(){
     selectedTime,selectedFilmMood,selectedFilmStyle].some(s=>s.size>0);
   const hasText=(document.getElementById("subject")?.value||"").trim()||(document.getElementById("scene")?.value||"").trim();
   if((hasSelections||hasText)&&!confirm("Go back? Your current selections will be cleared."))return;
+  clearAll();
   goToStep(1);
 }
 

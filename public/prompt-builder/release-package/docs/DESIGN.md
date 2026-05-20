@@ -44,7 +44,7 @@ That is the core UX move: **selection before syntax**.
 
 Presets here are not shortcuts. They are encoded workflow knowledge.
 
-A character turnaround preset is not just “character sheet.” It knows that consistency matters across front, side, back, head study, costume breakdown, and hero portrait.
+A Character Sheet preset is not just a "turnaround." It knows that consistency matters across front, side, back, head study, costume breakdown, and hero portrait.
 
 A panorama preset is not just “wide shot.” It knows that an establishing image sets geography, lighting direction, spatial relationships, and continuity for later shots.
 
