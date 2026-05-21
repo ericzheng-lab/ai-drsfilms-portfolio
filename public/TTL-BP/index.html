@@ -844,7 +844,7 @@
             <p class="gate-sub">This Timeworn Land — Business Proposal</p>
             <form id="gateForm" onsubmit="return handleGate(event)">
                 <input type="password" id="gatePassword" placeholder="请输入访问密码" required autofocus>
-                <input type="text" id="gateName" class="name-input" placeholder="您的名字（选填）">
+                <input type="text" id="gateName" class="name-input" placeholder="您的名字" required>
                 <button type="submit">进 入</button>
                 <p class="error-msg" id="gateError"></p>
             </form>
@@ -861,11 +861,11 @@
         function handleGate(e) {
             e.preventDefault();
             var pwd = document.getElementById('gatePassword').value;
-            var name = document.getElementById('gateName').value;
+            var name = document.getElementById('gateName').value.trim();
             var errorEl = document.getElementById('gateError');
 
             if (pwd !== GATE_PASSWORD) {
-                errorEl.textContent = '密码错误，请重试';
+                errorEl.textContent = '请填写名字和密码';
                 document.getElementById('gatePassword').value = '';
                 document.getElementById('gatePassword').focus();
                 return false;
