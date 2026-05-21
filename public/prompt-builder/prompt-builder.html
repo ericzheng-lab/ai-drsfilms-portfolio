@@ -209,6 +209,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .btn.btn-enhance{background:rgba(90,138,154,0.12);color:var(--blue);border-color:rgba(90,138,154,0.35);font-weight:600}
 .btn.btn-enhance:hover{background:rgba(90,138,154,0.22);border-color:var(--blue)}
 
+/* ── AI Agent button style ── */
+.btn.btn-intent{background:rgba(138,106,170,0.12);color:var(--accent);border-color:rgba(138,106,170,0.35);font-weight:600}
+.btn.btn-intent:hover{background:rgba(138,106,170,0.22);border-color:var(--accent)}
+
 /* ── Danger ghost button ── */
 .btn.btn-danger{color:var(--danger);border-color:rgba(196,106,122,0.3);background:rgba(255,255,255,0.5)}
 .btn.btn-danger:hover{background:rgba(196,106,122,0.08);border-color:var(--danger)}
@@ -245,6 +249,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="header">
   <h1><span>Prompt</span> Builder <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:8px">Film & AI Image</span></h1>
   <div class="header-right">
+    <button class="btn btn-intent" onclick="openIntentDecomposerModal()" title="Skip category selection — describe what you want, AI picks everything">🤖 AI Agent</button>
     <button onclick="openSettings()" title="API Settings" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:8px;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">⚙</button>
   </div>
 </div>
@@ -428,6 +433,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <!-- Actions -->
     <div class="actions">
       <button class="btn primary" onclick="copyPrompt()">Copy Prompt ⌘C</button>
+      <button class="btn btn-intent" onclick="openIntentDecomposerModal()" title="Describe what you want in natural language — AI picks the right category, fills fields, and generates the prompt">🤖 AI Agent</button>
       <button class="btn btn-enhance" onclick="openEnhanceModal()" title="跳过表单，用自然语言直接描述想法，AI 格式化为 prompt">✦ AI Rewrite</button>
       <button class="btn" onclick="exportMd()">Export .md</button>
       <button class="btn btn-danger" onclick="confirmClearAll()">Clear All</button>
@@ -503,6 +509,39 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <button class="btn" onclick="applyEnhanced()">Apply to Builder</button>
       <button class="btn" onclick="copyEnhanced()">Copy</button>
       <button class="btn" onclick="closeEnhanceModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ AI Intent Decomposer Modal ═══════ -->
+<div class="modal-overlay" id="intentDecomposerModal">
+  <div class="modal">
+    <h2><span>🤖 AI Agent</span> — Intent Decomposer</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      Describe what you want to create. AI will pick the right category, fill fields, select options, and generate the prompt.
+    </p>
+    <div id="intentApiStatus" style="font-size:11px;padding:6px 10px;border-radius:6px;margin-bottom:12px;background:rgba(90,138,154,0.08);color:var(--muted)">
+      API: Checking...
+    </div>
+    <div class="field-row">
+      <label class="field-label">What do you want to create?</label>
+      <textarea id="intentInput" rows="4" placeholder="e.g., A cyberpunk detective character for a noir film, dark moody lighting, Ridley Scott style..."></textarea>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Target Image Model</label>
+      <select id="intentModel">
+        <option value="midjourney">Midjourney</option>
+        <option value="flux">Flux 2 Max</option>
+        <option value="nano">Nano Banana (Google Gemini)</option>
+        <option value="gptimage">GPT Image 2</option>
+      </select>
+    </div>
+    <div class="enhanced-output" id="intentOutput">AI will classify your intent and fill the builder here...</div>
+    <div id="intentResultSummary" style="display:none;font-size:11px;padding:8px 10px;border-radius:6px;margin-top:8px;background:rgba(106,154,122,0.08);color:var(--green);line-height:1.5"></div>
+    <div class="modal-actions">
+      <button class="btn primary" id="intentBtn" onclick="runIntentDecomposer()">🤖 Analyze Intent</button>
+      <button class="btn" onclick="applyIntentDecomposer()">Apply to Builder</button>
+      <button class="btn" onclick="closeIntentDecomposerModal()">Close</button>
     </div>
   </div>
 </div>
@@ -1240,6 +1279,7 @@ let selectedFilmLighting=new Set(),selectedTime=new Set(),selectedFilmMood=new S
 let currentLLMPreset=null; // if set, we're in LLM preset mode
 let llmFieldValues={};
 let enhancedPromptText="";
+let intentDecomposerResult=null;
 let _llmAbort=null;
 let _isModelSwitch=false;
 let customPresets=normalizeCustomPresets(JSON.parse(localStorage.getItem("pb-custom-presets")||"[]"));
@@ -2329,16 +2369,16 @@ async function runEnhance(){
   }
 }
 
-async function callOpenAI(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal){
+async function callOpenAI(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800){
   const url=(baseUrl||"https://api.openai.com/v1").replace(/\/+$/,"")+"/chat/completions";
-  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},body:JSON.stringify({model:modelName||"gpt-4o",messages:[{role:"system",content:systemPrompt},{role:"user",content:userMessage}],max_tokens:800,temperature:0.7}),signal});
+  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},body:JSON.stringify({model:modelName||"gpt-4o",messages:[{role:"system",content:systemPrompt},{role:"user",content:userMessage}],max_tokens:maxTokens,temperature:0.7}),signal});
   if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`API error ${res.status}`)}
   return(await res.json()).choices[0].message.content;
 }
 
-async function callAnthropic(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal){
+async function callAnthropic(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800){
   const url=(baseUrl||"https://api.anthropic.com").replace(/\/+$/,"")+"/v1/messages";
-  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:modelName||"claude-sonnet-4-20250514",max_tokens:800,system:systemPrompt,messages:[{role:"user",content:userMessage}]}),signal});
+  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:modelName||"claude-sonnet-4-20250514",max_tokens:maxTokens,system:systemPrompt,messages:[{role:"user",content:userMessage}]}),signal});
   if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`API error ${res.status}`)}
   return(await res.json()).content[0].text;
 }
@@ -2409,6 +2449,224 @@ function applyEnhanced(){
 }
 
 function copyEnhanced(){if(!enhancedPromptText){toast("Generate first");return}navigator.clipboard.writeText(enhancedPromptText).then(()=>toast("Copied"))}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* AI INTENT DECOMPOSER                                            */
+/* ═══════════════════════════════════════════════════════════════ */
+
+function openIntentDecomposerModal(){
+  const cfg=loadApiConfig();
+  const statusEl=document.getElementById("intentApiStatus");
+  if(!cfg.apiKey){statusEl.innerHTML='API: <span style="color:var(--danger)">No API key configured</span> · <a href="#" onclick="event.preventDefault();closeIntentDecomposerModal();openSettings()" style="color:var(--blue)">Open Settings</a>';}
+  else{statusEl.innerHTML=`API: <span style="color:var(--green)">Using ${cfg.provider} (${cfg.modelName||"default"})</span> · <a href="#" onclick="event.preventDefault();closeIntentDecomposerModal();openSettings()" style="color:var(--blue)">Change</a>`;}
+  document.getElementById("intentModel").value=currentModel;
+  document.getElementById("intentInput").value="";
+  document.getElementById("intentOutput").textContent="AI will classify your intent and fill the builder here...";
+  document.getElementById("intentResultSummary").style.display="none";
+  document.getElementById("intentDecomposerModal").classList.add("open");
+}
+
+function closeIntentDecomposerModal(){document.getElementById("intentDecomposerModal").classList.remove("open")}
+
+function buildIntentDecomposerSystemPrompt(){
+  return `You are an AI Intent Decomposer for Prompt Builder, a visual prompt creation tool.
+The user will describe what they want to create in natural language. You must:
+1. Classify their intent into the correct mode and category
+2. Extract all relevant field values from their description
+3. Select appropriate chips (camera, lighting, mood, style)
+4. Generate the final assembled prompt text
+
+## MODES AND CATEGORIES
+
+### Film & TV mode categories:
+- moodboard: Mood Board (visual tone & atmosphere reference)
+- styleframe: Style Frame (key moment visual)
+- colorscript: Color Script (color progression)
+- storyboard: Storyboard (sequential breakdown)
+- char-design: Character Design (full concept sheet)
+- char-sheet: Character Sheet (multi-angle consistency)
+- char-expression: Expression Sheet (emotional range)
+- env-concept: Scene Concept (environment concept art)
+- env-panorama: Panorama / Establishing (wide establishing shot)
+- env-lighting: Lighting Study (lighting variation)
+- sb-sequence: Shot Sequence (multi-shot narrative)
+- sb-comic: Comic / Manga Page (panel-based storytelling)
+- prop-design: Prop / Costume Design (detailed reference)
+- vfx-ref: VFX Reference (visual effects breakdown)
+- film-poster: Film Poster / Key Art (marketing key visual)
+
+### General mode categories:
+- product: Product Visuals (product shots, packaging)
+- poster: Poster & Campaign (brand posters, banners)
+- branding: Branding & Packaging (brand identity)
+- grid-collage: Grids & Collages (multi-panel layouts)
+- portrait: Portrait & People (professional portraits)
+- avatar: Avatars & Profile (style transfer, avatars)
+- scene: Scene & Illustration (concept art, scenes)
+- storyboard: Storyboard & Sequence (comics, KV, storyboards)
+- ui-mockup: UI Mockups (app interfaces)
+- typography: Typography & Text (title-safe layouts)
+- infographic: Infographic (bento grids, dashboards)
+- map: Map (city maps, routes)
+- tech-diagram: Technical Diagrams (flowcharts, ER)
+- academic: Academic Figures (research charts)
+- slides: Slides & Visual Docs (explainer slides)
+- assets: Assets & Props (icons, game assets)
+- editing: Editing Workflows (retouch, remove)
+
+## FILM MODE CHIP VALUES:
+Shot sizes: ECU (Extreme Close-Up), CU (Close-Up), MCU (Medium Close-Up), MS (Medium Shot), MLS (Medium Long Shot), FS (Full Shot), WS (Wide Shot), EWS (Extreme Wide Shot), OTS (Over-the-Shoulder), POV, Insert Shot, Two-Shot, Cowboy Shot
+Angles: Eye Level, Low Angle, High Angle, Dutch Angle, Worm's Eye, Bird's Eye, Overhead, POV, Canted, Reverse Angle
+Lenses: 14mm Ultra Wide, 24mm Wide, 35mm Standard, 50mm Normal, 85mm Portrait, 100mm Macro, 135mm Telephoto, 200mm Telephoto, Anamorphic, Tilt-Shift, Fisheye
+Aspect ratios: 2.39:1 (Anamorphic), 1.85:1 (Flat Widescreen), 16:9 (HD), 4:3 (Academy), 1.66:1 (European), 2:1 (Univisium), 21:9 (Ultra Widescreen), 1:1 (Square)
+Lighting: Three-Point Key, Rembrandt, Butterfly/Paramount, Split Lighting, Loop Lighting, Silhouette, Practical Lighting, Motivated Natural, High-Key, Low-Key, Chiaroscuro, Neon/LED Color, Firelight, Moonlight, God Rays / volumetric, Dappled / Through Trees
+Time of day: Magic Hour (Sunrise), Golden Hour, Blue Hour, High Noon, Overcast Day, Night — Practical Lights, Night — Moonlit, Dawn, Dusk, Storm / Dark Sky, Night — Neon, Interior Day, Interior Night
+Film moods: Tense, Eerie, Melancholic, Euphoric, Nostalgic, Oppressive, Serene, Chaotic, Intimate, Desolate, Mysterious, Triumphant, Foreboding, Whimsical, Gritty, Dreamlike
+Style references: Wes Anderson, Ridley Scott, Denis Villeneuve, Wong Kar-wai, Stanley Kubrick, Akira Kurosawa, Terrence Malick, David Fincher, Christopher Nolan, Hayao Miyazaki, Park Chan-wook, Coen Brothers, Alfonso Cuarón, Bong Joon-ho, Roger Deakins, Emmanuel Lubezki
+
+## GENERAL MODE CHIP VALUES:
+Styles: photorealistic, oil painting, watercolor, digital art, 3D render, anime, pixel art, pencil sketch, claymation, paper craft, stained glass, low poly, isometric, cyberpunk, vaporwave, art nouveau, art deco, brutalist, bauhaus, surrealism, pop art, impressionism, minimalism, photographic, cinematic, illustration, concept art, matte painting
+Lighting: natural light, golden hour, blue hour, studio softbox, dramatic lighting, neon glow, volumetric light, rim light, backlit, chiaroscuro, candlelight, moonlight, holographic, bioluminescent, aurora, harsh shadows, diffused, underwater caustics, spotlight, ambient occlusion
+Moods: serene, epic, mysterious, joyful, melancholic, tense, whimsical, dark, ethereal, nostalgic, futuristic, cozy, dystopian, romantic, isolated, triumphant, eerie, vibrant
+Colors: warm tones, cool tones, monochrome, complementary, analogous, triadic, pastel, neon, earth tones, jewel tones, muted palette, high contrast, desaturated, dual-tone, iridescent
+Details: highly detailed, 8K resolution, ultra-realistic, sharp focus, depth of field, film grain, lens flare, motion blur, bokeh, caustics, subsurface scattering, ray tracing, ambient occlusion, volumetric, octane render, unreal engine 5, cinematic color grading, rule of thirds, golden ratio
+
+## OUTPUT FORMAT:
+Return ONLY a valid JSON object. No markdown fences, no explanation, no extra text.
+
+{
+  "mode": "film" or "general",
+  "category": "<exact category id from the lists above>",
+  "subject": "<detailed description of the main subject>",
+  "scene": "<environment and background description>",
+  "chips": {
+    "shotSize": ["<exact chip value>"],
+    "angle": ["<exact chip value>"],
+    "lens": ["<exact chip value>"],
+    "ar": ["<exact chip value>"],
+    "filmLighting": ["<exact chip value>"],
+    "time": ["<exact chip value>"],
+    "filmMood": ["<exact chip value>"],
+    "filmStyle": ["<exact chip value>"],
+    "style": ["<exact chip value>"],
+    "lighting": ["<exact chip value>"],
+    "mood": ["<exact chip value>"],
+    "color": ["<exact chip value>"],
+    "detail": ["<exact chip value>"]
+  },
+  "prompt": "<the final fully assembled prompt text, ready to use as-is>"
+}
+
+RULES:
+1. ALL chip values MUST exactly match values from the lists above. Do not invent new values.
+2. ALL category IDs MUST exactly match the ids from the lists above.
+3. For Film mode, populate film-related chip fields only. For General mode, populate general chip fields only.
+4. The "prompt" field should be the complete, production-ready prompt text.
+5. Keep descriptions in the user's language if they write in Chinese, but keep technical/camera terms in English.
+6. If the user's description is vague, make reasonable creative choices and fill all fields.
+7. Always include at least a subject and 2-3 chip selections.`;
+}
+
+function runIntentDecomposer(){
+  const input=document.getElementById("intentInput").value.trim();
+  if(!input){toast("Describe what you want to create");return;}
+  const cfg=loadApiConfig();
+  if(!cfg.apiKey){document.getElementById("intentOutput").textContent="No API key configured. Open Settings to add your API key.";return;}
+  const model=document.getElementById("intentModel").value;
+  const btn=document.getElementById("intentBtn");
+  const output=document.getElementById("intentOutput");
+  const summary=document.getElementById("intentResultSummary");
+  btn.textContent="Analyzing...";btn.disabled=true;
+  output.textContent="Analyzing your intent...";summary.style.display="none";
+  intentDecomposerResult=null;
+  const sysPrompt=buildIntentDecomposerSystemPrompt();
+  const ac=new AbortController();_llmAbort=ac;
+  const callFn=cfg.provider==="anthropic"?callAnthropic:callOpenAI;
+  callFn(cfg.apiKey,cfg.baseUrl,cfg.modelName,sysPrompt,input,ac.signal,1200)
+    .then(raw=>{
+      let cleaned=raw.replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();
+      const s=cleaned.indexOf("{"),e=cleaned.lastIndexOf("}");
+      if(s>=0&&e>s)cleaned=cleaned.substring(s,e+1);
+      const json=JSON.parse(cleaned);
+      if(!json.mode||!json.category||!json.subject||!json.prompt)throw new Error("Missing required fields in AI response");
+      intentDecomposerResult=json;
+      const chipCount=Object.values(json.chips||{}).reduce((n,a)=>n+(Array.isArray(a)?a.length:0),0);
+      summary.innerHTML=`<strong>Mode:</strong> ${json.mode} · <strong>Category:</strong> ${json.category} · <strong>Chips:</strong> ${chipCount} selected`;
+      summary.style.display="block";
+      output.textContent=json.prompt;
+    })
+    .catch(err=>{
+      output.textContent="Error: "+(err.message||"Failed to parse AI response. Please try again.");
+      intentDecomposerResult=null;summary.style.display="none";
+    })
+    .finally(()=>{btn.textContent="🤖 Analyze Intent";btn.disabled=false;_llmAbort=null;});
+}
+
+function applyIntentDecomposer(){
+  if(!intentDecomposerResult){toast("Analyze your intent first");return;}
+  const json=intentDecomposerResult;
+  const model=document.getElementById("intentModel").value;
+
+  // Switch model if needed
+  if(model!==currentModel){
+    currentModel=model;
+    document.querySelectorAll(".model-option").forEach(o=>o.classList.toggle("active",o.dataset.model===model));
+    renderModelSwitcher();renderModelParams();renderFormula();
+  }
+
+  // Switch mode if needed
+  if(json.mode!==currentMode)switchMode(json.mode);
+
+  // Clear existing selections
+  clearAll();
+
+  // Fill subject and scene
+  const subjectEl=document.getElementById("subject");
+  const sceneEl=document.getElementById("scene");
+  if(subjectEl)subjectEl.value=json.subject||"";
+  if(sceneEl)sceneEl.value=json.scene||"";
+
+  // Match chips from list
+  const matchFromList=(list,values)=>{
+    const s=new Set();
+    (values||[]).forEach(v=>{
+      const exact=list.find(item=>item.toLowerCase()===v.toLowerCase());
+      if(exact)s.add(exact);
+    });
+    return s;
+  };
+
+  // Film mode chips
+  if(json.mode==="film"){
+    const chips=json.chips||{};
+    if(chips.shotSize){selectedShotSize=matchFromList(FILM_SHOT_SIZE,chips.shotSize);renderChips("shotSizeChips",FILM_SHOT_SIZE,selectedShotSize);}
+    if(chips.angle){selectedAngle=matchFromList(FILM_ANGLE,chips.angle);renderChips("angleChips",FILM_ANGLE,selectedAngle);}
+    if(chips.lens){selectedLens=matchFromList(FILM_LENS,chips.lens);renderChips("lensChips",FILM_LENS,selectedLens);}
+    if(chips.ar){selectedAR=matchFromList(FILM_AR,chips.ar);renderChips("arChips",FILM_AR,selectedAR);}
+    if(chips.filmLighting){selectedFilmLighting=matchFromList(FILM_LIGHTING_SETUP,chips.filmLighting);renderChips("filmLightingChips",FILM_LIGHTING_SETUP,selectedFilmLighting);}
+    if(chips.time){selectedTime=matchFromList(FILM_TIME,chips.time);renderChips("timeChips",FILM_TIME,selectedTime);}
+    if(chips.filmMood){selectedFilmMood=matchFromList(FILM_MOOD_FILM,chips.filmMood);renderChips("filmMoodChips",FILM_MOOD_FILM,selectedFilmMood);}
+    if(chips.filmStyle){selectedFilmStyle=matchFromList(FILM_STYLE_REF,chips.filmStyle);renderChips("filmStyleChips",FILM_STYLE_REF,selectedFilmStyle);}
+  }else{
+    // General mode chips
+    const chips=json.chips||{};
+    if(chips.style){selectedStyles=matchFromList(STYLES,chips.style);renderChips("styleChips",STYLES,selectedStyles);}
+    if(chips.lighting){selectedLighting=matchFromList(LIGHTING,chips.lighting);renderChips("lightingChips",LIGHTING,selectedLighting);}
+    if(chips.mood){selectedMood=matchFromList(MOODS,chips.mood);renderChips("moodChips",MOODS,selectedMood);}
+    if(chips.color){selectedColor=matchFromList(COLORS,chips.color);renderChips("colorChips",COLORS,selectedColor);}
+    if(chips.detail){selectedDetail=matchFromList(DETAILS,chips.detail);renderChips("detailChips",DETAILS,selectedDetail);}
+  }
+
+  // Navigate to Step 2 and override preview with LLM-generated prompt
+  assemblyMode="standard";
+  goToStep(2);
+  // Write LLM prompt AFTER goToStep (which calls updatePreview internally)
+  const pe=document.getElementById("previewEditor");
+  if(pe&&json.prompt)pe.value=json.prompt;
+  pushHistory();
+  closeIntentDecomposerModal();
+  toast("Applied: "+json.category);
+}
 
 /* ═══════════════════════════════════════════════════════════════ */
 /* INIT                                                            */
