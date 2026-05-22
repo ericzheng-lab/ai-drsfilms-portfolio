@@ -845,105 +845,15 @@
         }
 
         /* ── Mobile Responsive (≤768px) ── */
-        @media (max-width: 768px) {
-            .slide-wrapper {
-                width: 100% !important;
-                min-height: 100vh !important;
-                aspect-ratio: auto !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-            }
-            .slide {
-                position: relative !important;
-                padding: 24px 20px !important;
-                overflow-y: auto !important;
-                min-height: 100vh !important;
-            }
-            :root {
-                --fs-display: 36px;
-                --fs-heading: 20px;
-                --fs-subheading: 16px;
-                --fs-body: 13px;
-                --fs-caption: 10px;
-            }
-            .section-header h3 {
-                font-size: 20px !important;
-            }
-            .section-header .en-sub {
-                font-size: 9px !important;
-            }
-            .cn-title {
-                font-size: 20px !important;
-            }
-            img {
-                max-width: 100% !important;
-                height: auto !important;
-            }
-            /* Grid: single column on mobile */
-            .slide .grid-cols-2,
-            .slide .grid-cols-3,
-            .slide .grid-cols-4,
-            .slide .grid-cols-2.lg\:grid-cols-4 {
-                grid-template-columns: 1fr !important;
-            }
-            /* KPI numbers smaller */
-            .num-display {
-                font-size: 28px !important;
-            }
-            /* Password gate */
-            .gate-card {
-                width: 95vw !important;
-                padding: 32px 24px !important;
-            }
-            .gate-card h2 {
-                font-size: 24px !important;
-            }
-            .gate-card input {
-                font-size: 16px !important;
-                padding: 12px 14px !important;
-            }
-            /* Mobile navigation */
-            .mobile-dots {
-                display: flex !important;
-            }
-            .desktop-arrows {
-                display: none !important;
-            }
-            /* Reduce space-y on mobile */
-            .space-y-8 > * + * { margin-top: 16px !important; }
-            .space-y-6 > * + * { margin-top: 12px !important; }
-            /* Cover title image */
-            .slide img[alt="流俗地"] {
-                max-width: 80vw !important;
-            }
-        }
 
         /* ── Mobile dots navigation ── */
-        .mobile-dots {
-            display: none;
-            position: fixed;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            gap: 6px;
-            padding: 8px 12px;
-            background: rgba(26,26,26,0.8);
-            border-radius: 20px;
-            backdrop-filter: blur(8px);
-        }
-        .mobile-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .mobile-dot.active {
-            background: #5b7a9d;
-            width: 18px;
-            border-radius: 3px;
+
+        /* ── Landscape rotation overlay ── */
+        @keyframes rotate-hint {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(90deg); }
+            75% { transform: rotate(0deg); }
         }
     </style>
 </head>
@@ -962,10 +872,6 @@
             <p class="gate-footer">CONFIDENTIAL — FOR AUTHORIZED RECIPIENTS ONLY</p>
         </div>
     </div>
-
-
-    <!-- Mobile dots navigation -->
-    <div class="mobile-dots" id="mobileDots"></div>
 
     <script>
         // ── Password Gate Logic ──
@@ -2208,34 +2114,38 @@
         });
 
         // Mobile touch swipe gestures
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-
-
-        function handleSwipe() {
-            const threshold = 60;
-            if (touchEndX < touchStartX - threshold) {
-                nextSlide();
-            }
-            if (touchEndX > touchStartX + threshold) {
+if (touchEndX > touchStartX + threshold) {
                 prevSlide();
             }
         }
-
-        window.addEventListener('touchstart', function(event) {
-            var gate = document.getElementById('passwordGate');
-            if (gate && !gate.classList.contains('hidden')) return;
-            touchStartX = event.changedTouches[0].screenX;
-        }, false);
-
-        window.addEventListener('touchend', function(event) {
-            var gate = document.getElementById('passwordGate');
-            if (gate && !gate.classList.contains('hidden')) return;
-            touchEndX = event.changedTouches[0].screenX;
-            handleSwipe();
-        }, false);
     
+    <script>
+        // ── Orientation detection ──
+        (function() {
+            var overlay = document.getElementById('rotationOverlay');
+            var gate = document.getElementById('passwordGate');
+
+            function checkOrientation() {
+                var isPortrait = window.matchMedia('(orientation: portrait)').matches;
+                if (isPortrait) {
+                    overlay.style.display = 'flex';
+                    if (gate && !gate.classList.contains('hidden')) {
+                        gate.style.display = 'none';
+                    }
+                } else {
+                    overlay.style.display = 'none';
+                    if (gate && !gate.classList.contains('hidden')) {
+                        gate.style.display = 'flex';
+                    }
+                }
+            }
+
+            window.addEventListener('orientationchange', checkOrientation);
+            window.addEventListener('resize', checkOrientation);
+            checkOrientation();
+        })();
+    </script>
+
     </script>
 </body>
 </html>
