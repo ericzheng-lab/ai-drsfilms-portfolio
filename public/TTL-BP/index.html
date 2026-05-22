@@ -834,6 +834,108 @@
             color: rgba(255,255,255,0.2);
             letter-spacing: 0.1em;
         }
+
+        /* ── Mobile Responsive (≤768px) ── */
+        @media (max-width: 768px) {
+            .slide-wrapper {
+                width: 100% !important;
+                min-height: 100vh !important;
+                aspect-ratio: auto !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
+            .slide {
+                position: relative !important;
+                padding: 24px 20px !important;
+                overflow-y: auto !important;
+                min-height: 100vh !important;
+            }
+            :root {
+                --fs-display: 36px;
+                --fs-heading: 20px;
+                --fs-subheading: 16px;
+                --fs-body: 13px;
+                --fs-caption: 10px;
+            }
+            .section-header h3 {
+                font-size: 20px !important;
+            }
+            .section-header .en-sub {
+                font-size: 9px !important;
+            }
+            .cn-title {
+                font-size: 20px !important;
+            }
+            img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+            /* Grid: single column on mobile */
+            .slide .grid-cols-2,
+            .slide .grid-cols-3,
+            .slide .grid-cols-4,
+            .slide .grid-cols-2.lg\:grid-cols-4 {
+                grid-template-columns: 1fr !important;
+            }
+            /* KPI numbers smaller */
+            .num-display {
+                font-size: 28px !important;
+            }
+            /* Password gate */
+            .gate-card {
+                width: 95vw !important;
+                padding: 32px 24px !important;
+            }
+            .gate-card h2 {
+                font-size: 24px !important;
+            }
+            .gate-card input {
+                font-size: 16px !important;
+                padding: 12px 14px !important;
+            }
+            /* Mobile navigation */
+            .mobile-dots {
+                display: flex !important;
+            }
+            .desktop-arrows {
+                display: none !important;
+            }
+            /* Reduce space-y on mobile */
+            .space-y-8 > * + * { margin-top: 16px !important; }
+            .space-y-6 > * + * { margin-top: 12px !important; }
+            /* Cover title image */
+            .slide img[alt="流俗地"] {
+                max-width: 80vw !important;
+            }
+        }
+
+        /* ── Mobile dots navigation ── */
+        .mobile-dots {
+            display: none;
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            gap: 6px;
+            padding: 8px 12px;
+            background: rgba(26,26,26,0.8);
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+        }
+        .mobile-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mobile-dot.active {
+            background: #5b7a9d;
+            width: 18px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body class="overflow-hidden min-h-screen flex flex-col justify-between select-none">
@@ -852,6 +954,9 @@
         </div>
     </div>
 
+
+    <!-- Mobile dots navigation -->
+    <div class="mobile-dots" id="mobileDots"></div>
 
     <script>
         // ── Password Gate Logic ──
@@ -2115,6 +2220,100 @@
                 prevSlide();
             }
         }
+    <script>
+        // ── Touch Navigation & Mobile Dots ──
+        (function() {
+            var currentSlide = 0;
+            var totalSlides = 0;
+            var slides = [];
+            var isMobile = window.innerWidth <= 768;
+
+            function init() {
+                slides = document.querySelectorAll('.slide');
+                totalSlides = slides.length;
+                buildDots();
+                updateDots();
+            }
+
+            function buildDots() {
+                var dotsContainer = document.getElementById('mobileDots');
+                if (!dotsContainer) return;
+                dotsContainer.innerHTML = '';
+                for (var i = 0; i < totalSlides; i++) {
+                    var dot = document.createElement('div');
+                    dot.className = 'mobile-dot' + (i === 0 ? ' active' : '');
+                    dot.setAttribute('data-index', i);
+                    dot.addEventListener('click', function() {
+                        goToSlide(parseInt(this.getAttribute('data-index')));
+                    });
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            function updateDots() {
+                var dots = document.querySelectorAll('.mobile-dot');
+                dots.forEach(function(dot, i) {
+                    dot.classList.toggle('active', i === currentSlide);
+                });
+            }
+
+            function goToSlide(index) {
+                if (index < 0 || index >= totalSlides || index === currentSlide) return;
+                slides[currentSlide].style.display = 'none';
+                slides[currentSlide].style.opacity = '0';
+                currentSlide = index;
+                slides[currentSlide].style.display = 'flex';
+                slides[currentSlide].style.opacity = '1';
+                updateDots();
+            }
+
+            // Touch events
+            var touchStartX = 0;
+            var touchStartY = 0;
+            var touchEndX = 0;
+            var touchEndY = 0;
+
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                var dx = touchEndX - touchStartX;
+                var dy = touchEndY - touchStartY;
+                var absDx = Math.abs(dx);
+                var absDy = Math.abs(dy);
+
+                // Only handle horizontal swipes
+                if (absDx < 50 || absDx < absDy) return;
+
+                if (dx < 0) {
+                    // Left swipe → next
+                    goToSlide(currentSlide + 1);
+                } else {
+                    // Right swipe → prev
+                    goToSlide(currentSlide - 1);
+                }
+            }
+
+            // Expose goToSlide globally for existing keyboard nav
+            window.goToSlide = goToSlide;
+            window.getCurrentSlide = function() { return currentSlide; };
+
+            // Init after DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
     </script>
 </body>
 </html>
