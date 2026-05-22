@@ -750,6 +750,7 @@
             align-items: center;
             justify-content: center;
             transition: opacity 0.5s ease, visibility 0.5s ease;
+            touch-action: manipulation;
         }
         .password-gate.hidden {
             opacity: 0;
@@ -793,6 +794,10 @@
             transition: border-color 0.3s;
             margin-bottom: 12px;
             box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .gate-card input:focus {
             border-color: #5b7a9d;
@@ -817,6 +822,10 @@
             cursor: pointer;
             transition: background 0.3s, transform 0.2s;
             letter-spacing: 0.1em;
+            position: relative;
+            z-index: 10;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .gate-card button:hover {
             background: #4a6a8a;
@@ -2203,10 +2212,12 @@
         let touchEndX = 0;
 
         window.addEventListener('touchstart', function(event) {
+            if (document.getElementById('passwordGate') && !document.getElementById('passwordGate').classList.contains('hidden')) return;
             touchStartX = event.changedTouches[0].screenX;
         }, false);
 
         window.addEventListener('touchend', function(event) {
+            if (document.getElementById('passwordGate') && !document.getElementById('passwordGate').classList.contains('hidden')) return;
             touchEndX = event.changedTouches[0].screenX;
             handleSwipe();
         }, false);
@@ -2274,11 +2285,21 @@
             var touchEndY = 0;
 
             document.addEventListener('touchstart', function(e) {
+<<<<<<< HEAD
+=======
+                var gate = document.getElementById('passwordGate');
+                if (gate && !gate.classList.contains('hidden')) return;
+>>>>>>> feat/bp-mobile-responsive
                 touchStartX = e.changedTouches[0].screenX;
                 touchStartY = e.changedTouches[0].screenY;
             }, { passive: true });
 
             document.addEventListener('touchend', function(e) {
+<<<<<<< HEAD
+=======
+                var gate = document.getElementById('passwordGate');
+                if (gate && !gate.classList.contains('hidden')) return;
+>>>>>>> feat/bp-mobile-responsive
                 touchEndX = e.changedTouches[0].screenX;
                 touchEndY = e.changedTouches[0].screenY;
                 handleSwipe();
