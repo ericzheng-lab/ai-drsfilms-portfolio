@@ -2211,16 +2211,7 @@
         let touchStartX = 0;
         let touchEndX = 0;
 
-        window.addEventListener('touchstart', function(event) {
-            if (document.getElementById('passwordGate') && !document.getElementById('passwordGate').classList.contains('hidden')) return;
-            touchStartX = event.changedTouches[0].screenX;
-        }, false);
 
-        window.addEventListener('touchend', function(event) {
-            if (document.getElementById('passwordGate') && !document.getElementById('passwordGate').classList.contains('hidden')) return;
-            touchEndX = event.changedTouches[0].screenX;
-            handleSwipe();
-        }, false);
 
         function handleSwipe() {
             const threshold = 60;
@@ -2231,110 +2222,20 @@
                 prevSlide();
             }
         }
-    <script>
-        // ── Touch Navigation & Mobile Dots ──
-        (function() {
-            var currentSlide = 0;
-            var totalSlides = 0;
-            var slides = [];
-            var isMobile = window.innerWidth <= 768;
 
-            function init() {
-                slides = document.querySelectorAll('.slide');
-                totalSlides = slides.length;
-                buildDots();
-                updateDots();
-            }
+        window.addEventListener('touchstart', function(event) {
+            var gate = document.getElementById('passwordGate');
+            if (gate && !gate.classList.contains('hidden')) return;
+            touchStartX = event.changedTouches[0].screenX;
+        }, false);
 
-            function buildDots() {
-                var dotsContainer = document.getElementById('mobileDots');
-                if (!dotsContainer) return;
-                dotsContainer.innerHTML = '';
-                for (var i = 0; i < totalSlides; i++) {
-                    var dot = document.createElement('div');
-                    dot.className = 'mobile-dot' + (i === 0 ? ' active' : '');
-                    dot.setAttribute('data-index', i);
-                    dot.addEventListener('click', function() {
-                        goToSlide(parseInt(this.getAttribute('data-index')));
-                    });
-                    dotsContainer.appendChild(dot);
-                }
-            }
-
-            function updateDots() {
-                var dots = document.querySelectorAll('.mobile-dot');
-                dots.forEach(function(dot, i) {
-                    dot.classList.toggle('active', i === currentSlide);
-                });
-            }
-
-            function goToSlide(index) {
-                if (index < 0 || index >= totalSlides || index === currentSlide) return;
-                slides[currentSlide].style.display = 'none';
-                slides[currentSlide].style.opacity = '0';
-                currentSlide = index;
-                slides[currentSlide].style.display = 'flex';
-                slides[currentSlide].style.opacity = '1';
-                updateDots();
-            }
-
-            // Touch events
-            var touchStartX = 0;
-            var touchStartY = 0;
-            var touchEndX = 0;
-            var touchEndY = 0;
-
-            document.addEventListener('touchstart', function(e) {
-<<<<<<< HEAD
-=======
-                var gate = document.getElementById('passwordGate');
-                if (gate && !gate.classList.contains('hidden')) return;
->>>>>>> feat/bp-mobile-responsive
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
-            }, { passive: true });
-
-            document.addEventListener('touchend', function(e) {
-<<<<<<< HEAD
-=======
-                var gate = document.getElementById('passwordGate');
-                if (gate && !gate.classList.contains('hidden')) return;
->>>>>>> feat/bp-mobile-responsive
-                touchEndX = e.changedTouches[0].screenX;
-                touchEndY = e.changedTouches[0].screenY;
-                handleSwipe();
-            }, { passive: true });
-
-            function handleSwipe() {
-                var dx = touchEndX - touchStartX;
-                var dy = touchEndY - touchStartY;
-                var absDx = Math.abs(dx);
-                var absDy = Math.abs(dy);
-
-                // Only handle horizontal swipes
-                if (absDx < 50 || absDx < absDy) return;
-
-                if (dx < 0) {
-                    // Left swipe → next
-                    goToSlide(currentSlide + 1);
-                } else {
-                    // Right swipe → prev
-                    goToSlide(currentSlide - 1);
-                }
-            }
-
-            // Expose goToSlide globally for existing keyboard nav
-            window.goToSlide = goToSlide;
-            window.getCurrentSlide = function() { return currentSlide; };
-
-            // Init after DOM ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-        })();
-    </script>
+        window.addEventListener('touchend', function(event) {
+            var gate = document.getElementById('passwordGate');
+            if (gate && !gate.classList.contains('hidden')) return;
+            touchEndX = event.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+    
     </script>
 </body>
 </html>
