@@ -1,0 +1,368 @@
+ai.drsfilms.com 升级方案 v2
+设计原则
+
+保留 Hero 的 Three.js cinematic 系统（零改动）
+下面 6 个板块全部重写内容，不重写代码架构
+跟 deck v7 共用同一套素材：3个数字、5个品牌 logo、3个产品截图、2个视频
+叙事对雇主友好：30秒看完核心，3分钟看完深度
+保留现有暗色 cinematic 设计系统
+
+
+整体叙事曲线
+Hero          → 你是谁（视觉证明 + 三模式互动）
+01 Record     → 你做过什么（硬通货资历）
+02 Built      → 你 build 了什么（3个产品）
+03 Films      → 你拍过什么（2个视频 + Sundance）
+04 Stack      → 你懂这个行业（工具栈）
+05 System     → 你怎么思考（OpenClaw 思维）
+06 Contact    → 怎么找你
+7个板块（含Hero），比现在多1个但更聚焦。
+
+Hero（保留，零改动）
+目的：30秒视觉证明
+现状 OK，三模式交互（FILM / TOOLS / AGENTS）正好是双重身份的视觉化表达。
+唯一建议补充：
+在 Hero 底部加一行简洁的副标题（如果还没有的话）：
+Eric Zheng
+Film Producer · AI Builder · Greater NY
+
+15 years producing. 1 year building. Both worlds, one workflow.
+最后这句话是核心抓手，跟 deck Slide 10 Philosophy 呼应。
+
+01 Track Record（替换现在的 01 Work）
+目的：硬通货资历，证明你不是空降 AI 玩家
+布局：
+┌─────────────────────────────────────────────┐
+│                                              │
+│         15 YEARS IN PRODUCTION               │
+│                                              │
+│  ┌──────────┬──────────┬──────────┐         │
+│  │  $8M+    │ Sundance │   60+    │         │
+│  │ Campaigns│ Grand    │Countries │         │
+│  │          │ Jury     │ Released │         │
+│  │          │ Nominee  │          │         │
+│  └──────────┴──────────┴──────────┘         │
+│                                              │
+│   ─────────────────────────────────────      │
+│                                              │
+│        TRUSTED BY                            │
+│                                              │
+│  [Nike] [Tencent] [Riot] [L'Oréal] [BMW]    │
+│  [miHoYo] [Mercedes] [Audi] ...              │
+│                                              │
+│  ─────────────────────────────────────       │
+│                                              │
+│  Final Frontier (Executive Producer)         │
+│  First Light Films (Founder)                 │
+│                                              │
+└─────────────────────────────────────────────┘
+实现要点：
+
+3个大数字横排，clamp(60-120px)，gold accent
+数字下方两行短描述
+中间一条 gold 分隔线
+品牌 logo 矩阵，单色处理，hover 时变 gold
+底部两行公司履历，warm gray 小字
+
+为什么放第一： 雇主看完 Hero 的炫技，第一反应是"这家伙真的会做电影吗？"——立刻用数字和品牌 logo 回答。
+复用 deck 资产： 这个板块跟 deck Slide 02 一模一样，logo 准备一次用两次。
+
+02 What I Built（替换现在的 02 AI Studio）
+目的：3个产品截图 + Live 链接
+布局：
+┌─────────────────────────────────────────────┐
+│                                              │
+│         WHAT I BUILT                         │
+│         12 Months · 7 Products · Live        │
+│                                              │
+│  ┌─────────────────────────────────────┐    │
+│  │                                       │   │
+│  │  [AI Film Studio 截图，全宽]          │   │
+│  │                                       │   │
+│  │  AI FILM STUDIO                       │   │
+│  │  Script-to-screen, gated pipeline.    │   │
+│  │  9 gates · LLM-validated · Next.js    │   │
+│  │                                       │   │
+│  │  [Live →]  [GitHub →]                 │   │
+│  └─────────────────────────────────────┘    │
+│                                              │
+│  ┌─────────────────────────────────────┐    │
+│  │  [Budget Studio 截图，全宽]           │   │
+│  │  BUDGET STUDIO                        │   │
+│  │  Built for producers, not auditors.   │   │
+│  │  ...                                  │   │
+│  └─────────────────────────────────────┘    │
+│                                              │
+│  ┌─────────────────────────────────────┐    │
+│  │  [Prompt Builder 截图，全宽]          │   │
+│  │  PROMPT BUILDER                       │   │
+│  │  Film-grade prompts in seconds.       │   │
+│  │  ...                                  │   │
+│  └─────────────────────────────────────┘    │
+│                                              │
+│  See all 7 products on GitHub →             │
+│                                              │
+└─────────────────────────────────────────────┘
+实现要点：
+
+3个产品竖排（不是横排，因为网站比 deck 长，可以滚动）
+每个产品一个大截图（宽度撑满，比例 16:9 或 16:10）
+截图下方：产品名（大字）+ 一句话定位（中字）+ 技术栈标签（小字）
+两个按钮：Live demo / GitHub
+截图建议加微动效（scroll into view 时缓慢放大或淡入）
+最底部一行链接，引导到 GitHub 看全部 7 个
+
+关键差异 vs deck：
+
+Deck 第4张是3个产品横排小卡，因为只有1张 slide
+网站可以竖排展开，每个产品给足空间，截图大、信息全
+雇主深度查看时能点进 Live 看
+
+复用 deck 资产： 同样3张截图，deck 用小图，网站用大图。
+
+03 Films（新增，重要！）
+目的：把电影资历也给足空间，呼应 deck Slide 08
+布局：
+┌─────────────────────────────────────────────┐
+│                                              │
+│         15 YEARS IN FILM                     │
+│                                              │
+│  ┌───────────────┬───────────────────────┐  │
+│  │               │                        │  │
+│  │               │   BRIEF HISTORY        │  │
+│  │  [电影海报]   │   OF A FAMILY          │  │
+│  │               │                        │  │
+│  │   高清海报    │   Sundance Grand Jury │  │
+│  │               │   Prize Nominee        │  │
+│  │               │   Berlinale Panorama   │  │
+│  │               │                        │  │
+│  │               │   $2.5M · 3-Country   │  │
+│  │               │   Co-Production        │  │
+│  │               │   60+ Countries        │  │
+│  │               │                        │  │
+│  │               │   Director: Lin Jianjie│  │
+│  │               │                        │  │
+│  └───────────────┴───────────────────────┘  │
+│                                              │
+│  ─────────────────────────────────────       │
+│                                              │
+│         RECENT AI FILMS                      │
+│                                              │
+│  ┌───────────────┬───────────────────────┐  │
+│  │  [HOME MANGA  │  [HOME live-action     │  │
+│  │   缩略图]     │   缩略图]              │  │
+│  │  ▶            │  ▶                     │  │
+│  │  Anime style  │  Cinematic realism     │  │
+│  └───────────────┴───────────────────────┘  │
+│                                              │
+└─────────────────────────────────────────────┘
+实现要点：
+
+上半部分：Brief History of A Family 单独成块，左海报右信息
+中间一条 gold 分隔线
+下半部分：两个 AI 视频并排（不是5个，按 deck 思路精简到2个）
+两个视频下面一行短描述，建立"我能做不同风格"的印象
+
+为什么这张关键：
+
+现在的网站没有给传统电影资历足够空间
+雇主（尤其是传统影视雇主）看到 Sundance/Berlinale 才会真正认真
+同时通过 AI 视频展示"现在我做这个"的连续性
+
+复用 deck 资产： 同样的海报、同样的两个视频。
+
+04 Tool Stack（替换现在的 03 AI Stack）
+目的：行业认知，logo grid
+布局：
+┌─────────────────────────────────────────────┐
+│                                              │
+│         TOOL STACK                           │
+│         What I use, daily.                   │
+│                                              │
+│  AI ORCHESTRATION                            │
+│  [Claude] [Cursor] [OpenSpec] [Discord]      │
+│                                              │
+│  VIDEO                                       │
+│  [Runway] [Higgsfield] [Seedance]            │
+│  [Kling] [Minimax] [InVideo]                 │
+│                                              │
+│  IMAGE                                       │
+│  [Midjourney] [Flux] [Nano Banana]           │
+│  [Freepik] [Dreamina]                        │
+│                                              │
+│  AUDIO                                       │
+│  [ElevenLabs] [Suno] [Xiaomimimo]            │
+│                                              │
+│  BUILD STACK                                 │
+│  [Next.js] [React] [TypeScript]              │
+│  [Supabase] [Vercel] [Cloudflare] [GitHub]   │
+│                                              │
+└─────────────────────────────────────────────┘
+实现要点：
+
+5 个分类纵向排列
+每个分类标题：Space Mono uppercase，warm gray
+Logo 用单色 SVG，hover 变 gold + 显示工具名
+Logo 之间 gap 24-32px，留白充足
+整个区块不需要任何描述句子
+
+与 deck Slide 06 的差异：
+
+Deck 板块少（4类），网站板块多（5类，多了 Image 单独分类）
+网站可以滚动，不挤
+网站 hover 有交互，更生动
+
+
+05 System Thinking（替换现在的 04 OpenClaw）
+目的：从"展示 OpenClaw 技术"改成"展示思维方式"
+关键改动：换叙事角度。
+现在的版块讲：OpenClaw 是什么、有8个 agent、有 cron。这是 builder 视角。
+应该讲：我怎么思考创作工作流，OpenClaw 只是一个例子。
+布局：
+┌─────────────────────────────────────────────┐
+│                                              │
+│         HOW I THINK                          │
+│                                              │
+│  Creative work is 90% logistics.             │
+│  AI changes who can deliver it.              │
+│                                              │
+│  ─────────────────────────────────────       │
+│                                              │
+│  ┌────────────────────────────────────┐     │
+│  │                                     │    │
+│  │   [OpenClaw 架构图 SVG，居中]       │    │
+│  │                                     │    │
+│  │   8 agents, one mac, 24/7           │    │
+│  │   General orchestrates              │    │
+│  │   Engineer builds                   │    │
+│  │   Creator writes                    │    │
+│  │   Wiseman advises                   │    │
+│  │   ...                               │    │
+│  │                                     │    │
+│  └────────────────────────────────────┘     │
+│                                              │
+│  This is one system. The thinking            │
+│  scales beyond it.                           │
+│                                              │
+│  [How I built this →]                        │
+│                                              │
+└─────────────────────────────────────────────┘
+实现要点：
+
+顶部是 manifesto 两行（跟 deck Philosophy 呼应）
+中间架构图（用现成的 OpenClaw-Agent-Control-v1.svg）
+架构图旁边或下方一句话标注每个 agent 角色（不超过3个字）
+底部一句钩子句 + 一个 "深度阅读" 链接（如果你有写关于这套系统的 Pulse 文章，链过去）
+
+为什么这样改：
+
+现在的 OpenClaw 板块是"我做了什么"
+改后是"我怎么做的"——这才是雇主真正关心的
+"我能搭出 8 agent 系统"比"我会用 ChatGPT" 重要
+
+复用 deck 资产： 同样的 SVG 架构图。
+
+06 Contact
+目的：明确两条路径
+布局：
+┌─────────────────────────────────────────────┐
+│                                              │
+│         LET'S BUILD SOMETHING.               │
+│                                              │
+│  ┌─────────────────┬───────────────────┐    │
+│  │                 │                    │   │
+│  │  HIRE ME        │  BUILD WITH ME    │   │
+│  │                 │                    │   │
+│  │  Open to roles  │  Open source       │   │
+│  │  in Producer,   │  collaboration,    │   │
+│  │  AI Creative    │  consulting,       │   │
+│  │  Lead, Hybrid   │  custom pipelines  │   │
+│  │  Production     │                    │   │
+│  │                 │                    │   │
+│  │  [Email →]      │  [GitHub →]        │   │
+│  │  [LinkedIn →]   │  [Calendar →]      │   │
+│  │                 │                    │   │
+│  └─────────────────┴───────────────────┘    │
+│                                              │
+│  ─────────────────────────────────────       │
+│                                              │
+│  drsfilms.com (Traditional Portfolio)        │
+│  Greater NY · U.S. Permanent Resident        │
+│  Available Immediately                       │
+│                                              │
+└─────────────────────────────────────────────┘
+实现要点：
+
+两列等分（移动端竖排）
+每列一个标题 + 一段说明 + 两个 CTA 按钮
+左侧雇佣路径，右侧合作路径
+底部 metadata 行，warm gray
+
+为什么这样改：
+
+现在的 Contact 是单一邮箱+GitHub+邮件
+改后明确"你来这里能做什么"——分流不同来意的访客
+"Available Immediately" 必须出现（你 System Prompt 强调过）
+
+
+删除的内容
+现在有处理7 个项目展示卡（01 Work）改成 02 What I Built 的 3 个产品截图（精选）GitHub 4 个仓库链接区（05 GitHub）合并到 02 板块的 GitHub 按钮 + 06 Contact 的 GitHub 链接AI Canvas demo（02 现状）截图收进 02 What I Built
+总体精简掉冗余。
+
+资产清单
+直接复用 deck v7 的资产（一份做两遍用）：
+
+3 个产品截图（AI Film Studio / Budget Studio / Prompt Builder）
+品牌 logo（Nike / Tencent / Riot / L'Oréal / BMW / miHoYo 等）
+工具 logo（Runway / Midjourney / ElevenLabs 等）
+Brief History of A Family 电影海报
+2 个 AI 视频缩略图（HOME MANGA / HOME live-action）
+OpenClaw 架构图 SVG（已有）
+
+网站独有素材：
+
+Hero 三模式动画（保留，无改动）
+Hero 底部那句 manifesto 副标题
+
+
+改造步骤（给 Engineer）
+
+新建 branch： v2-content-refresh
+保留： Hero（CinematicHero.tsx + hero.css + createCinematicHero.ts），所有 Three.js 代码
+重写： src/data/site.ts 里的板块数据结构
+新增板块组件：
+
+TrackRecord.tsx（01）
+WhatIBuilt.tsx（02）
+Films.tsx（03，新增）
+ToolStack.tsx（04，替换 AI Stack）
+SystemThinking.tsx（05，重写 OpenClaw）
+Contact.tsx（06，更新）
+
+
+删除： 现在的 Work（7 项目卡）、AI Studio、GitHub 独立板块
+响应式验证： 移动端 7 个板块滚动体验
+性能： 截图懒加载，视频用 poster 占位
+
+
+跟 deck v7 的关系
+Deck v7（10张，发出去用）
+  ↓
+HR 打开 Deck → 看完 6 张核心 → 想了解更多
+  ↓
+点击 ai.drsfilms.com（链接在 Slide 10 Contact）
+  ↓
+看网站，更长更深的版本
+  ↓
+同样的素材，同样的叙事，不会困惑
+这是统一品牌系统，不是两个独立项目。
+
+优先级建议
+如果资源有限，按这个顺序：
+
+先做 02 What I Built（产品截图最有杠杆）
+再做 01 Track Record（硬通货资历，立刻提升专业度）
+再做 03 Films（补回最大的内容空白）
+最后做 04/05/06（精修）
+
+每做完一个板块就 push，渐进式上线，不要等全做完。
