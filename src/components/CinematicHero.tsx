@@ -1,1 +1,112 @@
-LyoqCiAqIENpbmVtYXRpY0hlcm8g4oCUIEFJLU5hdGl2ZSBQcm9kdWN0aW9uIEVuZ2luZQogKgogKiBSZWFjdCB3cmFwcGVyIGZvciB0aGUgVGhyZWUuanMgaGVybyBzY2VuZS4KICogSGFuZGxlcyBjYW52YXMgbW91bnRpbmcsIHNjcm9sbCB0cmFja2luZywgbW91c2UgcGFyYWxsYXgsCiAqIHJlc2l6ZSwgcmVkdWNlZC1tb3Rpb24sIG1vZGUgc3dpdGNoaW5nLCBhbmQgY2xlYW51cC4KICovCmltcG9ydCB7IHVzZUVmZmVjdCwgdXNlUmVmLCB1c2VDYWxsYmFjayB9IGZyb20gInJlYWN0IjsKaW1wb3J0IHR5cGUgeyBIZXJvTW9kZSB9IGZyb20gIi4uL3RocmVlL2NyZWF0ZUNpbmVtYXRpY0hlcm8iOwoKdHlwZSBIZXJvU2NlbmUgPSB7CiAgdXBkYXRlOiAocHJvZ3Jlc3M6IG51bWJlciwgbW9kZTogSGVyb01vZGUsIG1vdXNlWDogbnVtYmVyLCBtb3VzZVk6IG51bWJlcikgPT4gdm9pZDsKICByZXNpemU6ICh3OiBudW1iZXIsIGg6IG51bWJlcikgPT4gdm9pZDsKICBkaXNwb3NlOiAoKSA9PiB2b2lkOwp9OwoKaW50ZXJmYWNlIENpbmVtYXRpY0hlcm9Qcm9wcyB7CiAgcHJvZ3Jlc3M6IG51bWJlcjsKICBtb2RlPzogSGVyb01vZGU7CiAgcmVkdWNlZE1vdGlvbj86IGJvb2xlYW47Cn0KCmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIENpbmVtYXRpY0hlcm8oeyBwcm9ncmVzcywgbW9kZSA9ICJkZWZhdWx0IiwgcmVkdWNlZE1vdGlvbiB9OiBDaW5lbWF0aWNIZXJvUHJvcHMpIHsKICBjb25zdCBjYW52YXNSZWYgPSB1c2VSZWY8SFRNTENhbnZhc0VsZW1lbnQ+KG51bGwpOwogIGNvbnN0IHNjZW5lUmVmID0gdXNlUmVmPEhlcm9TY2VuZSB8IG51bGw+KG51bGwpOwogIGNvbnN0IG1vdXNlUmVmID0gdXNlUmVmKHsgeDogMCwgeTogMCB9KTsKICBjb25zdCBwcm9ncmVzc1JlZiA9IHVzZVJlZihwcm9ncmVzcyk7CiAgY29uc3QgbW9kZVJlZiA9IHVzZVJlZjxIZXJvTW9kZT4obW9kZSk7CiAgY29uc3QgcmFmUmVmID0gdXNlUmVmKDApOwogIGNvbnN0IGxvYWRlZFJlZiA9IHVzZVJlZihmYWxzZSk7CgogIC8vIEtlZXAgcmVmcyBpbiBzeW5jCiAgcHJvZ3Jlc3NSZWYuY3VycmVudCA9IHByb2dyZXNzOwogIG1vZGVSZWYuY3VycmVudCA9IG1vZGU7CgogIC8vIExhenktbG9hZCBUaHJlZS5qcyBzY2VuZQogIHVzZUVmZmVjdCgoKSA9PiB7CiAgICBjb25zdCBjYW52YXMgPSBjYW52YXNSZWYuY3VycmVudDsKICAgIGlmICghY2FudmFzIHx8IGxvYWRlZFJlZi5jdXJyZW50KSByZXR1cm47CiAgICBsb2FkZWRSZWYuY3VycmVudCA9IHRydWU7CgogICAgbGV0IGRpc3Bvc2VkID0gZmFsc2U7CgogICAgaW1wb3J0KCIuLi90aHJlZS9jcmVhdGVDaW5lbWF0aWNIZXJvIikudGhlbigobW9kKSA9PiB7CiAgICAgIGlmIChkaXNwb3NlZCkgcmV0dXJuOwogICAgICBjb25zdCBzY2VuZSA9IG1vZC5jcmVhdGVDaW5lbWF0aWNIZXJvKGNhbnZhcyk7CiAgICAgIHNjZW5lUmVmLmN1cnJlbnQgPSBzY2VuZTsKCiAgICAgIC8vIEVuc3VyZSBjb3JyZWN0IGluaXRpYWwgc2l6ZSDigJQgY2FudmFzIGxheW91dCBtYXkgbm90IGJlIHJlYWR5IHlldAogICAgICBjb25zdCBmaXQgPSAoKSA9PiB7CiAgICAgICAgY29uc3QgdyA9IGNhbnZhcy5jbGllbnRXaWR0aCB8fCB3aW5kb3cuaW5uZXJXaWR0aDsKICAgICAgICBjb25zdCBoID0gY2FudmFzLmNsaWVudEhlaWdodCB8fCB3aW5kb3cuaW5uZXJIZWlnaHQ7CiAgICAgICAgc2NlbmUucmVzaXplKHcsIGgpOwogICAgICB9OwogICAgICBmaXQoKTsKICAgICAgcmVxdWVzdEFuaW1hdGlvbkZyYW1lKGZpdCk7CgogICAgICBjb25zdCB0aWNrID0gKCkgPT4gewogICAgICAgIGlmIChkaXNwb3NlZCkgcmV0dXJuOwogICAgICAgIHNjZW5lLnVwZGF0ZSgKICAgICAgICAgIHByb2dyZXNzUmVmLmN1cnJlbnQsCiAgICAgICAgICBtb2RlUmVmLmN1cnJlbnQsCiAgICAgICAgICBtb3VzZVJlZi5jdXJyZW50LngsCiAgICAgICAgICBtb3VzZVJlZi5jdXJyZW50LnkKICAgICAgICApOwogICAgICAgIHJhZlJlZi5jdXJyZW50ID0gcmVxdWVzdEFuaW1hdGlvbkZyYW1lKHRpY2spOwogICAgICB9OwogICAgICByYWZSZWYuY3VycmVudCA9IHJlcXVlc3RBbmltYXRpb25GcmFtZSh0aWNrKTsKICAgIH0pOwoKICAgIHJldHVybiAoKSA9PiB7CiAgICAgIGRpc3Bvc2VkID0gdHJ1ZTsKICAgICAgY2FuY2VsQW5pbWF0aW9uRnJhbWUocmFmUmVmLmN1cnJlbnQpOwogICAgICBzY2VuZVJlZi5jdXJyZW50Py5kaXNwb3NlKCk7CiAgICAgIHNjZW5lUmVmLmN1cnJlbnQgPSBudWxsOwogICAgICBsb2FkZWRSZWYuY3VycmVudCA9IGZhbHNlOyAvLyByZXNldCBzbyBSZWFjdCBTdHJpY3QgTW9kZSByZS1tb3VudCB3b3JrcwogICAgfTsKICB9LCBbXSk7CgogIC8vIE1vdXNlIHRyYWNraW5nCiAgY29uc3QgaGFuZGxlUG9pbnRlck1vdmUgPSB1c2VDYWxsYmFjaygoZTogUmVhY3QuUG9pbnRlckV2ZW50KSA9PiB7CiAgICBtb3VzZVJlZi5jdXJyZW50ID0gewogICAgICB4OiAoZS5jbGllbnRYIC8gd2luZG93LmlubmVyV2lkdGgpICogMiAtIDEsCiAgICAgIHk6IC0oZS5jbGllbnRZIC8gd2luZG93LmlubmVySGVpZ2h0KSAqIDIgKyAxLAogICAgfTsKICB9LCBbXSk7CgogIC8vIFJlc2l6ZQogIHVzZUVmZmVjdCgoKSA9PiB7CiAgICBjb25zdCBvblJlc2l6ZSA9ICgpID0+IHsKICAgICAgc2NlbmVSZWYuY3VycmVudD8ucmVzaXplKHdpbmRvdy5pbm5lcldpZHRoLCB3aW5kb3cuaW5uZXJIZWlnaHQpOwogICAgfTsKICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKCJyZXNpemUiLCBvblJlc2l6ZSk7CiAgICBvblJlc2l6ZSgpOwogICAgcmV0dXJuICgpID0+IHdpbmRvdy5yZW1vdmVFdmVudExpc3RlbmVyKCJyZXNpemUiLCBvblJlc2l6ZSk7CiAgfSwgW10pOwoKICBpZiAocmVkdWNlZE1vdGlvbikgewogICAgcmV0dXJuICgKICAgICAgPGRpdiBzdHlsZT17eyB3aWR0aDogIjEwMCUiLCBoZWlnaHQ6ICIxMDAlIiwgYmFja2dyb3VuZDogIiMwODA4MGMiIH19IC8+CiAgICApOwogIH0KCiAgcmV0dXJuICgKICAgIDxjYW52YXMKICAgICAgY2xhc3NOYW1lPSJoZXJvX19jYW52YXMiCiAgICAgIHJlZj17Y2FudmFzUmVmfQogICAgICBzdHlsZT17eyBkaXNwbGF5OiAiYmxvY2siLCB3aWR0aDogIjEwMCUiLCBoZWlnaHQ6ICIxMDAlIiB9fQogICAgICBvblBvaW50ZXJNb3ZlPXtoYW5kbGVQb2ludGVyTW92ZX0KICAgIC8+CiAgKTsKfQo=
+/**
+ * CinematicHero — AI-Native Production Engine
+ *
+ * React wrapper for the Three.js hero scene.
+ * Handles canvas mounting, scroll tracking, mouse parallax,
+ * resize, reduced-motion, mode switching, and cleanup.
+ */
+import { useEffect, useRef, useCallback } from "react";
+import type { HeroMode } from "../three/createCinematicHero";
+
+type HeroScene = {
+  update: (progress: number, mode: HeroMode, mouseX: number, mouseY: number) => void;
+  resize: (w: number, h: number) => void;
+  dispose: () => void;
+};
+
+interface CinematicHeroProps {
+  progress: number;
+  mode?: HeroMode;
+  reducedMotion?: boolean;
+}
+
+export default function CinematicHero({ progress, mode = "default", reducedMotion }: CinematicHeroProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sceneRef = useRef<HeroScene | null>(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const progressRef = useRef(progress);
+  const modeRef = useRef<HeroMode>(mode);
+  const rafRef = useRef(0);
+  const loadedRef = useRef(false);
+
+  // Keep refs in sync
+  progressRef.current = progress;
+  modeRef.current = mode;
+
+  // Lazy-load Three.js scene
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || loadedRef.current) return;
+    loadedRef.current = true;
+
+    let disposed = false;
+
+    import("../three/createCinematicHero").then((mod) => {
+      if (disposed) return;
+      const scene = mod.createCinematicHero(canvas);
+      sceneRef.current = scene;
+
+      // Ensure correct initial size — canvas layout may not be ready yet
+      const fit = () => {
+        const w = canvas.clientWidth || window.innerWidth;
+        const h = canvas.clientHeight || window.innerHeight;
+        scene.resize(w, h);
+      };
+      fit();
+      requestAnimationFrame(fit);
+
+      const tick = () => {
+        if (disposed) return;
+        scene.update(
+          progressRef.current,
+          modeRef.current,
+          mouseRef.current.x,
+          mouseRef.current.y
+        );
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    });
+
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(rafRef.current);
+      sceneRef.current?.dispose();
+      sceneRef.current = null;
+      loadedRef.current = false; // reset so React Strict Mode re-mount works
+    };
+  }, []);
+
+  // Mouse tracking
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    mouseRef.current = {
+      x: (e.clientX / window.innerWidth) * 2 - 1,
+      y: -(e.clientY / window.innerHeight) * 2 + 1,
+    };
+  }, []);
+
+  // Resize
+  useEffect(() => {
+    const onResize = () => {
+      sceneRef.current?.resize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", onResize);
+    onResize();
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  if (reducedMotion) {
+    return (
+      <div style={{ width: "100%", height: "100%", background: "#08080c" }} />
+    );
+  }
+
+  return (
+    <canvas
+      className="hero__canvas"
+      ref={canvasRef}
+      style={{ display: "block", width: "100%", height: "100%" }}
+      onPointerMove={handlePointerMove}
+    />
+  );
+}
