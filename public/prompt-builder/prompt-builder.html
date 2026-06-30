@@ -232,6 +232,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .suggestion-option:hover{border-color:var(--blue);background:rgba(90,138,154,0.1)}
 .agent-msg.classification{background:rgba(138,106,170,0.08);border:1px solid rgba(138,106,170,0.2);align-self:flex-start}
 .classification-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:4px;margin-bottom:4px}
+.agent-status-indicator{font-size:10px;color:var(--muted);margin-left:auto;padding:2px 6px;border-radius:8px;transition:color 0.2s}
+.agent-status-indicator[data-state="thinking"]{color:var(--blue)}
+.agent-status-indicator[data-state="done"]{color:var(--green)}
+.agent-status-indicator[data-state="error"]{color:var(--danger)}
+.preset-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:12px;background:rgba(90,138,154,0.12);color:var(--blue);font-weight:600;font-size:11px}
 .classification-badge.mode{background:rgba(138,106,170,0.12);color:var(--accent)}
 .classification-badge.cat{background:rgba(90,138,154,0.12);color:var(--blue)}
 .classification-badge.ok{background:rgba(106,154,122,0.12);color:var(--green)}
@@ -489,12 +494,14 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <div class="agent-col" id="agentCol">
     <div class="agent-col-header">
       <span>🤖 AI Agent</span>
+      <span class="agent-status-indicator" id="agentStatusIndicator"></span>
       <span class="byok-status" id="byokStatus"></span>
     </div>
+    <div class="active-preset-indicator" id="activePresetIndicator" style="display:none;padding:6px 12px;font-size:11px;border-bottom:1px solid var(--border);background:rgba(90,138,154,0.04)"></div>
     <div class="agent-messages" id="agentMessages">
       <div class="agent-welcome" id="agentWelcome">
         <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px 8px;line-height:1.6">
-          Describe what you want to create.<br>I'll help you find the right category and build your prompt.
+          Describe what you want to create.<br>I'll deliver a finished, model-ready prompt in one go.
         </div>
       </div>
     </div>
@@ -2285,8 +2292,9 @@ function renderAgentMessage(msg){
   if(msg.type==="suggestion"){
     div.innerHTML=`<div class="suggestion-title">${escHtml(msg.title||"Suggestions")}</div><div class="suggestion-options">${(msg.options||[]).map(o=>`<button class="suggestion-option" onclick="handleSuggestionClick('${escHtml(o.value||o)}')">${escHtml(o.label||o)}</button>`).join("")}</div>`;
   }else if(msg.type==="classification"){
-    const c=msg.classification||{};
-    div.innerHTML=`<div class="msg-role">Agent</div><div>${escHtml(msg.text||"")}</div><div style="margin-top:6px"><span class="classification-badge mode">${escHtml(c.mode||"")}</span><span class="classification-badge cat">${escHtml(c.category||"")}</span>${c.chipCount?`<span class="classification-badge ok">${c.chipCount} chips</span>`:""}</div>${c.subject?`<div class="classification-review"><div style="font-weight:500">${escHtml(c.subject)}</div>${c.scene?`<div style="color:var(--muted);font-size:10px;margin-top:2px">${escHtml(c.scene)}</div>`:""}</div>`:""}<div class="classification-actions"><button class="btn primary" onclick="handleClassificationConfirm()">确认</button><button class="btn" onclick="handleClassificationReject()">重来</button></div>`;
+    /* Agent-FIRST removed the confirm/reject card — degrade
+       any stray classification message to plain text. */
+    div.innerHTML=`<div class="msg-role">Agent</div><div>${escHtml(msg.text||"")}</div>`;
   }else if(msg.type==="reflection"){
     div.innerHTML=`<div class="msg-role"><span class="reflection-icon">💡</span>Reflection</div><div>${escHtml(msg.text||"")}</div><div class="reflection-actions"><button class="btn primary" onclick="handleReflectionAccept()" style="font-size:10px;padding:3px 8px">应用建议</button><button class="btn" onclick="handleReflectionDismiss()" style="font-size:10px;padding:3px 8px">忽略</button></div>`;
   }else if(msg.type==="error"){
@@ -2310,148 +2318,248 @@ function scrollAgentToBottom(){
 /* CONVERSATIONAL AGENT — LAYER 1: INTENT DIALOGUE                 */
 /* ═══════════════════════════════════════════════════════════════ */
 
-function buildLayer1SystemPrompt(){
-  return `You are a creative intent classifier for Prompt Builder. Your job is to understand what the user wants to create and classify it through natural conversation.
-
-## MODES AND CATEGORIES
-
-### Film & TV (mode: "film"):
-- moodboard: Mood Board (tone/atmosphere reference)
-- styleframe: Style Frame (key moment visual)
-- colorscript: Color Script (color progression)
-- storyboard: Storyboard (sequential shot breakdown) — Film mode ONLY
-- char-design: Character Design (full concept sheet)
-- char-sheet: Character Sheet (multi-angle consistency)
-- char-expression: Expression Sheet (emotional range)
-- env-concept: Scene Concept (environment concept art)
-- env-panorama: Panorama / Establishing (wide shot)
-- env-lighting: Lighting Study (lighting variation)
-- sb-sequence: Shot Sequence (multi-shot narrative)
-- sb-comic: Comic / Manga Page (panel storytelling)
-- prop-design: Prop / Costume Design
-- vfx-ref: VFX Reference (effects breakdown)
-- film-poster: Film Poster / Key Art
-
-### General (mode: "general"):
-- product: Product Visuals
-- poster: Poster & Campaign
-- branding: Branding & Packaging
-- grid-collage: Grids & Collages
-- portrait: Portrait & People
-- avatar: Avatars & Profile
-- scene: Scene & Illustration
-- gen-storyboard: Storyboard & Sequence (comics, KV) — General mode ONLY
-- ui-mockup: UI Mockups
-- typography: Typography & Text
-- infographic: Infographic
-- map: Map
-- tech-diagram: Technical Diagrams
-- academic: Academic Figures
-- slides: Slides & Visual Docs
-- assets: Assets & Props
-- editing: Editing Workflows
-
-## CHIP VALUES (pick from these exact values only):
-
-Film chips:
-Shot sizes: ECU, CU, MCU, MS, MLS, FS, WS, EWS, OTS, POV, Insert Shot, Two-Shot, Cowboy Shot
-Angles: Eye Level, Low Angle, High Angle, Dutch Angle, Worm's Eye, Bird's Eye, Overhead, POV, Canted
-Lenses: 14mm Ultra Wide, 24mm Wide, 35mm Standard, 50mm Normal, 85mm Portrait, 100mm Macro, 135mm Telephoto, 200mm Telephoto, Anamorphic, Tilt-Shift, Fisheye
-Lighting: Three-Point Key, Rembrandt, Butterfly/Paramount, Split Lighting, Loop Lighting, Silhouette, Practical Lighting, Motivated Natural, High-Key, Low-Key, Chiaroscuro, Neon/LED Color, Firelight, Moonlight, God Rays / volumetric
-Time: Magic Hour (Sunrise), Golden Hour, Blue Hour, High Noon, Overcast Day, Night — Practical Lights, Night — Moonlit, Dawn, Dusk, Storm / Dark Sky, Night — Neon
-Moods: Tense, Eerie, Melancholic, Euphoric, Nostalgic, Oppressive, Serene, Chaotic, Intimate, Desolate, Mysterious, Triumphant, Foreboding, Whimsical, Gritty, Dreamlike
-Style refs: Wes Anderson, Ridley Scott, Denis Villeneuve, Wong Kar-wai, Stanley Kubrick, Akira Kurosawa, Terrence Malick, David Fincher, Christopher Nolan, Hayao Miyazaki, Park Chan-wook, Coen Brothers, Alfonso Cuarón, Bong Joon-ho
-
-General chips:
-Styles: photorealistic, oil painting, watercolor, digital art, 3D render, anime, pixel art, pencil sketch, claymation, paper craft, stained glass, low poly, isometric, cyberpunk, vaporwave, art nouveau, art deco, brutalist, bauhaus, surrealism, pop art, impressionism, minimalism, photographic, cinematic, illustration, concept art, matte painting
-Lighting: natural light, golden hour, blue hour, studio softbox, dramatic lighting, neon glow, volumetric light, rim light, backlit, chiaroscuro, candlelight, moonlight, holographic, bioluminescent, aurora, harsh shadows, diffused
-Moods: serene, epic, mysterious, joyful, melancholic, tense, whimsical, dark, ethereal, nostalgic, futuristic, cozy, dystopian, romantic, isolated, triumphant, eerie, vibrant
-Colors: warm tones, cool tones, monochrome, complementary, analogous, triadic, pastel, neon, earth tones, jewel tones, muted palette, high contrast, desaturated, dual-tone, iridescent
-Details: highly detailed, 8K resolution, ultra-realistic, sharp focus, depth of field, film grain, lens flare, motion blur, bokeh, caustics, subsurface scattering, ray tracing, ambient occlusion, volumetric, octane render, unreal engine 5, cinematic color grading
-
-## RESPONSE FORMAT
-
-Always respond with valid JSON. No markdown, no explanation outside the JSON.
-
-{
-  "type": "text" | "suggestion" | "classification",
-  "text": "<your conversational response>",
-  "classification": {
-    "mode": "film" or "general",
-    "category": "<exact category id>",
-    "subject": "<main subject description>",
-    "scene": "<environment/background description>",
-    "chipCount": <number of chips selected>,
-    "chips": { "shotSize": [], "angle": [], "lens": [], "filmLighting": [], "time": [], "filmMood": [], "filmStyle": [], "style": [], "lighting": [], "mood": [], "color": [], "detail": [] }
-  },
-  "suggestions": [{"label": "Option A", "value": "option-a"}, ...]
-}
-
-## RULES
-
-1. If the user's intent is CLEAR, classify directly: set type="classification", include full classification object.
-2. If AMBIGUOUS, set type="suggestion" and offer 2-3 category options as clickable cards.
-3. For CONVERSATIONAL turns (edits, questions, refinements), set type="text" and respond naturally.
-4. When user says "确认" or "可以" or clicks confirm → output type="classification" with full classification.
-5. When user says "重来" or "不是" → acknowledge and ask them to re-describe.
-6. When user asks to EDIT (e.g., "change mood to X"), update chips and re-confirm with type="classification".
-7. Proactively suggest RELATED outputs: char-sheet→char-expression, env-concept→env-panorama, film-poster→styleframe.
-8. Keep responses SHORT and conversational. Max 2-3 sentences.
-9. Chip values MUST exactly match the lists above. Category IDs MUST exactly match.
-10. "storyboard" = Film mode, "gen-storyboard" = General mode. Never mix them.
-11. Keep user's language (Chinese ok), but technical/camera terms in English.`;
-}
+/* DEPRECATED — replaced by inline system prompt in runAgent().
+   Kept as no-op so any stray external reference does not throw. */
+function buildLayer1SystemPrompt(){return "";}
 
 function sendAgentMessage(){
   const input=document.getElementById("agentInput");
   const text=(input.value||"").trim();
   if(!text)return;
-
   const st=updateBYOKIndicator();
   if(!st.configured){showAgentSetupGuide();return;}
-
   input.value="";
-
   agentConversation.push({role:"user",text:text});
   renderAgentMessage({role:"user",type:"text",text:text});
+  runAgent(text);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* AGENT-FIRST — single-call prompt generation                     */
+/* ═══════════════════════════════════════════════════════════════ */
+
+async function runAgent(userMessage){
+  const cfg=loadApiConfig();
+  if(!cfg.apiKey){showAgentSetupGuide();return;}
+
+  const targetModel=document.getElementById("agentModel")?.value||currentModel;
+  // Switch builder model up-front so chip rendering targets the correct mode.
+  if(targetModel!==currentModel){
+    currentModel=targetModel;
+    document.querySelectorAll(".model-option").forEach(o=>o.classList.toggle("active",o.dataset.model===targetModel));
+    renderModelSwitcher();renderModelParams();renderFormula();
+    document.querySelectorAll(".gpt-only").forEach(el=>{el.style.display=currentModel==="gptimage"?"":"none"});
+    const neg=document.getElementById("sec-negative");if(neg)neg.style.display=currentModel==="midjourney"?"":"none";
+  }
+
+  // Compact preset catalog the LLM picks from. Includes id, name, category,
+  // a brief field list, and the first 12 chip options per field. Big enough
+  // for accurate routing, small enough to fit cheaply in a system prompt.
+  const presetCatalog=FILM_LLM_PRESETS.map(p=>({
+    id:p.id,
+    name:p.name,
+    desc:p.desc||"",
+    category:p.category,
+    compatibleModels:p.compatibleModels||[],
+    fields:(p.fields||[]).map(f=>({id:f.id,label:f.label,type:f.type,required:!!f.required})),
+    chips:p.fieldOptions?Object.fromEntries(
+      Object.entries(p.fieldOptions).map(([k,v])=>[k,(Array.isArray(v)?v:[]).slice(0,12)])
+    ):{}
+  }));
+
+  const modelRules=LLM_SYSTEM_PROMPTS[targetModel]||"";
+
+  // Current context (for refinement turns)
+  const curPrompt=getFullPrompt();
+  const activePresetId=currentLLMPreset?currentLLMPreset.id:null;
+  const activeChips=activePresetId?{...llmFieldValues}:null;
+
+  const systemPrompt=`You are a cinematographer's creative partner for AI image/video generation.
+
+The user describes a visual intent. Your job: produce a finished, model-ready prompt immediately. No back-and-forth, no confirmation cards — just deliver the prompt.
+
+AVAILABLE PRESETS (pick the best fit for the user's intent — match by category meaning, not keyword overlap):
+${JSON.stringify(presetCatalog,null,1)}
+
+TARGET MODEL: ${targetModel}
+MODEL RULES:
+${modelRules}
+
+CURRENT CONTEXT:
+${curPrompt?`Previous prompt:\n"""\n${curPrompt}\n"""\n`:"This is the first turn — produce a brand-new prompt."}
+${activePresetId?`Active preset: ${activePresetId}`:""}
+${activeChips?`Active chip values: ${JSON.stringify(activeChips)}`:""}
+
+RECENT CONVERSATION:
+${agentConversation.slice(-6).map(m=>`${m.role==="user"?"User":"Assistant"}: ${m.text}`).join("\n")}
+
+Respond ONLY with a single valid JSON object. No markdown fences, no commentary, no leading or trailing text.
+
+{
+  "preset_id": "<id from the AVAILABLE PRESETS list above, or null if no preset fits>",
+  "chip_selections": {"<field_id>": "<exact-match value(s) from that field's chips list, comma-separated if multiple>"},
+  "prompt": "<the complete, polished, model-ready prompt text — ready to paste into ${targetModel}>",
+  "rationale": "<one sentence: why this preset and these chip choices fit the request>",
+  "clarifying_question": "<optional: ONLY set if the intent is genuinely ambiguous and you cannot pick a preset. Otherwise leave empty.>"
+}
+
+RULES:
+- chip_selections values MUST be exact matches from the preset's chips list (case-sensitive). Pick the most fitting one or two; do not invent values.
+- If this is a refinement turn (previous prompt present), preserve preset choice unless the user explicitly redirects.
+- The prompt field must be a single, finished, ready-to-paste string in the target model's idiomatic format (see MODEL RULES).
+- If clarifying_question is set, leave prompt empty and wait for the user to answer.
+- Keep rationale to one short sentence.
+- Match the user's language for rationale and clarifying_question (Chinese OK), but keep technical/camera terms in English.`;
 
   const typingEl=document.getElementById("agentTyping");
   if(typingEl)typingEl.style.display="flex";
+  setAgentStatus("thinking");
+  if(_llmAbort)_llmAbort.abort();
+  _llmAbort=new AbortController();
 
-  const cfg=loadApiConfig();
-  const model=document.getElementById("agentModel").value;
-  const sysPrompt=buildLayer1SystemPrompt();
-  const historyMsgs=agentConversation.slice(-10).map(m=>`${m.role==="user"?"User":"Assistant"}: ${m.text}`).join("\n");
-  const fullPrompt=historyMsgs+"\n\nClassify the latest user message. Respond with JSON only.";
+  try{
+    const callFn=cfg.provider==="anthropic"?callAnthropic:callOpenAI;
+    const raw=await callFn(cfg.apiKey,cfg.baseUrl,cfg.modelName,systemPrompt,userMessage||"Generate a prompt.",_llmAbort.signal,2000);
+    let cleaned=raw.replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();
+    const s=cleaned.indexOf("{"),e=cleaned.lastIndexOf("}");
+    if(s>=0&&e>s)cleaned=cleaned.substring(s,e+1);
+    let result;
+    try{result=JSON.parse(cleaned);}
+    catch(parseErr){
+      renderAgentMessage({role:"agent",type:"error",text:"Could not parse agent response. Try rephrasing."});
+      setAgentStatus("error");
+      return;
+    }
 
-  const ac=new AbortController();_llmAbort=ac;
-  const callFn=cfg.provider==="anthropic"?callAnthropic:callOpenAI;
+    // Clarifying question path — ask and wait for next user turn.
+    if(result.clarifying_question && result.clarifying_question.trim()){
+      const q=result.clarifying_question.trim();
+      agentConversation.push({role:"agent",text:q,type:"text"});
+      renderAgentMessage({role:"agent",type:"text",text:q});
+      setAgentStatus("idle");
+      return;
+    }
 
-  callFn(cfg.apiKey,cfg.baseUrl,cfg.modelName,sysPrompt,fullPrompt,ac.signal,800)
-    .then(raw=>{
-      let cleaned=raw.replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();
-      const s=cleaned.indexOf("{"),e=cleaned.lastIndexOf("}");
-      if(s>=0&&e>s)cleaned=cleaned.substring(s,e+1);
-      const json=JSON.parse(cleaned);
-      agentConversation.push({role:"agent",text:json.text||"",type:json.type||"text"});
-
-      if(json.type==="classification"&&json.classification){
-        const c=json.classification;
-        agentBrief={category:c.category,subject:c.subject,scene:c.scene,chips:c.chips||{},mode:c.mode};
-        renderAgentMessage({role:"agent",type:"classification",text:json.text,classification:{mode:c.mode,category:c.category,subject:c.subject,scene:c.scene,chipCount:Object.values(c.chips||{}).reduce((n,a)=>n+(Array.isArray(a)?a.length:0),0)}});
-      }else if(json.type==="suggestion"&&json.suggestions){
-        renderAgentMessage({role:"agent",type:"suggestion",text:json.text,title:"Did you mean?",options:json.suggestions});
-      }else{
-        renderAgentMessage({role:"agent",type:"text",text:json.text||"Tell me more about what you want to create."});
+    // Apply preset (if any) — this also opens step 2 and renders LLM fields.
+    if(result.preset_id){
+      const preset=FILM_LLM_PRESETS.find(p=>p.id===result.preset_id);
+      if(preset){
+        applyPresetById(preset.id);
       }
-    })
-    .catch(err=>{
-      renderAgentMessage({role:"agent",type:"error",text:"Error: "+(err.message||"Failed to get response")});
-    })
-    .finally(()=>{
-      if(typingEl)typingEl.style.display="none";
-      _llmAbort=null;
-    });
+    }
+
+    // Apply chip selections, prefilling values and highlighting matching chips.
+    if(result.chip_selections && currentLLMPreset){
+      applyAgentChips(result.chip_selections, currentLLMPreset);
+    }
+
+    // Set the finished prompt into the preview editor.
+    if(result.prompt && result.prompt.trim()){
+      pushPromptVersion(getFullPrompt());
+      setPreviewPrompt(result.prompt.trim());
+      enhancedPromptText=result.prompt.trim();
+    }
+
+    const summaryParts=[];
+    if(result.preset_id){
+      const p=FILM_LLM_PRESETS.find(pp=>pp.id===result.preset_id);
+      if(p)summaryParts.push(p.name);
+    }
+    const rationale=(result.rationale||"Prompt ready.").trim();
+    const summary=summaryParts.length?`✓ ${summaryParts.join(" · ")} — ${rationale}`:`✓ ${rationale}`;
+    agentConversation.push({role:"agent",text:summary,type:"text"});
+    renderAgentMessage({role:"agent",type:"text",text:summary});
+    updatePresetIndicator();
+    setAgentStatus("done");
+  }catch(err){
+    if(err.name==="AbortError")return;
+    renderAgentMessage({role:"agent",type:"error",text:"Error: "+(err.message||"Failed to get response")});
+    setAgentStatus("error");
+  }finally{
+    if(typingEl)typingEl.style.display="none";
+    _llmAbort=null;
+  }
+}
+
+function setAgentStatus(state){
+  // state: idle | thinking | done | error — used by indicator UI.
+  const ind=document.getElementById("agentStatusIndicator");
+  if(!ind)return;
+  ind.dataset.state=state;
+  const labels={idle:"",thinking:"Thinking…",done:"Ready",error:"Error"};
+  ind.textContent=labels[state]||"";
+}
+
+function updatePresetIndicator(){
+  const el=document.getElementById("activePresetIndicator");
+  if(!el)return;
+  if(currentLLMPreset){
+    el.innerHTML=`<span class="preset-pill">${escHtml(currentLLMPreset.icon||"")} ${escHtml(currentLLMPreset.name)}</span>`;
+    el.style.display="";
+  }else{
+    el.innerHTML="";
+    el.style.display="none";
+  }
+}
+
+function setPreviewPrompt(text){
+  const el=document.getElementById("previewEditor");
+  if(el)el.value=text;
+}
+
+function applyPresetById(presetId){
+  const preset=FILM_LLM_PRESETS.find(p=>p.id===presetId);
+  if(!preset)return;
+  // If the preset declares compatibleModels and current target isn't in it,
+  // we still proceed — agent already accounted for target model in the prompt.
+  currentLLMPreset=preset;
+  llmFieldValues={};
+  assemblyMode="llm";
+  // Ensure we're in step 2 with the LLM fields section visible.
+  if(typeof goToStep==="function")goToStep(2);
+  setBuilderFormVisible(false);
+  const llmSec=document.getElementById("llmFieldsSection");
+  if(llmSec)llmSec.style.display="";
+  renderLLMFields(preset);
+}
+
+function applyAgentChips(chipSelections, preset){
+  // chipSelections: { fieldId: "value1, value2" }
+  if(!preset||!chipSelections)return;
+  const fields=preset.fields||[];
+  fields.forEach(f=>{
+    const raw=chipSelections[f.id];
+    if(!raw)return;
+    const val=String(raw).trim();
+    llmFieldValues[f.id]=val;
+    if(f.type==="chips"){
+      const chipsContainer=document.getElementById("llm-chips-"+f.id);
+      if(chipsContainer){
+        const values=val.split(",").map(v=>v.trim().toLowerCase()).filter(Boolean);
+        chipsContainer.querySelectorAll(".llm-chip").forEach(chip=>{
+          const cv=chip.dataset.value;
+          if(cv&&values.includes(cv.toLowerCase()))chip.classList.add("active");
+        });
+        const presetOpts=(preset.fieldOptions&&preset.fieldOptions[f.id])||[];
+        const customValues=val.split(",").map(v=>v.trim()).filter(v=>v&&!presetOpts.some(o=>o.toLowerCase()===v.toLowerCase()));
+        if(customValues.length){
+          const customWrap=document.getElementById("llm-custom-"+f.id);
+          if(customWrap){
+            customWrap.style.display="";
+            const customInp=customWrap.querySelector("input");
+            if(customInp)customInp.value=customValues.join(", ");
+          }
+        }
+        llmFieldValues[f.id]=getLLMChipValues(f.id);
+      }
+    }else{
+      const el=document.getElementById("llm-"+f.id);
+      if(el&&(el.tagName==="INPUT"||el.tagName==="TEXTAREA"||el.tagName==="SELECT")){
+        el.value=val;
+        el.dispatchEvent(new Event("input",{bubbles:true}));
+      }
+    }
+  });
 }
 
 function handleSuggestionClick(value){
@@ -2459,174 +2567,30 @@ function handleSuggestionClick(value){
   if(input){input.value=value;sendAgentMessage();}
 }
 
-function handleClassificationConfirm(){
-  if(!agentBrief)return;
-  agentLayer="layer2";
-  const indicator=document.createElement("div");
-  indicator.className="agent-layer-indicator";
-  indicator.textContent="Layer 2: Generation";
-  const msgEl=document.getElementById("agentMessages");
-  if(msgEl)msgEl.appendChild(indicator);
-  renderAgentMessage({role:"agent",type:"text",text:`Got it — ${agentBrief.category}. Generating your prompt now...`});
-  startLayer2(agentBrief);
-}
-
+/* Classification confirm/reject removed — agent-FIRST architecture
+   produces finished prompts in one call. Stubs kept so any stale
+   external reference (legacy bookmark, cached HTML) is a no-op. */
+function handleClassificationConfirm(){}
 function handleClassificationReject(){
-  agentBrief=null;
   agentConversation=[];
   const msgEl=document.getElementById("agentMessages");
   if(msgEl)msgEl.innerHTML="";
   const welcome=document.getElementById("agentWelcome");
   if(welcome)welcome.style.display="";
-  renderAgentMessage({role:"agent",type:"text",text:"No problem. Describe what you want to create and I'll find the right category."});
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
-/* CONVERSATIONAL AGENT — LAYER 2: GENERATION & ITERATION          */
+/* LEGACY LAYER 2 — removed. runAgent() now handles generation     */
+/* in one call. startLayer2() kept as a no-op shim.                */
 /* ═══════════════════════════════════════════════════════════════ */
 
-function startLayer2(brief){
-  if(!brief)return;
-
-  const model=document.getElementById("agentModel").value;
-  if(model!==currentModel){
-    currentModel=model;
-    document.querySelectorAll(".model-option").forEach(o=>o.classList.toggle("active",o.dataset.model===model));
-    renderModelSwitcher();renderModelParams();renderFormula();
-  }
-
-  if(brief.mode!==currentMode)switchMode(brief.mode);
-  silentClear();
-
-  const subjectEl=document.getElementById("subject");
-  const sceneEl=document.getElementById("scene");
-  if(subjectEl)subjectEl.value=brief.subject||"";
-  if(sceneEl)sceneEl.value=brief.scene||"";
-
-  const matchFromList=(list,values)=>{
-    const s=new Set();
-    (values||[]).forEach(v=>{
-      const exact=list.find(item=>item.toLowerCase()===v.toLowerCase());
-      if(exact)s.add(exact);
-    });
-    return s;
-  };
-
-  if(brief.mode==="film"){
-    const chips=brief.chips||{};
-    if(chips.shotSize){selectedShotSize=matchFromList(FILM_SHOT_SIZE,chips.shotSize);renderChips("shotSizeChips",FILM_SHOT_SIZE,selectedShotSize);}
-    if(chips.angle){selectedAngle=matchFromList(FILM_ANGLE,chips.angle);renderChips("angleChips",FILM_ANGLE,selectedAngle);}
-    if(chips.lens){selectedLens=matchFromList(FILM_LENS,chips.lens);renderChips("lensChips",FILM_LENS,selectedLens);}
-    if(chips.ar){selectedAR=matchFromList(FILM_AR,chips.ar);renderChips("arChips",FILM_AR,selectedAR);}
-    if(chips.filmLighting){selectedFilmLighting=matchFromList(FILM_LIGHTING_SETUP,chips.filmLighting);renderChips("filmLightingChips",FILM_LIGHTING_SETUP,selectedFilmLighting);}
-    if(chips.time){selectedTime=matchFromList(FILM_TIME,chips.time);renderChips("timeChips",FILM_TIME,selectedTime);}
-    if(chips.filmMood){selectedFilmMood=matchFromList(FILM_MOOD_FILM,chips.filmMood);renderChips("filmMoodChips",FILM_MOOD_FILM,selectedFilmMood);}
-    if(chips.filmStyle){selectedFilmStyle=matchFromList(FILM_STYLE_REF,chips.filmStyle);renderChips("filmStyleChips",FILM_STYLE_REF,selectedFilmStyle);}
-  }else{
-    const chips=brief.chips||{};
-    if(chips.style){selectedStyles=matchFromList(STYLES,chips.style);renderChips("styleChips",STYLES,selectedStyles);}
-    if(chips.lighting){selectedLighting=matchFromList(LIGHTING,chips.lighting);renderChips("lightingChips",LIGHTING,selectedLighting);}
-    if(chips.mood){selectedMood=matchFromList(MOODS,chips.mood);renderChips("moodChips",MOODS,selectedMood);}
-    if(chips.color){selectedColor=matchFromList(COLORS,chips.color);renderChips("colorChips",COLORS,selectedColor);}
-    if(chips.detail){selectedDetail=matchFromList(DETAILS,chips.detail);renderChips("detailChips",DETAILS,selectedDetail);}
-  }
-
-  const matchCat=brief.category==="gen-storyboard"?"gen-storyboard":brief.category;
-  const preset=FILM_LLM_PRESETS.find(p=>p.category===matchCat||p.id===matchCat);
-
-  if(preset){
-    currentLLMPreset=preset;
-    mapClassifierToPreset({mode:brief.mode,category:brief.category,subject:brief.subject,scene:brief.scene,chips:brief.chips},preset);
-    assemblyMode="llm";
-    goToStep(2);
-    setBuilderFormVisible(false);
-    const llmSec=document.getElementById("llmFieldsSection");
-    if(llmSec)llmSec.style.display="";
-    renderLLMFields(preset);
-    Object.keys(llmFieldValues).forEach(fid=>{
-      const val=llmFieldValues[fid];
-      if(!val)return;
-      const el=document.getElementById("llm-"+fid);
-      if(el&&(el.tagName==="INPUT"||el.tagName==="TEXTAREA")){
-        el.value=val;
-        el.dispatchEvent(new Event("input",{bubbles:true}));
-      }
-      // Fix: prefill + highlight LLM chip fields (previously skipped, which wiped AI-filled values on Generate)
-      const chipsContainer=document.getElementById("llm-chips-"+fid);
-      if(chipsContainer){
-        const values=val.split(",").map(v=>v.trim().toLowerCase());
-        chipsContainer.querySelectorAll(".llm-chip").forEach(chip=>{
-          const chipVal=chip.dataset.value;
-          if(chipVal&&values.includes(chipVal.toLowerCase())){chip.classList.add("active");}
-        });
-        const presetOpts=(preset.fieldOptions&&preset.fieldOptions[fid])||[];
-        const customValues=val.split(",").map(v=>v.trim()).filter(v=>v&&!presetOpts.some(o=>o.toLowerCase()===v.toLowerCase()));
-        if(customValues.length){
-          const customWrap=document.getElementById("llm-custom-"+fid);
-          if(customWrap){
-            customWrap.style.display="";
-            const customInp=customWrap.querySelector("input");
-            if(customInp)customInp.value=customValues.join(", ");
-          }
-        }
-        llmFieldValues[fid]=getLLMChipValues(fid);
-      }
-    });
-    renderAgentMessage({role:"agent",type:"text",text:`Routed to ${preset.name}. Prompt assembled. You can refine by describing changes.`});
-    const curPrompt=getFullPrompt();
-    if(curPrompt)pushPromptVersion(curPrompt);
-    agentReflect(curPrompt);
-  }else{
-    assemblyMode="standard";
-    goToStep(2);
-    updatePreview();
-    renderAgentMessage({role:"agent",type:"text",text:"Fields filled. Prompt assembled in preview. You can refine by describing changes."});
-    const curPrompt=getFullPrompt();
-    if(curPrompt)pushPromptVersion(curPrompt);
-  }
-}
+function startLayer2(){}
 
 function handleLayer2Refinement(userMessage){
-  const cfg=loadApiConfig();
-  if(!cfg.apiKey)return;
-
-  const curPrompt=getFullPrompt();
-  if(!curPrompt)return;
-
-  const typingEl=document.getElementById("agentTyping");
-  if(typingEl)typingEl.style.display="flex";
-
-  const sysPrompt=`You are a prompt refinement assistant. The user has an AI image generation prompt and wants to modify it. Rewrite the prompt according to their request while preserving the overall structure and quality.
-
-Current prompt:
-${curPrompt}
-
-User request: ${userMessage}
-
-Respond with ONLY the refined prompt text. No explanation, no markdown, no code fences.`;
-
-  const callFn=cfg.provider==="anthropic"?callAnthropic:callOpenAI;
-  const ac=new AbortController();_llmAbort=ac;
-
-  callFn(cfg.apiKey,cfg.baseUrl,cfg.modelName,sysPrompt,"Please refine this prompt.",ac.signal,1200)
-    .then(raw=>{
-      let refined=raw.replace(/^```[\s\S]*?\n/,"").replace(/\n```$/,"").trim();
-      if(refined.length>20){
-        pushPromptVersion(curPrompt);
-        document.getElementById("previewEditor").value=refined;
-        renderAgentMessage({role:"agent",type:"text",text:"Prompt refined. Check the preview."});
-        agentReflect(refined);
-      }else{
-        renderAgentMessage({role:"agent",type:"text",text:"Couldn't refine the prompt. Try a more specific request."});
-      }
-    })
-    .catch(err=>{
-      renderAgentMessage({role:"agent",type:"error",text:"Refinement failed: "+(err.message||"Unknown error")});
-    })
-    .finally(()=>{
-      if(typingEl)typingEl.style.display="none";
-      _llmAbort=null;
-    });
+  /* Agent-FIRST: refinement is just another runAgent() call.
+     getFullPrompt(), currentLLMPreset, and llmFieldValues are already
+     consulted inside runAgent() to build the CURRENT CONTEXT block. */
+  return runAgent(userMessage);
 }
 
 function agentReflect(prompt){
@@ -2684,16 +2648,9 @@ function handleAgentInputKeydown(e){
     e.preventDefault();
     const text=(e.target.value||"").trim();
     if(!text)return;
-    if(agentLayer==="layer2"&&(text==="撤销"||text==="undo")){
+    if(text==="撤销"||text==="undo"){
       agentUndo();
       e.target.value="";
-      return;
-    }
-    if(agentLayer==="layer2"&&agentBrief){
-      renderAgentMessage({role:"user",type:"text",text:text});
-      agentConversation.push({role:"user",text:text});
-      e.target.value="";
-      handleLayer2Refinement(text);
       return;
     }
     sendAgentMessage();
@@ -2977,41 +2934,11 @@ function applyEnhanced(){
 function copyEnhanced(){if(!enhancedPromptText){toast("Generate first");return}navigator.clipboard.writeText(enhancedPromptText).then(()=>toast("Copied"))}
 
 /* ═══════════════════════════════════════════════════════════════ */
-/* LEGACY AI INTENT — kept for mapClassifierToPreset only          */
+/* LEGACY mapClassifierToPreset — superseded by applyAgentChips    */
+/* (which is called directly from runAgent).                       */
 /* ═══════════════════════════════════════════════════════════════ */
 
-function mapClassifierToPreset(json,preset){
-  // Reset LLM field values
-  llmFieldValues={};
-  const fields=preset.fields||[];
-  if(!fields.length)return;
-
-  // Strategy: map subject to first required text field, scene to second text/textarea field
-  const textFields=fields.filter(f=>f.type==="text"||f.type==="textarea");
-  const requiredTextField=fields.find(f=>f.required&&(f.type==="text"||f.type==="textarea"));
-
-  if(requiredTextField){
-    llmFieldValues[requiredTextField.id]=json.subject||"";
-  }else if(textFields[0]){
-    llmFieldValues[textFields[0].id]=json.subject||"";
-  }
-  if(textFields.length>1&&textFields[1]!==requiredTextField){
-    llmFieldValues[textFields[1].id]=json.scene||"";
-  }
-
-  // Map chips to preset fieldOptions where possible
-  const chipMap=json.chips||{};
-  const allChips=[...(chipMap.filmMood||[]),...(chipMap.mood||[]),...(chipMap.filmStyle||[]),...(chipMap.style||[])];
-
-  fields.filter(f=>f.type==="chips").forEach(f=>{
-    const opts=f.id&&preset.fieldOptions?f.id:null;
-    if(opts&&preset.fieldOptions[opts]){
-      // Find matching chip values
-      const matched=allChips.filter(c=>preset.fieldOptions[opts].some(o=>o.toLowerCase()===c.toLowerCase()));
-      if(matched.length)llmFieldValues[f.id]=matched.join(", ");
-    }
-  });
-}
+function mapClassifierToPreset(){}
 
 /* ═══════════════════════════════════════════════════════════════ */
 /* INIT                                                            */
