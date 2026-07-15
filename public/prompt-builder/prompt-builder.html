@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-b: structured+role+qr+refine+errUX 2026-07-15 -->
+<!-- pb-sprint-c: pb-library star/tags/search/export 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -165,6 +165,29 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .history-item .hist-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:12px}
 .history-item .hist-meta{font-size:10px;color:var(--dim);white-space:nowrap}
 .history-empty{font-size:13px;color:var(--dim);padding:20px;text-align:center}
+/* Library (Sprint C) */
+.library-wrap{margin-top:18px}
+.library-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.library-toolbar input[type="search"],.library-toolbar input[type="text"]{
+  flex:1;min-width:120px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--radius-sm);
+  font-size:12px;font-family:'Josefin Sans',sans-serif;background:rgba(255,255,255,0.55);color:var(--text)
+}
+.library-tag-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.library-tag-chip{padding:2px 8px;border-radius:999px;border:1px solid var(--border2);font-size:10px;cursor:pointer;color:var(--muted);background:transparent}
+.library-tag-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(138,106,170,0.1)}
+.library-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto}
+.library-item{padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:rgba(255,255,255,0.35);font-size:12px}
+.library-item .lib-text{color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45;margin-bottom:6px;cursor:pointer}
+.library-item .lib-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:10px;color:var(--dim)}
+.library-item .lib-tag{padding:1px 6px;border-radius:4px;background:rgba(90,138,154,0.12);color:var(--blue)}
+.library-item .lib-actions{display:flex;gap:6px;margin-left:auto}
+.library-item .lib-actions button{padding:2px 8px;font-size:10px;border:1px solid var(--border2);border-radius:6px;background:transparent;cursor:pointer;color:var(--muted);font-family:'Josefin Sans',sans-serif}
+.library-item .lib-actions button:hover{color:var(--accent);border-color:var(--accent)}
+.library-item .lib-actions button.danger:hover{color:var(--danger);border-color:var(--danger)}
+.btn-star.saved{color:var(--accent);border-color:var(--accent)}
+.library-empty{font-size:13px;color:var(--dim);padding:16px;text-align:center}
+.library-import-label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--muted)}
+.library-import-label input{display:none}
 
 /* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:var(--radius);background:var(--accent);color:#fff;font-size:14px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999}.toast.show{opacity:1}
@@ -488,15 +511,29 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <!-- Actions -->
     <div class="actions">
       <button class="btn primary" onclick="copyPrompt()">Copy Prompt ⌘C</button>
+      <button class="btn btn-star" id="starPromptBtn" onclick="starCurrentPrompt()" title="Save to Library (favorites)">★ Save</button>
       <button class="btn btn-enhance" onclick="openEnhanceModal()" title="跳过表单，用自然语言直接描述想法，AI 格式化为 prompt">✦ AI Rewrite</button>
       <button class="btn" onclick="exportMd()">Export .md</button>
       <button class="btn btn-danger" onclick="confirmClearAll()">Clear All</button>
     </div>
 
-    <!-- History -->
+    <!-- History (auto last-10; not the Library) -->
     <div>
       <label class="field-label" style="margin-bottom:10px">Recent Prompts</label>
       <div class="history-list" id="historyList"><div class="history-empty">No prompts yet</div></div>
+    </div>
+
+    <!-- Library — explicit favorites (pb-library) -->
+    <div class="library-wrap" id="libraryWrap">
+      <label class="field-label" style="margin-bottom:10px">Library <span style="font-size:10px;color:var(--dim);text-transform:none;font-weight:400;margin-left:6px">★ saved prompts · separate from Recent</span></label>
+      <div class="library-toolbar">
+        <input type="search" id="librarySearch" placeholder="Search prompts…" oninput="renderLibrary()" />
+        <input type="text" id="libraryTagInput" placeholder="tag filter (optional)" oninput="renderLibrary()" style="max-width:140px" />
+        <button class="btn" type="button" onclick="exportLibrary()" style="padding:6px 10px;font-size:11px">Export</button>
+        <label class="library-import-label btn" style="padding:6px 10px">Import<input type="file" id="libraryImportFile" accept="application/json,.json" onchange="importLibraryFile(event)" /></label>
+      </div>
+      <div class="library-tag-filters" id="libraryTagFilters"></div>
+      <div class="library-list" id="libraryList"><div class="library-empty">No saved prompts yet — click ★ Save on a finished prompt</div></div>
     </div>
   </div>
 
@@ -2240,6 +2277,180 @@ function pushHistory(){const text=getFullPrompt();if(!text.trim())return;const h
 function renderHistory(){const h=getHistory();const el=document.getElementById("historyList");if(!h.length){el.innerHTML='<div class="history-empty">No prompts yet</div>';return}el.innerHTML=h.map((item,i)=>{const t=new Date(item.time);const now=Date.now();const diff=now-item.time;let ts;if(diff<60000)ts='just now';else if(diff<3600000)ts=Math.floor(diff/60000)+'m ago';else if(diff<86400000)ts=Math.floor(diff/3600000)+'h ago';else ts=(t.getMonth()+1)+'/'+t.getDate()+' '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');const modeTag=item.mode?` · ${item.mode==="film"?"Film":"General"}`:"";return `<div class="history-item" title="Click to restore" onclick="loadHistory(${i})"><span class="hist-text">${escHtml(item.text.slice(0,80))}</span><span class="hist-meta">${item.model}${modeTag} · ${ts}</span></div>`}).join("")}
 function loadHistory(i){const h=getHistory();if(!h[i])return;const item=h[i];document.getElementById('previewEditor').value=item.text;if(item.model&&item.model!==currentModel){currentModel=item.model;renderModelSwitcher();renderModelParams();renderFormula();document.querySelectorAll('.gpt-only').forEach(el=>{el.style.display=currentModel==='gptimage'?'':'none'});document.getElementById('sec-negative').style.display=currentModel==='midjourney'?'':'none'}toast('Restored from history')}
 
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* LIBRARY (Sprint C) — explicit favorites; key: pb-library        */
+/* Coexists with pb-history (auto last-10). Never writes history.  */
+/* ═══════════════════════════════════════════════════════════════ */
+
+let _libraryTagFilter=""; // active chip filter (empty = all)
+
+function getLibrary(){
+  try{return JSON.parse(localStorage.getItem("pb-library")||"[]")}catch{return[]}
+}
+function saveLibrary(list){
+  localStorage.setItem("pb-library",JSON.stringify(Array.isArray(list)?list:[]));
+}
+function uidLib(){
+  return "lib_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8);
+}
+function starCurrentPrompt(){
+  const prompt=(typeof getFullPrompt==="function"?getFullPrompt():"")||(document.getElementById("previewEditor")?.value||"");
+  if(!prompt.trim()){toast("Nothing to save — generate a prompt first");return}
+  const tagsRaw=prompt.includes("#")?[]:[]; // tags via prompt dialog
+  let note="";
+  let tags=[];
+  const tagStr=window.prompt("Optional tags (comma-separated). Leave empty to skip.","")||"";
+  tags=tagStr.split(",").map(t=>t.trim()).filter(Boolean).slice(0,12);
+  const noteStr=window.prompt("Optional note (one line). Leave empty to skip.","")||"";
+  note=noteStr.trim().slice(0,200);
+  const entry={
+    id:uidLib(),
+    prompt:prompt.trim(),
+    model:currentModel||"",
+    preset_id:(typeof currentLLMPreset!=="undefined"&&currentLLMPreset)?(currentLLMPreset.id||null):null,
+    tags,
+    note:note||undefined,
+    time:Date.now()
+  };
+  const list=getLibrary();
+  // de-dupe identical prompt+model at top
+  const filtered=list.filter(x=>!(x.prompt===entry.prompt&&x.model===entry.model));
+  filtered.unshift(entry);
+  saveLibrary(filtered.slice(0,200));
+  renderLibrary();
+  const btn=document.getElementById("starPromptBtn");
+  if(btn){btn.classList.add("saved");btn.textContent="★ Saved";setTimeout(()=>{btn.classList.remove("saved");btn.textContent="★ Save"},1600)}
+  toast("Saved to Library");
+}
+function deleteLibraryItem(id){
+  if(!id)return;
+  const list=getLibrary().filter(x=>x.id!==id);
+  saveLibrary(list);
+  renderLibrary();
+  toast("Removed");
+}
+function loadLibraryItem(id){
+  const item=getLibrary().find(x=>x.id===id);
+  if(!item)return;
+  const el=document.getElementById("previewEditor");
+  if(el)el.value=item.prompt;
+  if(item.model&&item.model!==currentModel){
+    currentModel=item.model;
+    if(typeof renderModelSwitcher==="function")renderModelSwitcher();
+    if(typeof renderModelParams==="function")renderModelParams();
+    if(typeof renderFormula==="function")renderFormula();
+    document.querySelectorAll(".model-option").forEach(o=>o.classList.toggle("active",o.dataset.model===item.model));
+  }
+  if(item.preset_id&&typeof applyPresetById==="function"){
+    try{applyPresetById(item.preset_id)}catch(e){}
+  }
+  toast("Loaded from Library");
+}
+function copyLibraryItem(id){
+  const item=getLibrary().find(x=>x.id===id);
+  if(!item)return;
+  navigator.clipboard.writeText(item.prompt).then(()=>toast("Copied!")).catch(()=>toast("Copy failed"));
+}
+function allLibraryTags(list){
+  const s=new Set();
+  (list||[]).forEach(it=>(it.tags||[]).forEach(t=>s.add(t)));
+  return Array.from(s).sort((a,b)=>a.localeCompare(b));
+}
+function setLibraryTagFilter(tag){
+  _libraryTagFilter=(_libraryTagFilter===tag)?"":tag;
+  renderLibrary();
+}
+function renderLibrary(){
+  const list=getLibrary();
+  const el=document.getElementById("libraryList");
+  const tagBar=document.getElementById("libraryTagFilters");
+  if(!el)return;
+  const q=(document.getElementById("librarySearch")?.value||"").trim().toLowerCase();
+  const tagInput=(document.getElementById("libraryTagInput")?.value||"").trim().toLowerCase();
+  const tags=allLibraryTags(list);
+  if(tagBar){
+    if(!tags.length)tagBar.innerHTML="";
+    else tagBar.innerHTML=tags.map(t=>`<button type="button" class="library-tag-chip${_libraryTagFilter===t?" active":""}" onclick="setLibraryTagFilter(${JSON.stringify(t)})">${escHtml(t)}</button>`).join("");
+  }
+  let filtered=list.slice();
+  if(_libraryTagFilter)filtered=filtered.filter(it=>(it.tags||[]).includes(_libraryTagFilter));
+  if(tagInput)filtered=filtered.filter(it=>(it.tags||[]).some(t=>t.toLowerCase().includes(tagInput)));
+  if(q)filtered=filtered.filter(it=>{
+    const blob=((it.prompt||"")+" "+(it.note||"")+" "+(it.model||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
+    return blob.includes(q);
+  });
+  if(!filtered.length){
+    el.innerHTML='<div class="library-empty">'+(list.length?"No matches":"No saved prompts yet — click ★ Save on a finished prompt")+'</div>';
+    return;
+  }
+  el.innerHTML=filtered.map(it=>{
+    const t=new Date(it.time||0);
+    const when=isNaN(t)?"":t.toLocaleString();
+    const tagHtml=(it.tags||[]).map(tg=>`<span class="lib-tag">${escHtml(tg)}</span>`).join("");
+    const note=it.note?`<span title="note">· ${escHtml(it.note)}</span>`:"";
+    return `<div class="library-item" data-id="${escHtml(it.id)}">
+      <div class="lib-text" onclick="loadLibraryItem(${JSON.stringify(it.id)})" title="Load into preview">${escHtml((it.prompt||"").slice(0,180))}${(it.prompt||"").length>180?"…":""}</div>
+      <div class="lib-meta">
+        <span>${escHtml(it.model||"?")}</span>
+        ${it.preset_id?`<span>· ${escHtml(it.preset_id)}</span>`:""}
+        <span>· ${escHtml(when)}</span>
+        ${note}
+        ${tagHtml}
+        <span class="lib-actions">
+          <button type="button" onclick="event.stopPropagation();copyLibraryItem(${JSON.stringify(it.id)})">Copy</button>
+          <button type="button" class="danger" onclick="event.stopPropagation();deleteLibraryItem(${JSON.stringify(it.id)})">Delete</button>
+        </span>
+      </div>
+    </div>`;
+  }).join("");
+}
+function exportLibrary(){
+  const list=getLibrary();
+  if(!list.length){toast("Library is empty");return}
+  const blob=new Blob([JSON.stringify({version:1,exported:new Date().toISOString(),items:list},null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="prompt-builder-library-"+new Date().toISOString().slice(0,10)+".json";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast("Library exported");
+}
+function importLibraryFile(ev){
+  const file=ev&&ev.target&&ev.target.files&&ev.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(String(reader.result||""));
+      const incoming=Array.isArray(data)?data:(Array.isArray(data.items)?data.items:null);
+      if(!incoming){toast("Invalid library file");return}
+      const cleaned=incoming.map(it=>({
+        id:it.id||uidLib(),
+        prompt:String(it.prompt||it.text||"").trim(),
+        model:it.model||"",
+        preset_id:it.preset_id||null,
+        tags:Array.isArray(it.tags)?it.tags.map(String).filter(Boolean).slice(0,12):[],
+        note:it.note?String(it.note).slice(0,200):undefined,
+        time:it.time||Date.now()
+      })).filter(it=>it.prompt);
+      if(!cleaned.length){toast("No prompts in file");return}
+      const existing=getLibrary();
+      const byKey=new Map(existing.map(x=>[x.id,x]));
+      cleaned.forEach(it=>{byKey.set(it.id,it)});
+      // also merge by prompt+model for id-less dupes
+      const merged=Array.from(byKey.values()).sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,200);
+      saveLibrary(merged);
+      renderLibrary();
+      toast("Imported "+cleaned.length+" item(s)");
+    }catch(e){
+      toast("Import failed: invalid JSON");
+    }
+    if(ev&&ev.target)ev.target.value="";
+  };
+  reader.readAsText(file);
+}
+
 /* ═══════════════════════════════════════════════════════════════ */
 /* FORMULA                                                         */
 /* ═══════════════════════════════════════════════════════════════ */
@@ -3437,6 +3648,7 @@ function init(){
   renderChips("styleChips",STYLES,selectedStyles);renderChips("lightingChips",LIGHTING,selectedLighting);
   renderChips("moodChips",MOODS,selectedMood);renderChips("colorChips",COLORS,selectedColor);renderChips("detailChips",DETAILS,selectedDetail);
   renderHistory();
+  renderLibrary();
   updateFilmSectionVisibility();
   // Collapse all sections except Subject
   ["sec-style","sec-camera","sec-lighting","sec-mood","sec-color","sec-detail","sec-negative","sec-params","sec-gpt-type","sec-gpt-layout","sec-gpt-constraints","sec-shot","sec-film-lighting","sec-film-style"].forEach(id=>{
