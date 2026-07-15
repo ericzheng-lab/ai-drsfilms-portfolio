@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-a: MODEL_CARDS V8.1 mock=1 2026-07-15 -->
+<!-- pb-sprint-b: structured+role+qr+refine+errUX 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -249,6 +249,15 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .reflection-actions{display:flex;gap:6px;margin-top:6px}
 .reflection-actions .btn{padding:3px 8px;font-size:10px}
 .agent-msg.error{background:rgba(196,106,122,0.1);border:1px solid rgba(196,106,122,0.25);color:var(--danger);align-self:flex-start}
+.agent-quick-replies{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.agent-qr-btn{padding:4px 10px;border:1px solid var(--border2);border-radius:999px;background:rgba(255,255,255,0.7);font-size:11px;font-family:'Josefin Sans',sans-serif;color:var(--text);cursor:pointer;transition:border-color .15s,background .15s}
+.agent-qr-btn:hover{border-color:var(--accent);background:rgba(138,106,170,0.1)}
+.agent-refine-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.agent-refine-btn{padding:3px 8px;border:1px dashed var(--border2);border-radius:6px;background:transparent;font-size:10px;font-family:'Josefin Sans',sans-serif;color:var(--muted);cursor:pointer}
+.agent-refine-btn:hover{color:var(--accent);border-color:var(--accent)}
+.agent-error-cta{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:6px;background:var(--accent);color:#fff;font-size:11px;cursor:pointer;border:none;font-family:'Josefin Sans',sans-serif}
+.agent-new-chat{margin-left:auto;padding:2px 8px;font-size:10px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;font-family:'Josefin Sans',sans-serif}
+.agent-new-chat:hover{color:var(--accent);border-color:var(--accent)}
 .agent-typing{padding:8px 14px;display:flex;align-items:center;gap:4px}
 .typing-dot{width:5px;height:5px;border-radius:50%;background:var(--dim);animation:typingBounce 1.2s infinite ease-in-out}
 .typing-dot:nth-child(2){animation-delay:0.15s}
@@ -495,6 +504,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <div class="agent-col" id="agentCol">
     <div class="agent-col-header">
       <span>🤖 AI Agent</span>
+      <button type="button" class="agent-new-chat" id="agentNewChatBtn" onclick="newAgentChat()" title="Start a new conversation">New chat</button>
       <span class="agent-status-indicator" id="agentStatusIndicator"></span>
       <span class="byok-status" id="byokStatus"></span>
     </div>
@@ -2296,22 +2306,36 @@ function renderAgentMessage(msg){
   if(welcome)welcome.style.display="none";
 
   const div=document.createElement("div");
-  div.className="agent-msg "+(msg.type||"text");
+  const roleClass=msg.role==="user"?"user":(msg.type==="error"?"error":"agent");
+  div.className="agent-msg "+(msg.type==="error"?"error":(msg.type==="suggestion"?"suggestion":roleClass));
+  if(msg.type==="text"||!msg.type){
+    div.className="agent-msg "+(msg.role==="user"?"user":"agent");
+  }
   div.dataset.msgId=msg.id||"";
 
   if(msg.type==="suggestion"){
-    div.innerHTML=`<div class="suggestion-title">${escHtml(msg.title||"Suggestions")}</div><div class="suggestion-options">${(msg.options||[]).map(o=>`<button class="suggestion-option" onclick="handleSuggestionClick('${escHtml(o.value||o)}')">${escHtml(o.label||o)}</button>`).join("")}</div>`;
+    div.innerHTML=`<div class="suggestion-title">${escHtml(msg.title||"Suggestions")}</div><div class="suggestion-options">${(msg.options||[]).map(o=>`<button class="suggestion-option" onclick="handleSuggestionClick(${JSON.stringify(String(o))})">${escHtml(String(o))}</button>`).join("")}</div>`;
   }else if(msg.type==="classification"){
-    /* Agent-FIRST removed the confirm/reject card — degrade
-       any stray classification message to plain text. */
     div.innerHTML=`<div class="msg-role">Agent</div><div>${escHtml(msg.text||"")}</div>`;
   }else if(msg.type==="reflection"){
-    div.innerHTML=`<div class="msg-role"><span class="reflection-icon">💡</span>Reflection</div><div>${escHtml(msg.text||"")}</div><div class="reflection-actions"><button class="btn primary" onclick="handleReflectionAccept()" style="font-size:10px;padding:3px 8px">应用建议</button><button class="btn" onclick="handleReflectionDismiss()" style="font-size:10px;padding:3px 8px">忽略</button></div>`;
+    div.innerHTML=`<div class="msg-role"><span class="reflection-icon">💡</span>Reflection</div><div>${escHtml(msg.text||"")}</div>`;
   }else if(msg.type==="error"){
-    div.innerHTML=`<div class="msg-role">Error</div><div>${escHtml(msg.text||"Unknown error")}</div>`;
+    const cta=msg.cta==="settings"?`<button type="button" class="agent-error-cta" onclick="openSettings()">Open Settings</button>`:"";
+    div.innerHTML=`<div class="msg-role">Error</div><div>${escHtml(msg.text||"Unknown error")}</div>${cta}`;
   }else{
     const roleLabel=msg.role==="user"?"You":"Agent";
-    div.innerHTML=`<div class="msg-role">${roleLabel}</div><div>${escHtml(msg.text||"")}</div>`;
+    let extra="";
+    if(msg.role!=="user"&&Array.isArray(msg.quick_replies)&&msg.quick_replies.length){
+      extra+=`<div class="agent-quick-replies">${msg.quick_replies.map(q=>`<button type="button" class="agent-qr-btn" onclick="pickAgentQuickReply(${JSON.stringify(String(q))})">${escHtml(String(q))}</button>`).join("")}</div>`;
+    }
+    if(msg.role!=="user"&&msg.show_refine){
+      extra+=`<div class="agent-refine-bar">
+        <button type="button" class="agent-refine-btn" onclick="refineAgentPrompt('shorter')">shorter</button>
+        <button type="button" class="agent-refine-btn" onclick="refineAgentPrompt('cinematic')">more cinematic</button>
+        <button type="button" class="agent-refine-btn" onclick="refineAgentPrompt('detail')">more detail</button>
+      </div>`;
+    }
+    div.innerHTML=`<div class="msg-role">${roleLabel}</div><div>${escHtml(msg.text||"")}</div>${extra}`;
   }
 
   msgEl.appendChild(div);
@@ -2336,11 +2360,14 @@ function sendAgentMessage(){
   const input=document.getElementById("agentInput");
   const text=(input.value||"").trim();
   if(!text)return;
-  const st=updateBYOKIndicator();
-  if(!st.configured){showAgentSetupGuide();return;}
+  if(!isMockMode()){
+    const st=updateBYOKIndicator();
+    if(!st.configured){showAgentSetupGuide();return;}
+  }
   input.value="";
-  agentConversation.push({role:"user",text:text});
+  agentConversation.push({role:"user",text:text,type:"text"});
   renderAgentMessage({role:"user",type:"text",text:text});
+  saveAgentConversation();
   runAgent(text);
 }
 
@@ -2351,20 +2378,25 @@ function sendAgentMessage(){
 async function runAgent(userMessage){
   const cfg=loadApiConfig();
   const targetModel=document.getElementById("agentModel")?.value||currentModel;
-  if(isMockMode()){
-    // Demo path: canned JSON after short delay — portfolio/smoke tests without keys
-    const typingEl=document.getElementById("agentTyping");
-    if(typingEl)typingEl.style.display="flex";
-    setAgentStatus("thinking");
-    await new Promise(r=>setTimeout(r,500));
-    const result=mockAgentResponse(userMessage,targetModel);
-    if(typingEl)typingEl.style.display="none";
+  const typingEl=document.getElementById("agentTyping");
+
+  async function applyAgentResult(result, isMock){
     if(targetModel!==currentModel){
       currentModel=targetModel;
       document.querySelectorAll(".model-option").forEach(o=>o.classList.toggle("active",o.dataset.model===targetModel));
       renderModelSwitcher();renderModelParams();renderFormula();
       document.querySelectorAll(".gpt-only").forEach(el=>{el.style.display=currentModel==="gptimage"?"":"none"});
       const neg=document.getElementById("sec-negative");if(neg)neg.style.display=currentModel==="midjourney"?"":"none";
+    }
+    // Clarifying question path
+    if(result.clarifying_question && String(result.clarifying_question).trim()){
+      const q=String(result.clarifying_question).trim();
+      const qrs=Array.isArray(result.quick_replies)?result.quick_replies.slice(0,3):[];
+      agentConversation.push({role:"agent",text:q,type:"text",quick_replies:qrs});
+      renderAgentMessage({role:"agent",type:"text",text:q,quick_replies:qrs});
+      saveAgentConversation();
+      setAgentStatus("idle");
+      return;
     }
     if(result.preset_id){
       const preset=FILM_LLM_PRESETS.find(p=>p.id===result.preset_id);
@@ -2373,22 +2405,44 @@ async function runAgent(userMessage){
     if(result.chip_selections && currentLLMPreset){
       applyAgentChips(result.chip_selections, currentLLMPreset);
     }
-    if(result.prompt && result.prompt.trim()){
+    if(result.prompt && String(result.prompt).trim()){
       pushPromptVersion(getFullPrompt());
-      setPreviewPrompt(result.prompt.trim());
-      enhancedPromptText=result.prompt.trim();
+      setPreviewPrompt(String(result.prompt).trim());
+      enhancedPromptText=String(result.prompt).trim();
+    }
+    const summaryParts=[];
+    if(result.preset_id){
+      const p=FILM_LLM_PRESETS.find(pp=>pp.id===result.preset_id);
+      if(p)summaryParts.push(p.name);
     }
     const rationale=(result.rationale||"Prompt ready.").trim();
-    const summary=`✓ mock — ${rationale}`;
-    agentConversation.push({role:"agent",text:summary,type:"text"});
-    renderAgentMessage({role:"agent",type:"text",text:summary});
+    const prefix=isMock?"✓ mock":"✓";
+    const summary=summaryParts.length?`${prefix} ${summaryParts.join(" · ")} — ${rationale}`:`${prefix} ${rationale}`;
+    const entry={role:"agent",text:summary,type:"text",show_refine:!!(result.prompt&&String(result.prompt).trim())};
+    agentConversation.push(entry);
+    renderAgentMessage({role:"agent",type:"text",text:summary,show_refine:entry.show_refine});
+    saveAgentConversation();
     updatePresetIndicator();
     setAgentStatus("done");
+  }
+
+  if(isMockMode()){
+    if(typingEl)typingEl.style.display="flex";
+    setAgentStatus("thinking");
+    await new Promise(r=>setTimeout(r,500));
+    try{
+      const result=mockAgentResponse(userMessage,targetModel);
+      if(typingEl)typingEl.style.display="none";
+      await applyAgentResult(result, true);
+    }catch(e){
+      if(typingEl)typingEl.style.display="none";
+      renderAgentMessage({role:"agent",type:"error",text:String(e.message||e)});
+      setAgentStatus("error");
+    }
     return;
   }
   if(!cfg.apiKey){showAgentSetupGuide();return;}
 
-  // Switch builder model up-front so chip rendering targets the correct mode.
   if(targetModel!==currentModel){
     currentModel=targetModel;
     document.querySelectorAll(".model-option").forEach(o=>o.classList.toggle("active",o.dataset.model===targetModel));
@@ -2397,9 +2451,6 @@ async function runAgent(userMessage){
     const neg=document.getElementById("sec-negative");if(neg)neg.style.display=currentModel==="midjourney"?"":"none";
   }
 
-  // Compact preset catalog the LLM picks from. Includes id, name, category,
-  // a brief field list, and the first 12 chip options per field. Big enough
-  // for accurate routing, small enough to fit cheaply in a system prompt.
   const presetCatalog=FILM_LLM_PRESETS.map(p=>({
     id:p.id,
     name:p.name,
@@ -2413,50 +2464,47 @@ async function runAgent(userMessage){
   }));
 
   const modelRules=buildModelRules(targetModel);
-
-  // Current context (for refinement turns)
   const curPrompt=getFullPrompt();
   const activePresetId=currentLLMPreset?currentLLMPreset.id:null;
   const activeChips=activePresetId?{...llmFieldValues}:null;
 
-  const systemPrompt=`You are a cinematographer's creative partner for AI image/video generation.
+  const systemPrompt=`You are a senior prompt supervisor for film & TV image generation — the person a DP texts when the still needs to be model-ready.
 
-The user describes a visual intent. Your job: produce a finished, model-ready prompt immediately. No back-and-forth, no confirmation cards — just deliver the prompt.
+ROLE
+- Turn the user's visual intent into a finished, paste-ready prompt for the target model.
+- Act by default: deliver a complete prompt on the first turn whenever you can infer a subject.
+- Ask at most ONE clarifying question, and only when the load-bearing slot (main subject) is truly unknown. When you ask, leave prompt empty and provide up to 3 short quick_replies the user can tap.
 
-AVAILABLE PRESETS (pick the best fit for the user's intent — match by category meaning, not keyword overlap):
-${JSON.stringify(presetCatalog,null,1)}
+PRESETS & CHIPS
+- Prefer a preset from AVAILABLE PRESETS when it fits (match by meaning, not keyword overlap).
+- chip_selections values MUST be exact chip strings from that preset (case-sensitive). Prefer catalog chips over free invention.
+- On refinement turns, keep the same preset and unchanged fields; apply a delta only. rationale ≤2 short lines on what changed.
 
+MODEL RULES (mandatory output format for the prompt field)
 TARGET MODEL: ${targetModel}
-MODEL RULES:
 ${modelRules}
 
+AVAILABLE PRESETS:
+${JSON.stringify(presetCatalog,null,1)}
+
 CURRENT CONTEXT:
-${curPrompt?`Previous prompt:\n"""\n${curPrompt}\n"""\n`:"This is the first turn — produce a brand-new prompt."}
+${curPrompt?`Previous prompt:\n"""\n${curPrompt}\n"""\n`:"First turn — produce a brand-new prompt."}
 ${activePresetId?`Active preset: ${activePresetId}`:""}
 ${activeChips?`Active chip values: ${JSON.stringify(activeChips)}`:""}
 
-RECENT CONVERSATION:
-${agentConversation.slice(-6).map(m=>`${m.role==="user"?"User":"Assistant"}: ${m.text}`).join("\n")}
-
-Respond ONLY with a single valid JSON object. No markdown fences, no commentary, no leading or trailing text.
-
+OUTPUT
+Return a single JSON object matching the schema (no markdown fences, no prose outside JSON):
 {
-  "preset_id": "<id from the AVAILABLE PRESETS list above, or null if no preset fits>",
-  "chip_selections": {"<field_id>": "<exact-match value(s) from that field's chips list, comma-separated if multiple>"},
-  "prompt": "<the complete, polished, model-ready prompt text — ready to paste into ${targetModel}>",
-  "rationale": "<one sentence: why this preset and these chip choices fit the request>",
-  "clarifying_question": "<optional: ONLY set if the intent is genuinely ambiguous and you cannot pick a preset. Otherwise leave empty.>"
+  "preset_id": "<id from AVAILABLE PRESETS or null>",
+  "chip_selections": {"<field_id>": "<exact chip value(s), comma-separated if multi>"},
+  "prompt": "<finished model-ready prompt, or empty if asking a clarifying question>",
+  "rationale": "<≤2 lines>",
+  "clarifying_question": "<empty string unless subject is unknown>",
+  "quick_replies": ["optional","up to","three"]
 }
 
-RULES:
-- chip_selections values MUST be exact matches from the preset's chips list (case-sensitive). Pick the most fitting one or two; do not invent values.
-- If this is a refinement turn (previous prompt present), preserve preset choice unless the user explicitly redirects.
-- The prompt field must be a single, finished, ready-to-paste string in the target model's idiomatic format (see MODEL RULES).
-- If clarifying_question is set, leave prompt empty and wait for the user to answer.
-- Keep rationale to one short sentence.
-- Match the user's language for rationale and clarifying_question (Chinese OK), but keep technical/camera terms in English.`;
+Language: match the user for rationale/clarifying_question (Chinese OK); keep camera/technical terms in English.`;
 
-  const typingEl=document.getElementById("agentTyping");
   if(typingEl)typingEl.style.display="flex";
   setAgentStatus("thinking");
   if(_agentAbort)_agentAbort.abort();
@@ -2464,61 +2512,26 @@ RULES:
 
   try{
     const callFn=cfg.provider==="anthropic"?callAnthropic:callOpenAI;
-    const raw=await callFn(cfg.apiKey,cfg.baseUrl,cfg.modelName,systemPrompt,userMessage||"Generate a prompt.",_agentAbort.signal,2000);
-    let cleaned=raw.replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();
-    const s=cleaned.indexOf("{"),e=cleaned.lastIndexOf("}");
-    if(s>=0&&e>s)cleaned=cleaned.substring(s,e+1);
+    const historyMsgs=normalizeAgentMessages(agentConversation);
+    // Ensure last message is the current user turn (already pushed)
+    const raw=await callFn(
+      cfg.apiKey,cfg.baseUrl,cfg.modelName,systemPrompt,
+      userMessage||"Generate a prompt.",
+      _agentAbort.signal,2000,
+      {messages:historyMsgs,jsonSchema:AGENT_JSON_SCHEMA,schemaName:"agent_response"}
+    );
     let result;
-    try{result=JSON.parse(cleaned);}
+    try{result=parseAgentJson(raw);}
     catch(parseErr){
       renderAgentMessage({role:"agent",type:"error",text:"Could not parse agent response. Try rephrasing."});
       setAgentStatus("error");
       return;
     }
-
-    // Clarifying question path — ask and wait for next user turn.
-    if(result.clarifying_question && result.clarifying_question.trim()){
-      const q=result.clarifying_question.trim();
-      agentConversation.push({role:"agent",text:q,type:"text"});
-      renderAgentMessage({role:"agent",type:"text",text:q});
-      setAgentStatus("idle");
-      return;
-    }
-
-    // Apply preset (if any) — this also opens step 2 and renders LLM fields.
-    if(result.preset_id){
-      const preset=FILM_LLM_PRESETS.find(p=>p.id===result.preset_id);
-      if(preset){
-        applyPresetById(preset.id);
-      }
-    }
-
-    // Apply chip selections, prefilling values and highlighting matching chips.
-    if(result.chip_selections && currentLLMPreset){
-      applyAgentChips(result.chip_selections, currentLLMPreset);
-    }
-
-    // Set the finished prompt into the preview editor.
-    if(result.prompt && result.prompt.trim()){
-      pushPromptVersion(getFullPrompt());
-      setPreviewPrompt(result.prompt.trim());
-      enhancedPromptText=result.prompt.trim();
-    }
-
-    const summaryParts=[];
-    if(result.preset_id){
-      const p=FILM_LLM_PRESETS.find(pp=>pp.id===result.preset_id);
-      if(p)summaryParts.push(p.name);
-    }
-    const rationale=(result.rationale||"Prompt ready.").trim();
-    const summary=summaryParts.length?`✓ ${summaryParts.join(" · ")} — ${rationale}`:`✓ ${rationale}`;
-    agentConversation.push({role:"agent",text:summary,type:"text"});
-    renderAgentMessage({role:"agent",type:"text",text:summary});
-    updatePresetIndicator();
-    setAgentStatus("done");
+    await applyAgentResult(result, false);
   }catch(err){
     if(err.name==="AbortError")return;
-    renderAgentMessage({role:"agent",type:"error",text:"Error: "+(err.message||"Failed to get response")});
+    const fe=formatAgentError(err,cfg);
+    renderAgentMessage({role:"agent",type:"error",text:fe.text,cta:fe.cta});
     setAgentStatus("error");
   }finally{
     if(typingEl)typingEl.style.display="none";
@@ -2988,12 +3001,269 @@ async function runEnhance(){
 
 
 /* ── Mock / demo mode (?mock=1) — canned agent JSON, no API key ── */
+
+/* ── Sprint B: agent schema, parse, conversation, structured LLM ── */
+const AGENT_JSON_SCHEMA={
+  type:"object",
+  additionalProperties:false,
+  properties:{
+    preset_id:{type:["string","null"]},
+    chip_selections:{type:"object",additionalProperties:{type:"string"}},
+    prompt:{type:"string"},
+    rationale:{type:"string"},
+    clarifying_question:{type:"string"},
+    quick_replies:{type:"array",items:{type:"string"},maxItems:3}
+  },
+  required:["preset_id","chip_selections","prompt","rationale","clarifying_question","quick_replies"]
+};
+
+function parseAgentJson(raw){
+  if(raw==null)throw new Error("Empty agent response");
+  let cleaned=String(raw).replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();
+  // trailing-comma cleanup (common model slip)
+  cleaned=cleaned.replace(/,\s*([}\]])/g,"$1");
+  const s=cleaned.indexOf("{"),e=cleaned.lastIndexOf("}");
+  if(s>=0&&e>s)cleaned=cleaned.substring(s,e+1);
+  let result;
+  try{result=JSON.parse(cleaned);}
+  catch(err){
+    // second pass: strip control chars outside strings (best-effort)
+    const soft=cleaned.replace(/[\u0000-\u001F]+/g," ");
+    result=JSON.parse(soft);
+  }
+  if(!result||typeof result!=="object")throw new Error("Agent response is not an object");
+  if(result.chip_selections==null||typeof result.chip_selections!=="object")result.chip_selections={};
+  if(result.prompt==null)result.prompt="";
+  if(result.rationale==null)result.rationale="";
+  if(result.clarifying_question==null)result.clarifying_question="";
+  if(!Array.isArray(result.quick_replies))result.quick_replies=[];
+  result.quick_replies=result.quick_replies.filter(x=>typeof x==="string"&&x.trim()).slice(0,3);
+  return result;
+}
+
+function normalizeAgentMessages(list){
+  // API roles: user | assistant (map legacy "agent" → assistant)
+  const out=[];
+  for(const m of (list||[])){
+    if(!m||!m.text)continue;
+    const role=m.role==="user"?"user":"assistant";
+    out.push({role,content:String(m.text)});
+  }
+  // keep last 20
+  return out.slice(-20);
+}
+
+function saveAgentConversation(){
+  try{
+    const targetModel=document.getElementById("agentModel")?.value||currentModel||"";
+    const payload={messages:agentConversation.slice(-40),targetModel,time:Date.now()};
+    localStorage.setItem("pb-conversations",JSON.stringify(payload));
+  }catch(e){}
+}
+
+function loadAgentConversation(){
+  try{
+    const raw=localStorage.getItem("pb-conversations");
+    if(!raw)return null;
+    const data=JSON.parse(raw);
+    if(!data||!Array.isArray(data.messages))return null;
+    return data;
+  }catch(e){return null}
+}
+
+function restoreAgentConversation(){
+  const data=loadAgentConversation();
+  if(!data||!data.messages||!data.messages.length)return;
+  agentConversation=data.messages.map(m=>({
+    role:m.role==="user"?"user":"agent",
+    text:m.text||m.content||"",
+    type:m.type||"text",
+    quick_replies:m.quick_replies||undefined,
+    show_refine:!!m.show_refine
+  }));
+  const welcome=document.getElementById("agentWelcome");
+  if(welcome)welcome.style.display="none";
+  const msgEl=document.getElementById("agentMessages");
+  if(msgEl){
+    // clear non-welcome children
+    Array.from(msgEl.querySelectorAll(".agent-msg")).forEach(n=>n.remove());
+  }
+  agentConversation.forEach(m=>renderAgentMessage({
+    role:m.role,
+    type:m.type||"text",
+    text:m.text,
+    quick_replies:m.quick_replies,
+    show_refine:m.show_refine
+  }));
+  if(data.targetModel){
+    const sel=document.getElementById("agentModel");
+    if(sel){
+      for(const opt of sel.options){if(opt.value===data.targetModel){sel.value=data.targetModel;break}}
+    }
+  }
+  scrollAgentToBottom();
+}
+
+function newAgentChat(){
+  agentConversation=[];
+  try{localStorage.removeItem("pb-conversations")}catch(e){}
+  const msgEl=document.getElementById("agentMessages");
+  if(msgEl)Array.from(msgEl.querySelectorAll(".agent-msg")).forEach(n=>n.remove());
+  const welcome=document.getElementById("agentWelcome");
+  if(welcome)welcome.style.display="";
+  setAgentStatus("idle");
+  toast("New chat");
+}
+
+function pickAgentQuickReply(text){
+  const input=document.getElementById("agentInput");
+  if(input)input.value=text;
+  sendAgentMessage();
+}
+
+function refineAgentPrompt(kind){
+  const map={
+    shorter:"Make the prompt shorter and tighter — keep the same subject and model format.",
+    cinematic:"Make it more cinematic: stronger camera language, lighting, and film-still texture.",
+    detail:"Add more concrete visual detail (materials, atmosphere, lens) without changing the core subject."
+  };
+  const text=map[kind]||kind;
+  const input=document.getElementById("agentInput");
+  if(input)input.value=text;
+  sendAgentMessage();
+}
+
+function formatAgentError(err,cfg){
+  const msg=String(err&&err.message||err||"Failed to get response");
+  const status=err&&err.status;
+  const provider=(cfg&&cfg.provider)||"anthropic";
+  const baseUrl=(cfg&&cfg.baseUrl)||"";
+  if(status===401||/\b401\b|invalid.?api.?key|authentication|unauthorized/i.test(msg)){
+    return {text:"API key rejected (401). Check your key in Settings.",cta:"settings",kind:"auth"};
+  }
+  const isDefaultOpenAI=!baseUrl||/api\.openai\.com/i.test(baseUrl);
+  if(provider==="openai"&&isDefaultOpenAI&&(err&&err.name==="TypeError"||/Failed to fetch|NetworkError|CORS|Load failed/i.test(msg))){
+    return {text:"OpenAI official API blocks browser CORS. Use an OpenAI-compatible endpoint (e.g. OpenRouter) in Base URL, or switch provider to Anthropic.",cta:"settings",kind:"cors"};
+  }
+  return {text:"Error: "+msg,cta:null,kind:"generic"};
+}
+
+async function callOpenAI(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800,options){
+  options=options||{};
+  const url=(baseUrl||"https://api.openai.com/v1").replace(/\/+$/,"")+"/chat/completions";
+  let messages;
+  if(Array.isArray(options.messages)&&options.messages.length){
+    messages=[{role:"system",content:systemPrompt},...options.messages];
+  }else{
+    messages=[{role:"system",content:systemPrompt},{role:"user",content:userMessage}];
+  }
+  const body={model:modelName||"gpt-5.6-terra",messages,max_tokens:maxTokens,temperature:0.7};
+  const wantSchema=!!options.jsonSchema;
+  if(wantSchema){
+    body.response_format={type:"json_schema",json_schema:{name:options.schemaName||"agent_response",strict:true,schema:options.jsonSchema}};
+  }
+  async function once(useSchema){
+    const b=useSchema?body:{model:body.model,messages:body.messages,max_tokens:body.max_tokens,temperature:body.temperature};
+    let res;
+    try{
+      res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},body:JSON.stringify(b),signal});
+    }catch(netErr){
+      netErr.status=0;
+      throw netErr;
+    }
+    if(!res.ok){
+      const errBody=await res.json().catch(()=>({}));
+      const e=new Error(errBody.error?.message||`API error ${res.status}`);
+      e.status=res.status;
+      e.body=errBody;
+      throw e;
+    }
+    return(await res.json()).choices[0].message.content;
+  }
+  if(wantSchema){
+    try{return await once(true);}
+    catch(err){
+      if(err&& (err.status===400||err.status===422||/response_format|json_schema|unrecognized|unsupported/i.test(String(err.message||"")))){
+        return await once(false);
+      }
+      throw err;
+    }
+  }
+  return await once(false);
+}
+
+async function callAnthropic(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800,options){
+  options=options||{};
+  const url=(baseUrl||"https://api.anthropic.com").replace(/\/+$/,"")+"/v1/messages";
+  let messages;
+  if(Array.isArray(options.messages)&&options.messages.length){
+    messages=options.messages.map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content}));
+    // Anthropic requires alternating roles starting with user — merge if needed
+    if(!messages.length||messages[0].role!=="user"){
+      messages=[{role:"user",content:userMessage||"Generate a prompt."},...messages];
+    }
+  }else{
+    messages=[{role:"user",content:userMessage}];
+  }
+  const headers={"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
+  const wantSchema=!!options.jsonSchema;
+  async function once(useSchema){
+    const body={model:modelName||"claude-sonnet-5",max_tokens:maxTokens,system:systemPrompt,messages};
+    if(useSchema){
+      // Official structured outputs: output_config.format
+      body.output_config={format:{type:"json_schema",schema:options.jsonSchema}};
+    }
+    let res;
+    try{
+      res=await fetch(url,{method:"POST",headers,body:JSON.stringify(body),signal});
+    }catch(netErr){
+      netErr.status=0;
+      throw netErr;
+    }
+    if(!res.ok){
+      const errBody=await res.json().catch(()=>({}));
+      const e=new Error(errBody.error?.message||`API error ${res.status}`);
+      e.status=res.status;
+      e.body=errBody;
+      throw e;
+    }
+    const data=await res.json();
+    const block=(data.content||[]).find(c=>c.type==="text")||data.content?.[0];
+    return block&&block.text!=null?block.text:"";
+  }
+  if(wantSchema){
+    try{return await once(true);}
+    catch(err){
+      if(err&&(err.status===400||err.status===422||/output_config|json_schema|unrecognized|unsupported|invalid/i.test(String(err.message||"")))){
+        return await once(false);
+      }
+      throw err;
+    }
+  }
+  return await once(false);
+}
+
+
+/* ── Mock / demo mode (?mock=1) — canned agent JSON, no API key ── */
 function isMockMode(){
   try{return new URLSearchParams(location.search).get("mock")==="1"}catch{return false}
 }
 function mockAgentResponse(userMessage,targetModel){
-  const msg=(userMessage||"").toLowerCase();
-  const isRefine=/shorter|more|less|cinematic|detail|改|更|短/.test(msg);
+  const msg=(userMessage||"").trim();
+  const low=msg.toLowerCase();
+  const isEmpty=!msg;
+  const isVague=msg.length>0&&msg.length<8&&!/(shot|scene|film|cinematic|portrait|landscape|character|env|poster)/i.test(msg);
+  if(isEmpty||isVague&&/^(hi|hello|hey|帮|你好|test)$/i.test(msg)){
+    return {
+      preset_id:null,
+      chip_selections:{},
+      prompt:"",
+      rationale:"",
+      clarifying_question:"Who or what is the main subject of this image?",
+      quick_replies:["lone rider at dusk","film producer in edit bay","neon city alley"]
+    };
+  }
+  const isRefine=/shorter|more|less|cinematic|detail|改|更|短|tighter|atmosphere/.test(low);
   const promptByModel={
     midjourney:"/imagine lone film producer at golden-hour edit bay, medium shot, 35mm anamorphic, warm practicals, cinematic still --ar 16:9 --s 200 --raw",
     flux:"A photorealistic medium shot of a film producer reviewing dailies at golden hour, 35mm anamorphic lens, warm practical lamps, shallow depth of field, subtle film grain",
@@ -3005,22 +3275,9 @@ function mockAgentResponse(userMessage,targetModel){
     chip_selections:{},
     prompt:promptByModel[targetModel]||promptByModel.flux,
     rationale:isRefine?"Mock refine: adjusted tone while keeping structure.":"Mock demo: finished model-ready prompt (no API key used).",
-    clarifying_question:""
+    clarifying_question:"",
+    quick_replies:[]
   };
-}
-
-async function callOpenAI(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800){
-  const url=(baseUrl||"https://api.openai.com/v1").replace(/\/+$/,"")+"/chat/completions";
-  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},body:JSON.stringify({model:modelName||"gpt-5.6-terra",messages:[{role:"system",content:systemPrompt},{role:"user",content:userMessage}],max_tokens:maxTokens,temperature:0.7}),signal});
-  if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`API error ${res.status}`)}
-  return(await res.json()).choices[0].message.content;
-}
-
-async function callAnthropic(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800){
-  const url=(baseUrl||"https://api.anthropic.com").replace(/\/+$/,"")+"/v1/messages";
-  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:modelName||"claude-sonnet-5",max_tokens:maxTokens,system:systemPrompt,messages:[{role:"user",content:userMessage}]}),signal});
-  if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`API error ${res.status}`)}
-  return(await res.json()).content[0].text;
 }
 
 function applyEnhanced(){
@@ -3173,6 +3430,7 @@ function init(){
   updateBYOKIndicator();
   const agentInputEl=document.getElementById("agentInput");
   if(agentInputEl)agentInputEl.addEventListener("keydown",handleAgentInputKeydown);
+  try{restoreAgentConversation()}catch(e){}
   const savedMode=localStorage.getItem("pb-mode");
   if(savedMode==="film"||savedMode==="general"){currentMode=savedMode;document.querySelectorAll(".mode-tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===savedMode))}
   renderStep1();
