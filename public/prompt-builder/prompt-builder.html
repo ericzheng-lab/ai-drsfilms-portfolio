@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
+<!-- pb-sprint-a: MODEL_CARDS V8.1 mock=1 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -555,7 +556,15 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     </div>
     <div class="settings-group">
       <label class="field-label">Model Name</label>
-      <input type="text" id="settingsModelName" placeholder="claude-sonnet-4-20250514">
+      <input type="text" id="settingsModelName" list="modelNameSuggestions" placeholder="claude-sonnet-5">
+      <datalist id="modelNameSuggestions">
+        <option value="claude-sonnet-5"></option>
+        <option value="claude-haiku-4-5"></option>
+        <option value="claude-opus-4-8"></option>
+        <option value="gpt-5.6-terra"></option>
+        <option value="gpt-5.6-sol"></option>
+        <option value="gpt-5.6-luna"></option>
+      </datalist>
     </div>
     <div class="settings-group">
       <label class="field-label">Base URL <span style="color:var(--dim)">(optional)</span></label>
@@ -1328,7 +1337,8 @@ let agentConversation=[];
 let agentBrief=null;
 let agentPromptHistory=[];
 let agentLayer="layer1";
-let _llmAbort=null;
+let _agentAbort=null;
+let _presetAbort=null;
 let _isModelSwitch=false;
 let customPresets=normalizeCustomPresets(JSON.parse(localStorage.getItem("pb-custom-presets")||"[]"));
 
@@ -2340,9 +2350,44 @@ function sendAgentMessage(){
 
 async function runAgent(userMessage){
   const cfg=loadApiConfig();
+  const targetModel=document.getElementById("agentModel")?.value||currentModel;
+  if(isMockMode()){
+    // Demo path: canned JSON after short delay — portfolio/smoke tests without keys
+    const typingEl=document.getElementById("agentTyping");
+    if(typingEl)typingEl.style.display="flex";
+    setAgentStatus("thinking");
+    await new Promise(r=>setTimeout(r,500));
+    const result=mockAgentResponse(userMessage,targetModel);
+    if(typingEl)typingEl.style.display="none";
+    if(targetModel!==currentModel){
+      currentModel=targetModel;
+      document.querySelectorAll(".model-option").forEach(o=>o.classList.toggle("active",o.dataset.model===targetModel));
+      renderModelSwitcher();renderModelParams();renderFormula();
+      document.querySelectorAll(".gpt-only").forEach(el=>{el.style.display=currentModel==="gptimage"?"":"none"});
+      const neg=document.getElementById("sec-negative");if(neg)neg.style.display=currentModel==="midjourney"?"":"none";
+    }
+    if(result.preset_id){
+      const preset=FILM_LLM_PRESETS.find(p=>p.id===result.preset_id);
+      if(preset)applyPresetById(preset.id);
+    }
+    if(result.chip_selections && currentLLMPreset){
+      applyAgentChips(result.chip_selections, currentLLMPreset);
+    }
+    if(result.prompt && result.prompt.trim()){
+      pushPromptVersion(getFullPrompt());
+      setPreviewPrompt(result.prompt.trim());
+      enhancedPromptText=result.prompt.trim();
+    }
+    const rationale=(result.rationale||"Prompt ready.").trim();
+    const summary=`✓ mock — ${rationale}`;
+    agentConversation.push({role:"agent",text:summary,type:"text"});
+    renderAgentMessage({role:"agent",type:"text",text:summary});
+    updatePresetIndicator();
+    setAgentStatus("done");
+    return;
+  }
   if(!cfg.apiKey){showAgentSetupGuide();return;}
 
-  const targetModel=document.getElementById("agentModel")?.value||currentModel;
   // Switch builder model up-front so chip rendering targets the correct mode.
   if(targetModel!==currentModel){
     currentModel=targetModel;
@@ -2367,7 +2412,7 @@ async function runAgent(userMessage){
     ):{}
   }));
 
-  const modelRules=LLM_SYSTEM_PROMPTS[targetModel]||"";
+  const modelRules=buildModelRules(targetModel);
 
   // Current context (for refinement turns)
   const curPrompt=getFullPrompt();
@@ -2414,12 +2459,12 @@ RULES:
   const typingEl=document.getElementById("agentTyping");
   if(typingEl)typingEl.style.display="flex";
   setAgentStatus("thinking");
-  if(_llmAbort)_llmAbort.abort();
-  _llmAbort=new AbortController();
+  if(_agentAbort)_agentAbort.abort();
+  _agentAbort=new AbortController();
 
   try{
     const callFn=cfg.provider==="anthropic"?callAnthropic:callOpenAI;
-    const raw=await callFn(cfg.apiKey,cfg.baseUrl,cfg.modelName,systemPrompt,userMessage||"Generate a prompt.",_llmAbort.signal,2000);
+    const raw=await callFn(cfg.apiKey,cfg.baseUrl,cfg.modelName,systemPrompt,userMessage||"Generate a prompt.",_agentAbort.signal,2000);
     let cleaned=raw.replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();
     const s=cleaned.indexOf("{"),e=cleaned.lastIndexOf("}");
     if(s>=0&&e>s)cleaned=cleaned.substring(s,e+1);
@@ -2477,7 +2522,7 @@ RULES:
     setAgentStatus("error");
   }finally{
     if(typingEl)typingEl.style.display="none";
-    _llmAbort=null;
+    _agentAbort=null;
   }
 }
 
@@ -2667,9 +2712,9 @@ async function runLLMPreset(){
   if(!cfg.apiKey){toast("No API key. Open Settings (gear icon) to configure.");return}
   assemblyMode="llm";
   setBuilderFormVisible(false);
-  if(_llmAbort)_llmAbort.abort();
-  _llmAbort=new AbortController();
-  const signal=_llmAbort.signal;
+  if(_presetAbort)_presetAbort.abort();
+  _presetAbort=new AbortController();
+  const signal=_presetAbort.signal;
   const preset=currentLLMPreset;
   if(preset.compatibleModels&&!preset.compatibleModels.includes(currentModel)){
     if(!confirm(`${preset.name} is optimized for: ${preset.compatibleModels.join(", ")}\nCurrent model: ${currentModel}\nProceed anyway?`))return;
@@ -2679,7 +2724,7 @@ async function runLLMPreset(){
   if(!userMsg){toast("Fill in at least one field");return}
   // Build system prompt with model-specific format instructions
   let sysPrompt=(preset.systemPrompt||buildSystemPrompt(preset.catName||preset.category,preset.tmpl||preset.name,preset.fields,preset.constraints||{must_keep:[],avoid:[]},currentModel))+`\n\nTarget image model: ${currentModel}\nMode: ${currentMode==="film"?"Film & TV production":"General image generation"}`;
-  const modelPrompts=LLM_SYSTEM_PROMPTS[currentModel];
+  const modelPrompts=buildModelRules(currentModel);
   if(modelPrompts&&!sysPrompt.includes("OUTPUT FORMAT"))sysPrompt+=`\n\nADDITIONAL MODEL INSTRUCTIONS:\n${modelPrompts}`;
   if(currentModel==="gptimage"){
     sysPrompt+=`\n\nOUTPUT FORMAT: You MUST output a valid JSON object matching this structure:
@@ -2703,8 +2748,8 @@ Output ONLY the JSON object. No markdown fences, no explanation, no extra text.`
   if(btn){btn.textContent="Generating...";btn.disabled=true}
   try{
     let result;
-    if(cfg.provider==="anthropic")result=await callAnthropic(cfg.apiKey,cfg.baseUrl,cfg.modelName,sysPrompt,userMsg,signal);
-    else result=await callOpenAI(cfg.apiKey,cfg.baseUrl,cfg.modelName,sysPrompt,userMsg,signal);
+    if(cfg.provider==="anthropic")result=await callAnthropic(cfg.apiKey,cfg.baseUrl,cfg.modelName,sysPrompt,userMsg,signal,1600);
+    else result=await callOpenAI(cfg.apiKey,cfg.baseUrl,cfg.modelName,sysPrompt,userMsg,signal,1600);
     // Display in preview textarea
     const el=document.getElementById("previewEditor");
     if(currentModel==="gptimage"){
@@ -2726,20 +2771,109 @@ Output ONLY the JSON object. No markdown fences, no explanation, no extra text.`
 /* LLM ENHANCE MODAL                                               */
 /* ═══════════════════════════════════════════════════════════════ */
 
-const LLM_SYSTEM_PROMPTS={
-midjourney:`You are an expert Midjourney v6.1 prompt engineer. Transform the user's idea into an optimized prompt.
-RULES: Front-load first 3-5 words. Structure: [Subject] [Action] [Setting] [Camera] [Lighting] [Mood] [Style] [Details]. Use :: for multi-prompt weighting. --style raw strips beautifier. --s 250-750 sweet spot. Include --ar, --s, --style.
-OUTPUT: ONLY the prompt starting with /imagine. No explanation.`,
-flux:`You are an expert Flux 2 Max prompt engineer. Transform the user's idea into an optimized prompt.
-RULES: Natural language sentences. Include camera/lens specs. No negative prompts. No "masterpiece, best quality". Text in quotes. Materials and textures described.
-OUTPUT: ONLY the prompt text as natural language. No explanation.`,
-nano:`You are an expert Nano Banana (Google Gemini) prompt engineer. Transform the user's idea into an optimized prompt.
-RULES: Natural language, conversational tone. Be specific about composition, camera, lighting, materials, atmosphere. No SDXL syntax. No emphasis weights. No negative prompts. Think like describing a scene to a cinematographer.
-OUTPUT: ONLY the prompt text as natural language. No explanation.`,
-gptimage:`You are an expert GPT Image 2 prompt engineer. Transform the user's idea into structured JSON.
-RULES: Output valid JSON. Required: type, subject. Structure: {type, goal, subject, scene, style, camera, layout, details, constraints}. layout.sections for multi-panel. constraints.must_avoid for negatives.
-OUTPUT: ONLY the JSON object. No markdown fences.`
+const MODEL_CARDS={
+midjourney:{
+  version:"V8.1",
+  updated:"2026-07-14",
+  identity:"Midjourney V8.1 (default since 2026-06-10) — high prompt adherence, strong detail retention, 4–5× faster than V7. Supports HD/2K.",
+  format:"Output ONLY a single prompt starting with /imagine. No explanation, no markdown fences.",
+  structure:["Front-load 3–5 strongest keywords first","Subject + Action","Setting / environment","Camera / lens / framing","Lighting / mood","Style / medium","Fine details","Parameters (--ar, --s, --raw, --sref, --sw, --chaos, --profile)"],
+  params:[
+    {flag:"--ar",usage:"Aspect ratio",range:"e.g. 16:9, 3:2, 1:1, 21:9"},
+    {flag:"--s",usage:"Stylize",range:"0–1000 (default 100; sweet spot often 100–400)"},
+    {flag:"--raw",usage:"Strip beautifier; stronger prompt adherence",range:"flag only"},
+    {flag:"--sref",usage:"Style reference code or random",range:"code | random"},
+    {flag:"--sw",usage:"Style weight for --sref",range:"0–1000 (default 100)"},
+    {flag:"--chaos",usage:"Variation / unpredictability",range:"0–100"},
+    {flag:"--profile",usage:"Personalization profile",range:"profile id"}
+  ],
+  dos:["Use :: multi-prompt weighting when competing concepts need balance","Prefer concrete camera/lighting language over vague adjectives","Keep parameters at the end"],
+  donts:["Do not invent unreleased version flags","Do not omit /imagine prefix","Do not dump long prose before the subject"],
+  techniques:[":: weight splits for subject vs style","--raw for product/layout fidelity","--sref + --sw for brand look continuity"],
+  example:"/imagine elderly fisherman mending nets at dawn harbor, ECU weathered hands, 85mm, soft haze, cinematic still --ar 16:9 --s 200 --raw"
+},
+flux:{
+  version:"FLUX.2",
+  updated:"2026-07-14",
+  identity:"Black Forest Labs FLUX.2 — variants: [pro] production, [flex] tunable, [max] highest quality + web, [klein] open, [dev] local. Natural language or JSON structured prompting; no negative prompts.",
+  format:"Output ONLY the prompt as natural language (or a single JSON object if structured mode is requested). No explanation.",
+  structure:["Image type","Subject + Action","Location / context","Style / medium","Camera / lens","Lighting","Colors / materials","Effect / atmosphere"],
+  params:[
+    {flag:"length",usage:"Prompt length bands",range:"10–30 concise | 30–80 standard | 80–300+ detailed (up to 32K tokens)"},
+    {flag:"variant",usage:"Model variant hint in prose if relevant",range:"pro | flex | max | klein | dev"}
+  ],
+  dos:["Describe what IS present (positive phrasing replaces negatives)","Specify materials, textures, lens, lighting concretely","JSON structured prompting is official and interchangeable with prose"],
+  donts:["No negative prompts","No SDXL quality spam (masterpiece, best quality, etc.)","No weight syntax"],
+  techniques:["Subject+Action+Style+Context short form","Full form: Image type / Subject / Location / Style / Camera / Lighting / Colors / Effect","Quoted on-image text for legible lettering"],
+  example:"A photorealistic medium shot of a film producer at a night edit bay, soft practical lamp, 35mm, shallow DOF, warm tungsten against cool monitor glow, subtle film grain"
+},
+gptimage:{
+  version:"gpt-image-2",
+  updated:"2026-07-14",
+  identity:"OpenAI gpt-image-2 (recommended default). Multi-format prompts; strong text rendering; free size within long-edge <3840, multiples of 16, ratio ≤3:1; quality low|medium|high.",
+  format:"Output ONLY a valid JSON object. No markdown fences, no commentary.",
+  structure:["Background / scene first","Subject","Key details","Constraints / must_avoid","Optional layout for multi-panel"],
+  params:[
+    {flag:"quality",usage:"Render quality tier",range:"low | medium | high"},
+    {flag:"size",usage:"Canvas constraints",range:"long edge <3840; multiples of 16; aspect ≤3:1"},
+    {flag:"text",usage:"On-image lettering",range:"exact text in quotes + font/position/color; hard words letter-by-letter"}
+  ],
+  dos:["Prefer scannable production templates","Put scene before subject when composition matters","Use layout.sections for multi-panel / storyboard"],
+  donts:["Do not wrap JSON in markdown fences","Do not omit type or subject"],
+  techniques:["Order: scene → subject → details → constraints","Quoted exact text for titles/signage","JSON fields: type, goal, subject, scene, style, camera, layout, details, constraints"],
+  example:'{"type":"cinematic still","goal":"key art","subject":"lone rider on ridgeline","scene":"pre-dawn desert, low fog","style":"photoreal, anamorphic","camera":"WS, 40mm, low angle","details":"dust motes, rim light","constraints":{"must_keep":["silhouette readable"],"must_avoid":["logo watermark"]}}'
+},
+nano:{
+  version:"gemini-3-pro-image",
+  updated:"2026-07-14",
+  identity:"Google Nano Banana Pro = gemini-3-pro-image. Natural language only. Core five: Subject / Composition / Action / Location / Style. Resolutions 1K/2K/4K. Reference images: up to 6 objects + 5 characters + 3 styles with explicit role assignment.",
+  format:"Output ONLY natural-language prompt text. No SDXL syntax, no weights, no negative prompts, no markdown fences.",
+  structure:["Subject","Composition","Action","Location","Style","Optional: Camera / Lighting / Aspect Ratio / Text Integration / Factual Constraints / Reference role map"],
+  params:[
+    {flag:"resolution",usage:"Output resolution tier",range:"1K | 2K | 4K"},
+    {flag:"references",usage:"Multi-image role assignment",range:"≤6 objects, ≤5 character consistency, ≤3 style refs; e.g. Image A pose, Image B style"}
+  ],
+  dos:["Write like briefing a cinematographer","Be explicit about composition and materials","Assign reference roles when multi-image"],
+  donts:["No SDXL emphasis weights","No negative prompt blocks","No parameter flag soup"],
+  techniques:["Five-element core then advanced layers","Reference role sentences","Factual constraints for product accuracy"],
+  example:"Medium close-up of a young director reviewing dailies on a handheld monitor, over-shoulder composition, soft window light from camera left, contemporary production office, naturalistic documentary still, 2K, shallow depth of field"
+}
 };
+
+function buildModelRules(model){
+  const card=MODEL_CARDS[model];
+  if(!card)return "";
+  const lines=[];
+  lines.push(`MODEL: ${model} | version ${card.version} | updated ${card.updated}`);
+  lines.push(`IDENTITY: ${card.identity}`);
+  lines.push(`FORMAT: ${card.format}`);
+  if(card.structure&&card.structure.length){
+    lines.push("STRUCTURE (in order):");
+    card.structure.forEach((s,i)=>lines.push(`  ${i+1}. ${s}`));
+  }
+  if(card.params&&card.params.length){
+    lines.push("PARAMS:");
+    card.params.forEach(p=>lines.push(`  ${p.flag}: ${p.usage} [${p.range}]`));
+  }
+  if(card.dos&&card.dos.length){
+    lines.push("DO:");
+    card.dos.forEach(d=>lines.push(`  - ${d}`));
+  }
+  if(card.donts&&card.donts.length){
+    lines.push("DON'T:");
+    card.donts.forEach(d=>lines.push(`  - ${d}`));
+  }
+  if(card.techniques&&card.techniques.length){
+    lines.push("TECHNIQUES:");
+    card.techniques.forEach(t=>lines.push(`  - ${t}`));
+  }
+  if(card.example){
+    lines.push("EXAMPLE:");
+    lines.push(`  ${card.example}`);
+  }
+  return lines.join("\n");
+}
+
 
 const LOCAL_TEMPLATES={
 midjourney:{expand:i=>`/imagine ${i}, highly detailed, professional photography, dramatic lighting, cinematic composition, 8K --ar 16:9 --s 250 --style raw`,creative:i=>`/imagine ${i}, surreal dreamscape, ethereal atmosphere, vibrant colors, trending on artstation --ar 16:9 --s 500`,photoreal:i=>`/imagine close-up photo of ${i}, natural lighting, shot on Sony A7IV, 85mm f/1.4, film grain, photorealistic --ar 3:2 --s 50 --style raw`,anime:i=>`/imagine ${i}, anime key visual, Studio Ghibli style, vibrant colors, clean linework --ar 16:9 --niji --s 300`,cinematic:i=>`/imagine cinematic still of ${i}, anamorphic lens, shallow DOF, teal and orange, film grain --ar 21:9 --s 300`},
@@ -2838,7 +2972,7 @@ async function runEnhance(){
   btn.textContent="Generating...";btn.disabled=true;out.classList.remove("loading");out.textContent="Calling LLM...";
   try{
     let result="";
-    const sys=LLM_SYSTEM_PROMPTS[model]+modeContext;
+    const sys=buildModelRules(model)+"\n\n"+modeContext;
     if(provider==="openai")result=await callOpenAI(apiKey,baseUrl,modelName,sys,userMsg);
     else if(provider==="anthropic")result=await callAnthropic(apiKey,baseUrl,modelName,sys,userMsg);
     enhancedPromptText=result.trim();
@@ -2852,16 +2986,39 @@ async function runEnhance(){
   }
 }
 
+
+/* ── Mock / demo mode (?mock=1) — canned agent JSON, no API key ── */
+function isMockMode(){
+  try{return new URLSearchParams(location.search).get("mock")==="1"}catch{return false}
+}
+function mockAgentResponse(userMessage,targetModel){
+  const msg=(userMessage||"").toLowerCase();
+  const isRefine=/shorter|more|less|cinematic|detail|改|更|短/.test(msg);
+  const promptByModel={
+    midjourney:"/imagine lone film producer at golden-hour edit bay, medium shot, 35mm anamorphic, warm practicals, cinematic still --ar 16:9 --s 200 --raw",
+    flux:"A photorealistic medium shot of a film producer reviewing dailies at golden hour, 35mm anamorphic lens, warm practical lamps, shallow depth of field, subtle film grain",
+    nano:"Medium shot of a film producer reviewing dailies on dual monitors at golden hour, over-shoulder composition, warm practical lighting, contemporary edit suite, naturalistic documentary still, 2K",
+    gptimage:JSON.stringify({type:"cinematic still",goal:"portfolio key visual",subject:"film producer at edit bay",scene:"golden-hour room, dual monitors, soft haze",style:"photoreal cinematic",camera:"MS, 35mm anamorphic",details:"warm practicals, shallow DOF",constraints:{must_keep:["readable face"],must_avoid:["logo watermark"]}},null,2)
+  };
+  return {
+    preset_id:"env-concept",
+    chip_selections:{},
+    prompt:promptByModel[targetModel]||promptByModel.flux,
+    rationale:isRefine?"Mock refine: adjusted tone while keeping structure.":"Mock demo: finished model-ready prompt (no API key used).",
+    clarifying_question:""
+  };
+}
+
 async function callOpenAI(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800){
   const url=(baseUrl||"https://api.openai.com/v1").replace(/\/+$/,"")+"/chat/completions";
-  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},body:JSON.stringify({model:modelName||"gpt-4o",messages:[{role:"system",content:systemPrompt},{role:"user",content:userMessage}],max_tokens:maxTokens,temperature:0.7}),signal});
+  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},body:JSON.stringify({model:modelName||"gpt-5.6-terra",messages:[{role:"system",content:systemPrompt},{role:"user",content:userMessage}],max_tokens:maxTokens,temperature:0.7}),signal});
   if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`API error ${res.status}`)}
   return(await res.json()).choices[0].message.content;
 }
 
 async function callAnthropic(apiKey,baseUrl,modelName,systemPrompt,userMessage,signal,maxTokens=800){
   const url=(baseUrl||"https://api.anthropic.com").replace(/\/+$/,"")+"/v1/messages";
-  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:modelName||"claude-sonnet-4-20250514",max_tokens:maxTokens,system:systemPrompt,messages:[{role:"user",content:userMessage}]}),signal});
+  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:modelName||"claude-sonnet-5",max_tokens:maxTokens,system:systemPrompt,messages:[{role:"user",content:userMessage}]}),signal});
   if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`API error ${res.status}`)}
   return(await res.json()).content[0].text;
 }
