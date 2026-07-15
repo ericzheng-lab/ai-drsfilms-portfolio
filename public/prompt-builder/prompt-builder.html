@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-d: image distill MODEL_CARDS.techniques + chips 2026-07-15 -->
+<!-- pb-sprint-e: agent↔pb-library + chips r2 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -1017,7 +1017,7 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What should this character convey? e.g., intimidating authority, quiet vulnerability..."}
 ],
 fieldOptions:{
-personality:["Calm","Observant","Melancholic","Fierce","Cunning","Warm","Cold","Reckless","Methodical","Charismatic","Brooding","Eccentric","Stoic","Volatile","Wise","Playful","Haunted","Regal","Weary","Menacing","Vulnerable","Authoritative"]
+personality:["Calm","Observant","Melancholic","Fierce","Cunning","Warm","Cold","Reckless","Methodical","Charismatic","Brooding","Eccentric","Stoic","Volatile","Wise","Playful","Haunted","Regal","Weary","Menacing","Vulnerable","Authoritative","Aloof","Guarded","Restless","Tender","Defiant"]
 },
 systemPrompt:`You are a character sheet generator for film production. Generate a multi-angle character consistency reference sheet.
 
@@ -1046,10 +1046,10 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What should the viewer feel?"}
 ],
 fieldOptions:{
-weather:["Clear","Fog","Mist","Rain","Heavy rain","Snow","Dust storm","Storm approaching","Haze","Humid","Smog","After-rain wet ground","Heat shimmer"],
-era:["1940s","1960s","1970s","1980s","Near-future","Medieval","Ancient","Post-apocalyptic","Victorian","Modern day","1990s","2010s","Alt-history","Timeless"],
-colorRef:["Teal + amber","Muted earth","Neon-soaked","Golden warm","Cool blue-grey","Monochrome","Saturated tropical","Desaturated pastel","Teal + orange grade","Bleach bypass","Day-for-night"],
-cameraAngle:["Wide establishing","Low angle","Drone aerial","Eye-level","Telephoto compression","Through foliage","Road leading in","Matte-painting plate","Location scout still","Through doorway frame","OTS into set"]
+weather:["Clear","Fog","Mist","Rain","Heavy rain","Snow","Dust storm","Storm approaching","Haze","Humid","Smog","After-rain wet ground","Heat shimmer","Overcast","Soft drizzle","Blue-hour chill","Morning frost"],
+era:["1940s","1960s","1970s","1980s","Near-future","Medieval","Ancient","Post-apocalyptic","Victorian","Modern day","1990s","2010s","Alt-history","Timeless","Edwardian","1920s Jazz Age","1950s","1930s pre-war"],
+colorRef:["Teal + amber","Muted earth","Neon-soaked","Golden warm","Cool blue-grey","Monochrome","Saturated tropical","Desaturated pastel","Teal + orange grade","Bleach bypass","Day-for-night","Chiaroscuro Rembrandt","Cross-processed","Low-sat grey-blue"],
+cameraAngle:["Wide establishing","Low angle","Drone aerial","Eye-level","Telephoto compression","Through foliage","Road leading in","Matte-painting plate","Location scout still","Through doorway frame","OTS into set","Worm's-eye","Dutch/canted","Overhead","Ground level"]
 },
 systemPrompt:`You are a cinematic location scout and production designer. Generate a photorealistic outdoor environment that could serve as a location reference for a film crew.
 
@@ -1076,8 +1076,8 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What should this establishing shot communicate?"}
 ],
 fieldOptions:{
-weather:["Clear sky","Fog rolling in","Dramatic clouds","Storm approaching","Light rain","Haze","Snow","Dust"],
-scale:["Intimate — single building","Small — street or courtyard","Medium — city block","Large — cityscape","Epic — landscape/mountain","Vast — aerial/bird's eye","Horizon-dominant vista","Fog-layered depth"],
+weather:["Clear sky","Fog rolling in","Dramatic clouds","Storm approaching","Light rain","Haze","Snow","Dust","Overcast plate","Golden haze","Blue-hour chill"],
+scale:["Intimate — single building","Small — street or courtyard","Medium — city block","Large — cityscape","Epic — landscape/mountain","Vast — aerial/bird's eye","Horizon-dominant vista","Fog-layered depth","Room-scale","Corridor depth","Shoreline arc","Plaza expanse"],
 colorRef:["Warm golden","Cool blue-grey","Teal + orange","Desaturated earth","Vibrant saturated","Monochrome","Pastel soft","Deep shadows"]
 },
 systemPrompt:`You are a cinematic cinematographer generating a wide establishing panorama shot. This is the FIRST image in a scene — other angles will be derived from it for spatial consistency.
@@ -1112,7 +1112,7 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What emotion should this poster evoke?"}
 ],
 fieldOptions:{
-colorRef:["Teal + orange","Monochrome","Warm golden","Cool blue","Neon-soaked","Desaturated earth","High contrast B&W","Deep red + black","One-sheet hierarchy","Title treatment space","Teaser minimal"]
+colorRef:["Teal + orange","Monochrome","Warm golden","Cool blue","Neon-soaked","Desaturated earth","High contrast B&W","Deep red + black","One-sheet hierarchy","Title treatment space","Teaser minimal","Chiaroscuro noir","Muted duotone","Amber + charcoal"]
 },
 systemPrompt:`You are a film poster and key art designer for theatrical marketing. Generate a cinematic movie poster composition.
 
@@ -1193,7 +1193,7 @@ fields:[
 {id:"panels_count",label:"Panels count",type:"select",options:["4-panel grid","6-panel grid","9-panel grid"]}
 ],
 fieldOptions:{
-mood:["Oppressive","Catastrophic","Awe-struck","High tension","Eerie","Mysterious","Epic","Heroic","Desolate","Calm","Panel rhythm","Splash-page beat","Ink-wash noir"]
+mood:["Oppressive","Catastrophic","Awe-struck","High tension","Eerie","Mysterious","Epic","Heroic","Desolate","Calm","Panel rhythm","Splash-page beat","Ink-wash noir","Quiet dread","Bruised hope","Liminal hush"]
 },
 systemPrompt:`You are a professional cinematic storyboard artist and illustrator for high-budget films. Generate a multi-panel narrative storyboard sheet.
 
@@ -1223,8 +1223,8 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What story does their look tell? e.g., battle-hardened commander, weary survivor..."}
 ],
 fieldOptions:{
-build:["Athletic","Tall & Lean","Muscular","Stocky","Slender","Weathered","Imposing","Petite","Towering","Wiry","Hero costume ready","Strong silhouette"],
-personality:["Grim","Stoic","Cunning","Jovial","Weary","Menacing","Regal","Haunted","Arrogant","Sardonic","Identity-bible clear","Costume-forward"]
+build:["Athletic","Tall & Lean","Muscular","Stocky","Slender","Weathered","Imposing","Petite","Towering","Wiry","Hero costume ready","Strong silhouette","Compact","Lanky","Angular","Lean-muscled"],
+personality:["Grim","Stoic","Cunning","Jovial","Weary","Menacing","Regal","Haunted","Arrogant","Sardonic","Identity-bible clear","Costume-forward","Soft-spoken","Restless","Defiant","Aloof"]
 },
 systemPrompt:`You are a leading film concept artist and character designer. Generate a highly detailed character design concept board.
 
@@ -1247,7 +1247,7 @@ fields:[
 {id:"consistency",label:"Consistency Markers",type:"textarea",placeholder:"e.g., Always has the signature cheek scar and green eyes across all expressions"}
 ],
 fieldOptions:{
-expressions:["Joyful","Angry/Furious","Timid/Fearful","Inquisitive/Curious","Devastated/Sad","Smug/Arrogant","Shocked/Surprised","Skeptical","Wry Smile","Intense Focus","Micro-expression","Performance still","Eye-line locked"]
+expressions:["Joyful","Angry/Furious","Timid/Fearful","Inquisitive/Curious","Devastated/Sad","Smug/Arrogant","Shocked/Surprised","Skeptical","Wry Smile","Intense Focus","Micro-expression","Performance still","Eye-line locked","Soft half-smile","Tight-lipped resolve","Distant gaze","Brow-knit concern"]
 },
 systemPrompt:`You are a character designer and expression sheet specialist. Generate a character facial expression reference board.
 
@@ -1270,9 +1270,9 @@ fields:[
 {id:"mood",label:"Mood & Atmosphere",type:"chips",placeholder:"Custom mood..."}
 ],
 fieldOptions:{
-narrativeArc:["Establishing wide shot","Medium tracking shot","Extreme close-up beat","Dynamic low-angle action shot","POV tracking shot","High-angle resolution","Before/after cut pair","Coverage set","Reverse angle"],
-cameraMovement:["Dolly Zoom","Whip Pan","Dutch Tilt","Drone Crane Shot","Steadicam OTS","Static Lock-off","Low-angle Tilt-up","Push-in","Pull-out","Orbit implied"],
-mood:["Suspenseful","High-octane action","Eerie & Quiet","Comedic & Playful","Melodramatic","Claustrophobic","Continuity-safe","Still-frame beats"]
+narrativeArc:["Establishing wide shot","Medium tracking shot","Extreme close-up beat","Dynamic low-angle action shot","POV tracking shot","High-angle resolution","Before/after cut pair","Coverage set","Reverse angle","Insert detail beat","Two-shot exchange","Match-cut pair","Reaction insert"],
+cameraMovement:["Dolly Zoom","Whip Pan","Dutch Tilt","Drone Crane Shot","Steadicam OTS","Static Lock-off","Low-angle Tilt-up","Push-in","Pull-out","Orbit implied","Pedestal up","Crash zoom","Rack focus","Handheld follow","Pull-back reveal"],
+mood:["Suspenseful","High-octane action","Eerie & Quiet","Comedic & Playful","Melodramatic","Claustrophobic","Continuity-safe","Still-frame beats","Hushed dread","Bruised intimacy","Clinical cold","Gritty restraint"]
 },
 systemPrompt:`You are a professional cinematographer and cinematic storyboard director. Generate a highly sequential, narrative-driven storyboard panel sheet.
 
@@ -1296,8 +1296,8 @@ fields:[
 {id:"artStyle",label:"Art Style",type:"select",options:["Photorealistic studio render","Highly detailed concept art","Stylized illustration/sketch","Patent blueprint style"]}
 ],
 fieldOptions:{
-era:["Steampunk","Dieselpunk","Cyberpunk","Medieval Fantasy","Sci-Fi Space Opera","Post-Apocalyptic","Historical Victorian","Ancient Relic","Contemporary practical","Near-future prop"],
-materials:["Brass","Polished Gold","Damascus Steel","Weathered Leather","Carbon Fiber","Bioluminescent Glass","Carved Obsidian","Forged Iron","Oak Wood","Worn paint","Scale reference","Insert detail"]
+era:["Steampunk","Dieselpunk","Cyberpunk","Medieval Fantasy","Sci-Fi Space Opera","Post-Apocalyptic","Historical Victorian","Ancient Relic","Contemporary practical","Near-future prop","Art Deco","Mid-century modern","Bauhaus","Atomic Age"],
+materials:["Brass","Polished Gold","Damascus Steel","Weathered Leather","Carbon Fiber","Bioluminescent Glass","Carved Obsidian","Forged Iron","Oak Wood","Worn paint","Scale reference","Insert detail","Brushed aluminum","Patinated copper","Ceramic glaze","Frosted acrylic","Anodized titanium"]
 },
 systemPrompt:`You are a leading film production prop master and conceptual designer. Generate a highly detailed production-grade prop/costume design sheet.
 
@@ -2288,6 +2288,36 @@ let _libraryTagFilter=""; // active chip filter (empty = all)
 function getLibrary(){
   try{return JSON.parse(localStorage.getItem("pb-library")||"[]")}catch{return[]}
 }
+/** Rank ★ library items for agent context: prefer same model, then tag match, then recency. */
+function getLibraryContext(targetModel, userMessage, limit){
+  limit=limit||5;
+  const list=getLibrary();
+  if(!list.length)return "";
+  const msg=(userMessage||"").toLowerCase();
+  const words=msg.split(/[^a-z0-9\u4e00-\u9fff]+/i).filter(w=>w.length>1);
+  const scored=list.map(it=>{
+    let score=0;
+    if(it.model&&targetModel&&it.model===targetModel)score+=50;
+    const tags=(it.tags||[]).map(t=>String(t).toLowerCase());
+    tags.forEach(t=>{if(t&&msg.includes(t))score+=25});
+    const blob=((it.prompt||"")+" "+(it.note||"")).toLowerCase();
+    words.forEach(w=>{if(blob.includes(w))score+=3});
+    score+=Math.min(10, Math.floor(((it.time||0)/1e12))); // weak recency
+    // prefer newer when scores tie via time
+    return {it,score,time:it.time||0};
+  }).sort((a,b)=>b.score-a.score||b.time-a.time);
+  const top=scored.filter(x=>x.score>0||scored[0].score===0).slice(0,limit);
+  // if nothing matched keywords, still give most recent same-model or recent overall
+  const pick=(top[0]&&top[0].score>0?top:scored.slice(0,limit)).map(x=>x.it);
+  if(!pick.length)return "";
+  const lines=pick.map((it,i)=>{
+    const tags=(it.tags||[]).length?" tags=["+(it.tags||[]).join(", ")+"]":"";
+    const note=it.note?" note="+JSON.stringify(String(it.note).slice(0,80)):"";
+    const body=String(it.prompt||"").slice(0,420).replace(/\n/g," ");
+    return (i+1)+". model="+(it.model||"?")+" preset="+(it.preset_id||"null")+tags+note+"\n   "+body+(String(it.prompt||"").length>420?"…":"");
+  });
+  return "USER LIBRARY (★ saved — prefer matching style/structure when relevant; do not copy verbatim unless user asks):\n"+lines.join("\n");
+}
 function saveLibrary(list){
   localStorage.setItem("pb-library",JSON.stringify(Array.isArray(list)?list:[]));
 }
@@ -2681,6 +2711,7 @@ async function runAgent(userMessage){
   const curPrompt=getFullPrompt();
   const activePresetId=currentLLMPreset?currentLLMPreset.id:null;
   const activeChips=activePresetId?{...llmFieldValues}:null;
+  const libraryContext=(typeof getLibraryContext==="function")?getLibraryContext(targetModel,userMessage,5):"";
 
   const systemPrompt=`You are a senior prompt supervisor for film & TV image generation — the person a DP texts when the still needs to be model-ready.
 
@@ -2705,6 +2736,7 @@ CURRENT CONTEXT:
 ${curPrompt?`Previous prompt:\n"""\n${curPrompt}\n"""\n`:"First turn — produce a brand-new prompt."}
 ${activePresetId?`Active preset: ${activePresetId}`:""}
 ${activeChips?`Active chip values: ${JSON.stringify(activeChips)}`:""}
+${libraryContext?`\n${libraryContext}\n`:""}
 
 OUTPUT
 Return a single JSON object matching the schema (no markdown fences, no prose outside JSON):
@@ -2717,7 +2749,8 @@ Return a single JSON object matching the schema (no markdown fences, no prose ou
   "quick_replies": ["optional","up to","three"]
 }
 
-Language: match the user for rationale/clarifying_question (Chinese OK); keep camera/technical terms in English.`;
+Language: match the user for rationale/clarifying_question (Chinese OK); keep camera/technical terms in English.
+- If USER LIBRARY examples are present, borrow structure/style when relevant; only copy a library prompt verbatim if the user explicitly asks to reuse/save it.`;
 
   if(typingEl)typingEl.style.display="flex";
   setAgentStatus("thinking");
