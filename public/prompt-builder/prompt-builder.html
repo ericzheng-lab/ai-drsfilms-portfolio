@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-e: agent↔pb-library + chips r2 2026-07-15 -->
+<!-- pb-sprint-f: qr-click fix + landing hrefs + MJ V7 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -273,7 +273,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .reflection-actions .btn{padding:3px 8px;font-size:10px}
 .agent-msg.error{background:rgba(196,106,122,0.1);border:1px solid rgba(196,106,122,0.25);color:var(--danger);align-self:flex-start}
 .agent-quick-replies{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.agent-qr-btn{padding:4px 10px;border:1px solid var(--border2);border-radius:999px;background:rgba(255,255,255,0.7);font-size:11px;font-family:'Josefin Sans',sans-serif;color:var(--text);cursor:pointer;transition:border-color .15s,background .15s}
+.agent-qr-btn,.suggestion-option{padding:4px 10px;border:1px solid var(--border2);border-radius:999px;background:rgba(255,255,255,0.85);font-size:11px;font-family:'Josefin Sans',sans-serif;color:var(--text);cursor:pointer;transition:border-color .15s,background .15s;pointer-events:auto;position:relative;z-index:2;-webkit-tap-highlight-color:rgba(138,106,170,0.25)}
 .agent-qr-btn:hover{border-color:var(--accent);background:rgba(138,106,170,0.1)}
 .agent-refine-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .agent-refine-btn{padding:3px 8px;border:1px dashed var(--border2);border-radius:6px;background:transparent;font-size:10px;font-family:'Josefin Sans',sans-serif;color:var(--muted);cursor:pointer}
@@ -1358,7 +1358,7 @@ const GPT_PARAMS=[
 ];
 
 const FORMULAS={
-midjourney:{title:"Midjourney v6.1 — Prompt Formula",structure:'<span class="fh">[Subject]</span> <span class="fh">[Action]</span> <span class="fh">[Setting]</span> <span class="fh">[Camera]</span> <span class="fh">[Lighting]</span> <span class="fh">[Mood]</span> <span class="fh">[Style]</span> <span class="fh">[Details]</span> <span class="fh">[Params]</span>',tips:'<strong>Key:</strong> Front-load first 3-5 words. Use <strong>::</strong> for multi-prompt weighting. <strong>--style raw</strong> strips beautifier. <strong>--sref/--cref</strong> for style/character ref.',techniques:["/imagine","::weight","--style raw","--sref URL","--cref URL","--weird","--region","--tile","--niji"]},
+midjourney:{title:"Midjourney V7 — Prompt Formula",structure:'<span class="fh">[Subject]</span> <span class="fh">[Action]</span> <span class="fh">[Setting]</span> <span class="fh">[Camera]</span> <span class="fh">[Lighting]</span> <span class="fh">[Mood]</span> <span class="fh">[Style]</span> <span class="fh">[Details]</span> <span class="fh">[Params]</span>',tips:'<strong>Key:</strong> Front-load first 3-5 words. Use <strong>::</strong> for multi-prompt weighting. <strong>--style raw</strong> strips beautifier. <strong>--sref/--cref</strong> for style/character ref.',techniques:["/imagine","::weight","--style raw","--sref URL","--cref URL","--weird","--region","--tile","--niji"]},
 flux:{title:"Flux 2 Max — Prompt Formula",structure:'<span class="fh">[Subject]</span> + <span class="fh">[Style]</span> + <span class="fh">[Details]</span> + <span class="fh">[Lighting]</span> + <span class="fh">[Composition]</span>',tips:'<strong>Key:</strong> Natural language sentences. Include camera/lens specs. <strong>No negative prompts needed.</strong> Great at text rendering — put text in quotes.',techniques:["Natural sentences","Camera specs","No negatives","Text in quotes","guidance 3.5","20-50 steps"]},
 nano:{title:"Nano Banana (Google Gemini) — Prompt Formula",structure:'<span class="fh">[Subject]</span> <span class="fh">[Action]</span>, <span class="fh">[Setting]</span>, <span class="fh">[Lighting]</span>, <span class="fh">[Style]</span>, <span class="fh">[Details]</span>',tips:'<strong>Key:</strong> Natural language, like talking to a photographer. Be specific about composition, materials, lighting. Reference images help with consistency. <strong>No negative prompts needed.</strong>',techniques:["Natural language","Be specific","No negatives","Reference style","gemini-3-pro","Thinking mode"]},
 gptimage:{title:"GPT Image 2 — JSON Template",structure:'<span class="fh">{type}</span> → <span class="fh">{goal}</span> → <span class="fh">{subject}</span> → <span class="fh">{scene}</span> → <span class="fh">{style}</span> → <span class="fh">{layout}</span> → <span class="fh">{constraints}</span>',tips:'<strong>Key:</strong> Structured JSON. 18 categories, 80+ templates. Use <strong>layout.sections</strong> for multi-panel. <strong>constraints.must_avoid</strong> replaces negatives.',techniques:["JSON structure","18 categories","layout.sections","constraints","text in UI","multi-panel"]}
@@ -2546,6 +2546,7 @@ function showAgentSetupGuide(){
 function renderAgentMessage(msg){
   const msgEl=document.getElementById("agentMessages");
   if(!msgEl)return;
+  try{bindAgentMessageClicks()}catch(e){}
   const welcome=document.getElementById("agentWelcome");
   if(welcome)welcome.style.display="none";
 
@@ -2558,7 +2559,7 @@ function renderAgentMessage(msg){
   div.dataset.msgId=msg.id||"";
 
   if(msg.type==="suggestion"){
-    div.innerHTML=`<div class="suggestion-title">${escHtml(msg.title||"Suggestions")}</div><div class="suggestion-options">${(msg.options||[]).map(o=>`<button class="suggestion-option" onclick="handleSuggestionClick(${JSON.stringify(String(o))})">${escHtml(String(o))}</button>`).join("")}</div>`;
+    div.innerHTML=`<div class="suggestion-title">${escHtml(msg.title||"Suggestions")}</div><div class="suggestion-options">${(msg.options||[]).map(o=>`<button type="button" class="suggestion-option" data-agent-qr="${escAttr(String(o))}">${escHtml(String(o))}</button>`).join("")}</div>`;
   }else if(msg.type==="classification"){
     div.innerHTML=`<div class="msg-role">Agent</div><div>${escHtml(msg.text||"")}</div>`;
   }else if(msg.type==="reflection"){
@@ -2570,13 +2571,13 @@ function renderAgentMessage(msg){
     const roleLabel=msg.role==="user"?"You":"Agent";
     let extra="";
     if(msg.role!=="user"&&Array.isArray(msg.quick_replies)&&msg.quick_replies.length){
-      extra+=`<div class="agent-quick-replies">${msg.quick_replies.map(q=>`<button type="button" class="agent-qr-btn" onclick="pickAgentQuickReply(${JSON.stringify(String(q))})">${escHtml(String(q))}</button>`).join("")}</div>`;
+      extra+=`<div class="agent-quick-replies">${msg.quick_replies.map(q=>`<button type="button" class="agent-qr-btn" data-agent-qr="${escAttr(String(q))}">${escHtml(String(q))}</button>`).join("")}</div>`;
     }
     if(msg.role!=="user"&&msg.show_refine){
       extra+=`<div class="agent-refine-bar">
-        <button type="button" class="agent-refine-btn" onclick="refineAgentPrompt('shorter')">shorter</button>
-        <button type="button" class="agent-refine-btn" onclick="refineAgentPrompt('cinematic')">more cinematic</button>
-        <button type="button" class="agent-refine-btn" onclick="refineAgentPrompt('detail')">more detail</button>
+        <button type="button" class="agent-refine-btn" data-agent-refine="shorter">shorter</button>
+        <button type="button" class="agent-refine-btn" data-agent-refine="cinematic">more cinematic</button>
+        <button type="button" class="agent-refine-btn" data-agent-refine="detail">more detail</button>
       </div>`;
     }
     div.innerHTML=`<div class="msg-role">${roleLabel}</div><div>${escHtml(msg.text||"")}</div>${extra}`;
@@ -3033,11 +3034,11 @@ Output ONLY the JSON object. No markdown fences, no explanation, no extra text.`
 
 const MODEL_CARDS={
 midjourney:{
-  version:"V8.1",
+  version:"V7",
   updated:"2026-07-15",
-  identity:"Midjourney V8.1 (default since 2026-06-10) — high prompt adherence, strong detail retention, 4–5× faster than V7. Supports HD/2K.",
+  identity:"Midjourney V7 — mass-default public model. Strong general aesthetics; use --raw for tighter prompt adherence; --sref/--sw for style lock. (V8.x not default here.)",
   format:"Output ONLY a single prompt starting with /imagine. No explanation, no markdown fences.",
-  structure:["Front-load 3–5 strongest keywords first","Subject + Action","Setting / environment","Camera / lens / framing","Lighting / mood","Style / medium","Fine details","Parameters (--ar, --s, --raw, --sref, --sw, --chaos, --profile)"],
+  structure:["Front-load 3–5 strongest keywords first","Subject + Action","Setting / environment","Camera / lens / framing","Lighting / mood","Style / medium","Fine details","Parameters for V7 (--ar, --s, --raw, --sref, --sw, --chaos, --profile, --v 7 if needed)"],
   params:[
     {flag:"--ar",usage:"Aspect ratio",range:"e.g. 16:9, 3:2, 1:1, 21:9"},
     {flag:"--s",usage:"Stylize",range:"0–1000 (default 100; sweet spot often 100–400)"},
@@ -3049,7 +3050,7 @@ midjourney:{
   ],
   dos:["Use :: multi-prompt weighting when competing concepts need balance","Prefer concrete camera/lighting language over vague adjectives","Keep parameters at the end"],
   donts:["Do not invent unreleased version flags","Do not omit /imagine prefix","Do not dump long prose before the subject"],
-  techniques:["Params after prompt text; space before every --flag","--sref URL/code + --sw 0-1000 for look lock","--oref for person/object likeness (Omni Reference)","--raw for photoreal / product fidelity","--chaos 0-100 for grid variety then refine low","--ar for film frames (16:9, 3:2, 21:9)","--hd ~2K / --sd ~1K on V8.1 when available",":: weight splits for competing concepts","Front-load subject; name lens + light quality","Avoid SD quality-token spam (masterpiece, 8k)"],
+  techniques:["Default target is Midjourney V7 (mass default)","Params after prompt; space before every --flag","Front-load subject in first 3–5 words","--sref + --sw 0–1000 for style continuity","--raw when you need less beautify / more control","--stylize / --s 0–1000 (default 100; 100–400 common)","--chaos 0–100 then refine with low chaos","--ar for frames (16:9, 3:2, 2:3, 1:1, 21:9)",":: weights to balance competing concepts","Avoid SD quality-token spam (masterpiece, 8k)"],
   example:"/imagine elderly fisherman mending nets at dawn harbor, ECU weathered hands, 85mm, soft haze, cinematic still --ar 16:9 --s 200 --raw"
 },
 flux:{
@@ -3363,9 +3364,35 @@ function newAgentChat(){
 }
 
 function pickAgentQuickReply(text){
+  const t=String(text==null?"":text).trim();
+  if(!t)return;
   const input=document.getElementById("agentInput");
-  if(input)input.value=text;
+  if(input)input.value=t;
+  // Prefer direct send so we don't depend on input focus/state races
   sendAgentMessage();
+}
+
+function bindAgentMessageClicks(){
+  const msgEl=document.getElementById("agentMessages");
+  if(!msgEl||msgEl.dataset.qrBound==="1")return;
+  msgEl.dataset.qrBound="1";
+  msgEl.addEventListener("click",function(ev){
+    const t=ev.target;
+    if(!t||!t.closest)return;
+    const qr=t.closest("[data-agent-qr]");
+    if(qr){
+      ev.preventDefault();
+      ev.stopPropagation();
+      pickAgentQuickReply(qr.getAttribute("data-agent-qr")||"");
+      return;
+    }
+    const rf=t.closest("[data-agent-refine]");
+    if(rf){
+      ev.preventDefault();
+      ev.stopPropagation();
+      refineAgentPrompt(rf.getAttribute("data-agent-refine")||"");
+    }
+  });
 }
 
 function refineAgentPrompt(kind){
