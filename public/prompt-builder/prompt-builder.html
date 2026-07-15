@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-h: resizable agent + scroll chips + MJ V7 settings 2026-07-15 -->
+<!-- pb-sprint-i: chips 44px + copy badge + library badge + scroll preserve 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -140,13 +140,13 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 
 .chips-scroll{max-height:200px;overflow-y:auto;padding-right:4px}
 .chips-scroll::-webkit-scrollbar{width:4px}.chips-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.chip{padding:7px 14px;border-radius:16px;font-size:14px;border:1px solid var(--border);background:rgba(255,255,255,0.4);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;text-align:center}
+.chip{padding:10px 14px;border-radius:16px;font-size:14px;border:1px solid var(--border);background:rgba(255,255,255,0.4);color:var(--muted);cursor:pointer;min-height:44px;display:inline-flex;align-items:center;gap:6px;touch-action:manipulation;transition:all 0.15s;user-select:none;text-align:center}
 .chip:hover{border-color:var(--border2);color:var(--text);background:rgba(255,255,255,0.6)}
 .chip.active{background:rgba(138,106,170,0.1);border-color:var(--accent);color:var(--accent)}
 
 /* LLM Chip Fields */
 .llm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
-.llm-chip{padding:5px 12px;border-radius:16px;font-size:13px;border:1px solid var(--border);background:rgba(255,255,255,0.4);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none}
+.llm-chip{padding:8px 14px;border-radius:16px;font-size:13px;border:1px solid var(--border);background:rgba(255,255,255,0.4);color:var(--muted);cursor:pointer;min-height:44px;display:inline-flex;align-items:center;touch-action:manipulation;transition:all 0.15s;user-select:none}
 .llm-chip:hover{border-color:var(--border2);color:var(--text)}
 .llm-chip.active{background:rgba(90,138,154,0.1);border-color:var(--blue);color:var(--blue)}
 .llm-chip.custom-trigger{border-style:dashed;color:var(--dim)}
@@ -594,7 +594,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 
     <!-- Actions -->
     <div class="actions">
-      <button class="btn primary" onclick="copyPrompt()">Copy Prompt ⌘C</button>
+      <button class="btn primary" onclick="copyPrompt()">Copy Prompt</button>
       <button class="btn btn-star" id="starPromptBtn" onclick="starCurrentPrompt()" title="Save to Library (favorites)">★ Save</button>
       <button class="btn btn-enhance" onclick="openEnhanceModal()" title="跳过表单，用自然语言直接描述想法，AI 格式化为 prompt">✦ AI Rewrite</button>
       <button class="btn" onclick="exportMd()">Export .md</button>
@@ -609,7 +609,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 
     <!-- Library — explicit favorites (pb-library) -->
     <div class="library-wrap" id="libraryWrap">
-      <label class="field-label" style="margin-bottom:10px">Library <span style="font-size:10px;color:var(--dim);text-transform:none;font-weight:400;margin-left:6px">★ saved prompts · separate from Recent</span></label>
+      <label class="field-label" style="margin-bottom:10px">Library <span id="pb-library-badge" style="font-size:10px;font-weight:600;margin-left:8px;padding:2px 8px;border-radius:999px;background:rgba(90,138,154,0.1);color:var(--blue)"></span> <span style="font-size:10px;color:var(--dim);text-transform:none;font-weight:400;margin-left:6px">★ saved prompts · separate from Recent</span></label>
       <div class="library-toolbar">
         <input type="search" id="librarySearch" placeholder="Search prompts…" oninput="renderLibrary()" />
         <input type="text" id="libraryTagInput" placeholder="tag filter (optional)" oninput="renderLibrary()" style="max-width:140px" />
@@ -1929,9 +1929,13 @@ function switchModel(newModel){
 
 function renderChips(containerId,items,selectedSet){
   const el=document.getElementById(containerId);
+  const prevScroll=el?el.scrollTop:0;
   el.innerHTML=items.map(item=>{
     return `<button class="chip ${selectedSet.has(item)?"active":""}" data-value="${item}" onclick="toggleChip(this,'${containerId}')">${item}</button>`;
   }).join("");
+  if(el){
+    try{el.scrollTop=prevScroll;}catch(e){}
+  }
 }
 function toggleChip(el,cid){const val=el.dataset.value,set=getSet(cid);if(set.has(val)){set.delete(val);el.classList.remove("active")}else{set.add(val);el.classList.add("active")}updateChipCounter(cid);updatePreview()}
 function updateChipCounter(containerId){const set=getSet(containerId);const count=set.size;const el=document.getElementById(containerId);if(!el)return;const sec=el.closest(".section");if(!sec)return;const title=sec.querySelector(".section-title");if(!title)return;let badge=title.querySelector(".chip-count");if(count>0){if(!badge){badge=document.createElement("span");badge.className="chip-count";title.appendChild(badge)}badge.textContent=count}else{if(badge)badge.remove()}}
@@ -2306,7 +2310,26 @@ function updatePreview(){
 /* ACTIONS                                                         */
 /* ═══════════════════════════════════════════════════════════════ */
 
-function copyPrompt(){const text=getFullPrompt();navigator.clipboard.writeText(text).then(()=>toast("Copied!"))}
+function copyPrompt(){
+  const text=getFullPrompt();
+  const len=(text||"").length;
+  if(!len){toast("Nothing to copy");return}
+  const btn=document.querySelector('.actions .btn.primary');
+  const orig=btn?btn.textContent:"";
+  const restore=()=>{
+    if(btn&&orig){btn.textContent=orig;btn.classList.remove("copied")}
+  };
+  navigator.clipboard.writeText(text).then(()=>{
+    toast("Copied "+len+" chars");
+    if(btn){btn.textContent="Copied ✓";btn.classList.add("copied");setTimeout(restore,1500)}
+  }).catch(()=>{
+    toast("Copy blocked — select text manually");
+    try{
+      const el=document.getElementById("previewEditor");
+      if(el){el.focus();el.select();}
+    }catch(e){}
+  });
+}
 
 function getFullPrompt(){
   const el=document.getElementById("previewEditor");
@@ -2510,9 +2533,20 @@ function renderLibrary(){
     return blob.includes(q);
   });
   if(!filtered.length){
-    el.innerHTML='<div class="library-empty">'+(list.length?"No matches":"No saved prompts yet — click ★ Save on a finished prompt")+'</div>';
+    const hasAny=list.length>0;
+    const clearBtn=hasAny&&(_libraryTagFilter||q||tagInput)?`<div style="margin-top:10px"><button type="button" class="btn" style="padding:4px 10px;font-size:11px" onclick="(() => { _libraryTagFilter=''; const s=document.getElementById('librarySearch'); if(s)s.value=''; const ti=document.getElementById('libraryTagInput'); if(ti)ti.value=''; renderLibrary(); })()">Clear filters</button></div>`:"";
+    el.innerHTML='<div class="library-empty">'+(list.length?("No matches"+clearBtn):"No saved prompts yet — click ★ Save on a finished prompt")+'</div>';
+    // export disable + badge
+    const expBtn=document.querySelector('#libraryWrap .btn[onclick="exportLibrary()"]');
+    if(expBtn){expBtn.disabled=!list.length;expBtn.style.opacity=list.length?"":"0.5";expBtn.style.pointerEvents=list.length?"":"none";}
+    const badge=document.getElementById("pb-library-badge");
+    if(badge)badge.textContent=(list.length?list.length+" saved":"");
     return;
   }
+  const expBtn2=document.querySelector('#libraryWrap .btn[onclick="exportLibrary()"]');
+  if(expBtn2){expBtn2.disabled=!list.length;expBtn2.style.opacity=list.length?"":"0.5";expBtn2.style.pointerEvents=list.length?"":"none";}
+  const badge2=document.getElementById("pb-library-badge");
+  if(badge2)badge2.textContent=(list.length?list.length+" saved":"");
   el.innerHTML=filtered.map(it=>{
     const t=new Date(it.time||0);
     const when=isNaN(t)?"":t.toLocaleString();
@@ -2699,6 +2733,8 @@ function scrollAgentToBottom(opts){
   const el=document.getElementById("agentMessages");
   if(!el)return;
   const force=opts&&opts.force;
+  const nearBottom=(el.scrollHeight - (el.scrollTop + el.clientHeight)) < 120;
+  if(!force&&!nearBottom)return;
   const run=()=>{
     el.scrollTop=el.scrollHeight;
     const focus=el.querySelector(".agent-quick-replies, .agent-refine-bar, .agent-msg:last-child");
