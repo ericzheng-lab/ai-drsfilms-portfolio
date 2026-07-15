@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-f: qr-click fix + landing hrefs + MJ V7 2026-07-15 -->
+<!-- pb-sprint-g: mock banner + touch chips + agent empty state 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -275,6 +275,58 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .agent-quick-replies{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .agent-qr-btn,.suggestion-option{padding:4px 10px;border:1px solid var(--border2);border-radius:999px;background:rgba(255,255,255,0.85);font-size:11px;font-family:'Josefin Sans',sans-serif;color:var(--text);cursor:pointer;transition:border-color .15s,background .15s;pointer-events:auto;position:relative;z-index:2;-webkit-tap-highlight-color:rgba(138,106,170,0.25)}
 .agent-qr-btn:hover{border-color:var(--accent);background:rgba(138,106,170,0.1)}
+/* Sprint G — touch targets + mock banner + empty state */
+.agent-qr-btn,.suggestion-option{
+  min-height:36px;min-width:44px;padding:8px 14px;font-size:12px;line-height:1.3;
+  display:inline-flex;align-items:center;justify-content:center;touch-action:manipulation;
+}
+.agent-refine-btn{
+  min-height:32px;padding:6px 12px;font-size:11px;touch-action:manipulation;
+  display:inline-flex;align-items:center;
+}
+.agent-quick-replies,.agent-refine-bar,.suggestion-options{gap:8px}
+.agent-mock-banner{
+  display:none;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:8px 12px;font-size:11px;line-height:1.4;
+  background:linear-gradient(90deg,rgba(90,138,154,0.14),rgba(138,106,170,0.10));
+  border-bottom:1px solid rgba(90,138,154,0.25);color:var(--text);
+}
+.agent-mock-banner[data-on="1"]{display:flex}
+.agent-mock-banner strong{color:var(--blue);font-weight:600;letter-spacing:0.02em}
+.agent-mock-banner .mock-pill{
+  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;
+  padding:2px 8px;border-radius:999px;background:rgba(90,138,154,0.2);color:var(--blue);
+}
+.agent-mock-banner a{color:var(--accent);text-decoration:underline;cursor:pointer}
+.agent-welcome-inner{
+  text-align:center;padding:18px 14px 22px;max-width:260px;margin:0 auto;
+}
+.agent-welcome-inner .aw-title{
+  font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;letter-spacing:0.02em;
+}
+.agent-welcome-inner .aw-body{
+  font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;
+}
+.agent-welcome-starters{
+  display:flex;flex-direction:column;gap:8px;width:100%;
+}
+.agent-welcome-starters button{
+  width:100%;min-height:40px;padding:8px 12px;border-radius:10px;
+  border:1px solid var(--border2);background:rgba(255,255,255,0.75);
+  font-family:'Josefin Sans',sans-serif;font-size:12px;color:var(--text);
+  cursor:pointer;text-align:left;line-height:1.35;touch-action:manipulation;
+  transition:border-color .15s,background .15s;
+}
+.agent-welcome-starters button:hover{
+  border-color:var(--accent);background:rgba(138,106,170,0.08);
+}
+.agent-welcome-starters button span{
+  display:block;font-size:10px;color:var(--dim);margin-top:2px;
+}
+.agent-welcome-hint{
+  margin-top:12px;font-size:10px;color:var(--dim);line-height:1.4;
+}
+
 .agent-refine-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .agent-refine-btn{padding:3px 8px;border:1px dashed var(--border2);border-radius:6px;background:transparent;font-size:10px;font-family:'Josefin Sans',sans-serif;color:var(--muted);cursor:pointer}
 .agent-refine-btn:hover{color:var(--accent);border-color:var(--accent)}
@@ -545,11 +597,23 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <span class="agent-status-indicator" id="agentStatusIndicator"></span>
       <span class="byok-status" id="byokStatus"></span>
     </div>
+    <div class="agent-mock-banner" id="agentMockBanner" role="status" aria-live="polite">
+      <span class="mock-pill">Demo</span>
+      <span><strong>Mock mode</strong> — no API key needed. Canned replies for UI smoke tests &amp; portfolio demos.</span>
+      <a href="?" title="Exit mock mode">Exit demo</a>
+    </div>
     <div class="active-preset-indicator" id="activePresetIndicator" style="display:none;padding:6px 12px;font-size:11px;border-bottom:1px solid var(--border);background:rgba(90,138,154,0.04)"></div>
     <div class="agent-messages" id="agentMessages">
       <div class="agent-welcome" id="agentWelcome">
-        <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px 8px;line-height:1.6">
-          Describe what you want to create.<br>I'll deliver a finished, model-ready prompt in one go.
+        <div class="agent-welcome-inner">
+          <div class="aw-title">What are we making?</div>
+          <div class="aw-body">Describe a shot, character, or poster. I'll return a finished, model-ready prompt — or ask one clarifying question with tappable options.</div>
+          <div class="agent-welcome-starters" id="agentWelcomeStarters">
+            <button type="button" data-agent-starter="cinematic wide shot of a rain-soaked neo-noir alley at night, neon reflections">Cinematic alley at night<span>env · mood lighting</span></button>
+            <button type="button" data-agent-starter="character sheet for a weary 40-year-old detective, photoreal cinematic, full turnaround">Detective character sheet<span>character · consistency</span></button>
+            <button type="button" data-agent-starter="theatrical one-sheet film poster, lone astronaut silhouette, deep space, bold title space">Sci-fi one-sheet poster<span>poster · key art</span></button>
+          </div>
+          <div class="agent-welcome-hint" id="agentWelcomeHint">Tip: set your model in the dropdown below. Add <code style="font-size:10px">?mock=1</code> to the URL to demo without an API key.</div>
         </div>
       </div>
     </div>
@@ -2516,13 +2580,21 @@ function checkBYOKStatus(){
 function updateBYOKIndicator(){
   const el=document.getElementById("byokStatus");
   if(!el)return;
+  if(typeof isMockMode==="function"&&isMockMode()){
+    el.innerHTML='<span class="byok-dot ok"></span>Demo';
+    el.style.color="var(--blue)";
+    el.title="Mock mode — no API key required";
+    return {configured:true,mock:true};
+  }
   const st=checkBYOKStatus();
   if(st.configured){
     el.innerHTML='<span class="byok-dot ok"></span>已配置';
     el.style.color="var(--green)";
+    el.title="";
   }else{
     el.innerHTML='<span class="byok-dot missing"></span>未配置';
     el.style.color="var(--danger)";
+    el.title="Open Settings to add API key";
   }
   return st;
 }
@@ -3522,6 +3594,39 @@ async function callAnthropic(apiKey,baseUrl,modelName,systemPrompt,userMessage,s
 function isMockMode(){
   try{return new URLSearchParams(location.search).get("mock")==="1"}catch{return false}
 }
+function applyMockBanner(){
+  const el=document.getElementById("agentMockBanner");
+  if(!el)return;
+  const on=isMockMode();
+  el.dataset.on=on?"1":"0";
+  el.setAttribute("aria-hidden", on?"false":"true");
+  const hint=document.getElementById("agentWelcomeHint");
+  if(hint){
+    hint.innerHTML=on
+      ? 'Demo mode is on — starters and replies work with <strong>no API key</strong>.'
+      : 'Tip: set your model in the dropdown below. Add <code style="font-size:10px">?mock=1</code> to the URL to demo without an API key.';
+  }
+  // Soften BYOK urgency in mock
+  const byok=document.getElementById("byokStatus");
+  if(byok&&on){
+    byok.innerHTML='<span class="byok-dot ok"></span>Demo';
+    byok.style.color="var(--blue)";
+    byok.title="Mock mode — no API key required";
+  }
+}
+function bindAgentWelcomeStarters(){
+  const root=document.getElementById("agentWelcomeStarters");
+  if(!root||root.dataset.bound==="1")return;
+  root.dataset.bound="1";
+  root.addEventListener("click",function(ev){
+    const btn=ev.target&&ev.target.closest&&ev.target.closest("[data-agent-starter]");
+    if(!btn)return;
+    ev.preventDefault();
+    const text=btn.getAttribute("data-agent-starter")||"";
+    if(!text)return;
+    pickAgentQuickReply(text);
+  });
+}
 function mockAgentResponse(userMessage,targetModel){
   const msg=(userMessage||"").trim();
   const low=msg.toLowerCase();
@@ -3705,6 +3810,8 @@ function init(){
   const agentInputEl=document.getElementById("agentInput");
   if(agentInputEl)agentInputEl.addEventListener("keydown",handleAgentInputKeydown);
   try{restoreAgentConversation()}catch(e){}
+  try{applyMockBanner()}catch(e){}
+  try{bindAgentWelcomeStarters()}catch(e){}
   const savedMode=localStorage.getItem("pb-mode");
   if(savedMode==="film"||savedMode==="general"){currentMode=savedMode;document.querySelectorAll(".mode-tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===savedMode))}
   renderStep1();
