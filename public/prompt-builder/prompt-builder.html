@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-c: pb-library star/tags/search/export 2026-07-15 -->
+<!-- pb-sprint-c: pb-library + escAttr import-hardening 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -2389,7 +2389,7 @@ function renderLibrary(){
     const when=isNaN(t)?"":t.toLocaleString();
     const tagHtml=(it.tags||[]).map(tg=>`<span class="lib-tag">${escHtml(tg)}</span>`).join("");
     const note=it.note?`<span title="note">· ${escHtml(it.note)}</span>`:"";
-    return `<div class="library-item" data-id="${escHtml(it.id)}">
+    return `<div class="library-item" data-id="${escAttr(it.id)}">
       <div class="lib-text" onclick="loadLibraryItem(${JSON.stringify(it.id)})" title="Load into preview">${escHtml((it.prompt||"").slice(0,180))}${(it.prompt||"").length>180?"…":""}</div>
       <div class="lib-meta">
         <span>${escHtml(it.model||"?")}</span>
@@ -2425,15 +2425,18 @@ function importLibraryFile(ev){
       const data=JSON.parse(String(reader.result||""));
       const incoming=Array.isArray(data)?data:(Array.isArray(data.items)?data.items:null);
       if(!incoming){toast("Invalid library file");return}
-      const cleaned=incoming.map(it=>({
-        id:it.id||uidLib(),
+      const cleaned=incoming.map(it=>{
+        const rawId=String(it.id||"");
+        const safeId=/^lib_[a-z0-9_]+$/i.test(rawId)?rawId:uidLib();
+        return {
+        id:safeId,
         prompt:String(it.prompt||it.text||"").trim(),
         model:it.model||"",
         preset_id:it.preset_id||null,
         tags:Array.isArray(it.tags)?it.tags.map(String).filter(Boolean).slice(0,12):[],
         note:it.note?String(it.note).slice(0,200):undefined,
         time:it.time||Date.now()
-      })).filter(it=>it.prompt);
+      }}).filter(it=>it.prompt);
       if(!cleaned.length){toast("No prompts in file");return}
       const existing=getLibrary();
       const byKey=new Map(existing.map(x=>[x.id,x]));
