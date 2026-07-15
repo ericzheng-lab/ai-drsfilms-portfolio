@@ -453,6 +453,84 @@ function Hero({ accent, rotateRole }) {
   );
 }
 
+
+function ByokStrip({ accent }) {
+  return (
+    <section style={{
+      padding: '0 32px 48px', maxWidth: 1280, margin: '0 auto',
+      display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 18, alignItems: 'stretch',
+    }}>
+      <div style={{
+        border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px',
+        background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(10px)',
+        boxShadow: '0 12px 30px -20px rgba(74,52,108,0.25)',
+      }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 12,
+          fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em',
+          color: 'var(--dim)', textTransform: 'uppercase',
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: '50%', background: accent,
+            display: 'inline-block',
+          }}/> BYOK — your key, your data
+        </div>
+        <h3 style={{ fontSize: 20, fontWeight: 400, letterSpacing: '-0.02em', marginBottom: 10, color: 'var(--text)' }}>
+          No backend. No key storage. No tracking.
+        </h3>
+        <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', marginBottom: 12 }}>
+          Prompt Builder runs 100% in your browser. If you use the AI Agent to auto-build a prompt,
+          bring your own Anthropic / OpenAI-compatible key. Your key is saved only in this browser’s localStorage,
+          calls go directly to the provider — never through our servers.
+        </p>
+        <ul style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--text-2)', paddingLeft: 18, marginBottom: 14 }}>
+          <li><strong style={{ color: 'var(--text)' }}>Try without a key</strong> — add <code style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{'{'}?mock=1{'}'}</code> to the URL for canned replies &amp; portfolio demos.</li>
+          <li><strong style={{ color: 'var(--text)' }}>Image models</strong> produce text-only prompts — paste into Midjourney (V7 default), Flux, GPT Image, or Nano Banana.</li>
+        </ul>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <a href="/prompt-builder/prompt-builder?mock=1" style={{
+            padding: '9px 16px', borderRadius: 9, background: accent, color: '#fff', fontWeight: 500, fontSize: 13,
+          }}>Try demo — no key →</a>
+          <a href="/prompt-builder/prompt-builder" style={{
+            padding: '9px 16px', borderRadius: 9, border: `1px solid ${accent}`, color: accent, fontWeight: 500, fontSize: 13,
+            background: 'rgba(255,255,255,0.6)',
+          }}>Open with BYOK →</a>
+        </div>
+      </div>
+      <div style={{
+        border: '1px dashed var(--border)', borderRadius: 14, padding: '18px 20px',
+        background: 'rgba(255,255,255,0.45)', color: 'var(--muted)',
+      }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>How BYOK works</div>
+        <div style={{ display: 'grid', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: accent }}>01</span>
+            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Click ⚙️ Settings → paste your <code style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>sk-ant-…</code> or OpenAI-compatible key → Save</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: accent }}>02</span>
+            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Agent talks directly to Anthropic / OpenAI — key never leaves your browser</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: accent }}>03</span>
+            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Remove anytime in Settings, or clear site storage — we never see it</span>
+          </div>
+        </div>
+        <div style={{
+          marginTop: 14, padding: '10px 12px', borderRadius: 10, background: 'rgba(138,106,170,0.08)',
+          border: '1px solid rgba(138,106,170,0.18)', fontSize: 12, lineHeight: 1.5, color: 'var(--text-2)',
+        }}>
+          <strong>Privacy:</strong> No backend, no analytics on prompts, no key sync. Everything is client-side.
+          Need to prove portfolio without a key? Use <code style={{ fontFamily: 'var(--mono)', fontSize: 11 }}>?mock=1</code>.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+Object.assign(window, { ByokStrip });
+
+
 Object.assign(window, { Hero });
 
 
@@ -1242,6 +1320,7 @@ function App() {
     <div>
       <Hero accent={t.accent} rotateRole={t.rotateRole} />
       <DemoVideo />
+      <ByokStrip accent={accent} />
       <ShowcaseSection accent={t.accent} />
       <CategoriesSection accent={t.accent} />
       <AudienceProofSection accent={t.accent} />

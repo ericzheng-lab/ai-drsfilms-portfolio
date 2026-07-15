@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-i: chips 44px + copy badge + library badge + scroll preserve 2026-07-15 -->
+<!-- pb-sprint-j: BYOK clarity landing + top bar + mock toggle 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -412,8 +412,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 
 <div class="header">
   <h1><span>Prompt</span> Builder <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:8px">Film & AI Image</span></h1>
-  <div class="header-right">
-    <button onclick="openSettings()" title="API Settings" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:8px;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">⚙</button>
+  <div class="header-right" style="display:flex;align-items:center;gap:8px">
+    <span class="byok-top-status" id="byokTopStatus" style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.55);font-size:11px;color:var(--muted)"></span>
+    <button type="button" id="byokMockToggle" onclick="toggleMockMode()" title="Toggle demo no-key mode" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.55);font-size:11px;color:var(--muted);cursor:pointer">Try without key</button>
+    <button onclick="openSettings()" title="API Settings (BYOK)" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:8px;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">⚙ <span style="font-size:11px;font-family:var(--sans)">BYOK</span></button>
   </div>
 </div>
 
@@ -647,7 +649,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
             <button type="button" data-agent-starter="character sheet for a weary 40-year-old detective, photoreal cinematic, full turnaround">Detective character sheet<span>character · consistency</span></button>
             <button type="button" data-agent-starter="theatrical one-sheet film poster, lone astronaut silhouette, deep space, bold title space">Sci-fi one-sheet poster<span>poster · key art</span></button>
           </div>
-          <div class="agent-welcome-hint" id="agentWelcomeHint">Tip: set your model in the dropdown below. Add <code style="font-size:10px">?mock=1</code> to the URL to demo without an API key.</div>
+          <div class="agent-welcome-hint" id="agentWelcomeHint">Tip: set your model in the dropdown below. Click <strong id="byokTopStatus">Try without key</strong> above or add <code style="font-size:10px">?mock=1</code> to URL for no-key demo, or open <strong>⚙ BYOK</strong> to add your key.</div>
         </div>
       </div>
     </div>
@@ -688,6 +690,16 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <button class="settings-close" onclick="closeSettings()">&times;</button>
   </div>
   <div class="settings-body">
+    <div style="padding:12px 14px;border-radius:10px;border:1px solid rgba(138,106,170,0.18);background:rgba(138,106,170,0.08);margin-bottom:14px;font-size:12px;line-height:1.55;color:var(--text-2)">
+      <div style="font-weight:600;margin-bottom:6px;color:var(--text)">Bring your own key (BYOK) — how it works</div>
+      <div>Your key stays in <code style="font-family:var(--mono);font-size:11px">this browser only</code> (localStorage). Calls go <strong>directly</strong> to Anthropic / OpenAI — never through our servers. No backend, no tracking.</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <span style="padding:3px 8px;border-radius:999px;background:rgba(90,138,154,0.12);font-family:var(--mono);font-size:10px">sk-ant-… (Anthropic)</span>
+        <span style="padding:3px 8px;border-radius:999px;background:rgba(90,138,154,0.12);font-family:var(--mono);font-size:10px">OpenAI / compatible</span>
+        <span style="padding:3px 8px;border-radius:999px;background:rgba(90,138,154,0.12);font-family:var(--mono);font-size:10px">?mock=1 = no key demo</span>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--dim)">Tip: Want to demo with no key? Turn on mock mode — it uses canned replies to show the UI flow. Real prompts need a key.</div>
+    </div>
     <div class="settings-group">
       <label class="field-label">Provider</label>
       <select id="settingsProvider" onchange="onSettingsProviderChange()">
@@ -2648,25 +2660,57 @@ function checkBYOKStatus(){
 
 function updateBYOKIndicator(){
   const el=document.getElementById("byokStatus");
-  if(!el)return;
-  if(typeof isMockMode==="function"&&isMockMode()){
-    el.innerHTML='<span class="byok-dot ok"></span>Demo';
-    el.style.color="var(--blue)";
-    el.title="Mock mode — no API key required";
+  const topEl=document.getElementById("byokTopStatus");
+  const mockBtn=document.getElementById("byokMockToggle");
+  const isMock=(typeof isMockMode==="function"&&isMockMode());
+  if(!el&&!topEl)return {configured:false};
+  if(isMock){
+    if(el){el.innerHTML='<span class="byok-dot ok"></span>Demo';el.style.color="var(--blue)";el.title="Mock mode — no API key required";}
+    if(topEl){topEl.innerHTML='<span class="byok-dot ok" style="width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--blue)"></span> Demo (no key) — canned replies';topEl.style.color="var(--blue)";topEl.title="Mock mode: no key needed";}
+    if(mockBtn){mockBtn.textContent="Exit demo";mockBtn.style.borderColor="var(--blue)";mockBtn.style.color="var(--blue)";}
     return {configured:true,mock:true};
   }
-  const st=checkBYOKStatus();
-  if(st.configured){
-    el.innerHTML='<span class="byok-dot ok"></span>已配置';
-    el.style.color="var(--green)";
-    el.title="";
-  }else{
-    el.innerHTML='<span class="byok-dot missing"></span>未配置';
-    el.style.color="var(--danger)";
-    el.title="Open Settings to add API key";
+  const st=(typeof checkBYOKStatus==="function")?checkBYOKStatus():{configured:false};
+  if(el){
+    if(st.configured){
+      el.innerHTML='<span class="byok-dot ok"></span>已配置';
+      el.style.color="var(--green)";
+      el.title="API key configured — ready";
+    }else{
+      el.innerHTML='<span class="byok-dot missing"></span>未配置';
+      el.style.color="var(--danger)";
+      el.title="Open Settings (⚙ BYOK) to add API key, or toggle Try without key";
+    }
   }
+  if(topEl){
+    if(st.configured){
+      topEl.innerHTML='<span class="byok-dot ok" style="width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--green)"></span> BYOK ready — key in this browser only';
+      topEl.style.color="var(--green)";
+      topEl.title="Key stored locally, calls go direct to provider";
+    }else{
+      topEl.innerHTML='<span class="byok-dot missing" style="width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--danger)"></span> No key — <span style="text-decoration:underline;cursor:pointer" onclick="toggleMockMode()">Try without key</span> or <span style="text-decoration:underline;cursor:pointer" onclick="openSettings()">Add key</span>';
+      topEl.style.color="var(--danger)";
+      topEl.title="Add your Anthropic/OpenAI key in Settings, or demo with no key";
+    }
+  }
+  if(mockBtn){mockBtn.textContent="Try without key";mockBtn.style.borderColor="var(--border)";mockBtn.style.color="var(--muted)";}
   return st;
 }
+function toggleMockMode(){
+  try{
+    const url=new URL(location.href);
+    if(url.searchParams.get("mock")==="1"){
+      url.searchParams.delete("mock");
+    }else{
+      url.searchParams.set("mock","1");
+    }
+    location.href=url.toString();
+  }catch(e){
+    if(location.search.includes("mock=1")) location.href=location.pathname;
+    else location.href=location.pathname+"?mock=1";
+  }
+}
+
 
 function showAgentSetupGuide(){
   const msgEl=document.getElementById("agentMessages");
