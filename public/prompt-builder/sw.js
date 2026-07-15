@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prompt-builder-v3';
+const CACHE_NAME = 'prompt-builder-v4-byok-hotfix-2026-07-15';
 const ASSETS = [
   './',
   './index.html',
@@ -34,7 +34,11 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
-  );
+  const req=event.request;
+  const isJsx=req.url.includes('landing-bundle.jsx')||req.url.includes('tweaks-panel.jsx')||req.url.includes('index.html');
+  if(isJsx){
+    event.respondWith(fetch(req).then(r=>{ const c=r.clone(); caches.open(CACHE_NAME).then(cache=>cache.put(req,c)); return r; }).catch(()=>caches.match(req)));
+  }else{
+    event.respondWith(caches.match(req).then(response=>response||fetch(req)));
+  }
 });
