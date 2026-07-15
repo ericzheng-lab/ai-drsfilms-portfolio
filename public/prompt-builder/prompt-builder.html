@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-c: pb-library + escAttr import-hardening 2026-07-15 -->
+<!-- pb-sprint-d: image distill MODEL_CARDS.techniques + chips 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -1017,7 +1017,7 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What should this character convey? e.g., intimidating authority, quiet vulnerability..."}
 ],
 fieldOptions:{
-personality:["Calm","Observant","Melancholic","Fierce","Cunning","Warm","Cold","Reckless","Methodical","Charismatic","Brooding","Eccentric","Stoic","Volatile","Wise","Playful"]
+personality:["Calm","Observant","Melancholic","Fierce","Cunning","Warm","Cold","Reckless","Methodical","Charismatic","Brooding","Eccentric","Stoic","Volatile","Wise","Playful","Haunted","Regal","Weary","Menacing","Vulnerable","Authoritative"]
 },
 systemPrompt:`You are a character sheet generator for film production. Generate a multi-angle character consistency reference sheet.
 
@@ -1046,10 +1046,10 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What should the viewer feel?"}
 ],
 fieldOptions:{
-weather:["Clear","Fog","Mist","Rain","Heavy rain","Snow","Dust storm","Storm approaching","Haze","Humid"],
-era:["1940s","1960s","1970s","1980s","Near-future","Medieval","Ancient","Post-apocalyptic","Victorian","Modern day"],
-colorRef:["Teal + amber","Muted earth","Neon-soaked","Golden warm","Cool blue-grey","Monochrome","Saturated tropical","Desaturated pastel"],
-cameraAngle:["Wide establishing","Low angle","Drone aerial","Eye-level","Telephoto compression","Through foliage","Road leading in"]
+weather:["Clear","Fog","Mist","Rain","Heavy rain","Snow","Dust storm","Storm approaching","Haze","Humid","Smog","After-rain wet ground","Heat shimmer"],
+era:["1940s","1960s","1970s","1980s","Near-future","Medieval","Ancient","Post-apocalyptic","Victorian","Modern day","1990s","2010s","Alt-history","Timeless"],
+colorRef:["Teal + amber","Muted earth","Neon-soaked","Golden warm","Cool blue-grey","Monochrome","Saturated tropical","Desaturated pastel","Teal + orange grade","Bleach bypass","Day-for-night"],
+cameraAngle:["Wide establishing","Low angle","Drone aerial","Eye-level","Telephoto compression","Through foliage","Road leading in","Matte-painting plate","Location scout still","Through doorway frame","OTS into set"]
 },
 systemPrompt:`You are a cinematic location scout and production designer. Generate a photorealistic outdoor environment that could serve as a location reference for a film crew.
 
@@ -1077,7 +1077,7 @@ fields:[
 ],
 fieldOptions:{
 weather:["Clear sky","Fog rolling in","Dramatic clouds","Storm approaching","Light rain","Haze","Snow","Dust"],
-scale:["Intimate — single building","Small — street or courtyard","Medium — city block","Large — cityscape","Epic — landscape/mountain","Vast — aerial/bird's eye"],
+scale:["Intimate — single building","Small — street or courtyard","Medium — city block","Large — cityscape","Epic — landscape/mountain","Vast — aerial/bird's eye","Horizon-dominant vista","Fog-layered depth"],
 colorRef:["Warm golden","Cool blue-grey","Teal + orange","Desaturated earth","Vibrant saturated","Monochrome","Pastel soft","Deep shadows"]
 },
 systemPrompt:`You are a cinematic cinematographer generating a wide establishing panorama shot. This is the FIRST image in a scene — other angles will be derived from it for spatial consistency.
@@ -1112,7 +1112,7 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What emotion should this poster evoke?"}
 ],
 fieldOptions:{
-colorRef:["Teal + orange","Monochrome","Warm golden","Cool blue","Neon-soaked","Desaturated earth","High contrast B&W","Deep red + black"]
+colorRef:["Teal + orange","Monochrome","Warm golden","Cool blue","Neon-soaked","Desaturated earth","High contrast B&W","Deep red + black","One-sheet hierarchy","Title treatment space","Teaser minimal"]
 },
 systemPrompt:`You are a film poster and key art designer for theatrical marketing. Generate a cinematic movie poster composition.
 
@@ -1193,7 +1193,7 @@ fields:[
 {id:"panels_count",label:"Panels count",type:"select",options:["4-panel grid","6-panel grid","9-panel grid"]}
 ],
 fieldOptions:{
-mood:["Oppressive","Catastrophic","Awe-struck","High tension","Eerie","Mysterious","Epic","Heroic","Desolate","Calm"]
+mood:["Oppressive","Catastrophic","Awe-struck","High tension","Eerie","Mysterious","Epic","Heroic","Desolate","Calm","Panel rhythm","Splash-page beat","Ink-wash noir"]
 },
 systemPrompt:`You are a professional cinematic storyboard artist and illustrator for high-budget films. Generate a multi-panel narrative storyboard sheet.
 
@@ -1223,8 +1223,8 @@ fields:[
 {id:"intention",label:"Director's Vision",type:"textarea",placeholder:"What story does their look tell? e.g., battle-hardened commander, weary survivor..."}
 ],
 fieldOptions:{
-build:["Athletic","Tall & Lean","Muscular","Stocky","Slender","Weathered","Imposing","Petite","Towering","Wiry"],
-personality:["Grim","Stoic","Cunning","Jovial","Weary","Menacing","Regal","Haunted","Arrogant","Sardonic"]
+build:["Athletic","Tall & Lean","Muscular","Stocky","Slender","Weathered","Imposing","Petite","Towering","Wiry","Hero costume ready","Strong silhouette"],
+personality:["Grim","Stoic","Cunning","Jovial","Weary","Menacing","Regal","Haunted","Arrogant","Sardonic","Identity-bible clear","Costume-forward"]
 },
 systemPrompt:`You are a leading film concept artist and character designer. Generate a highly detailed character design concept board.
 
@@ -1247,7 +1247,7 @@ fields:[
 {id:"consistency",label:"Consistency Markers",type:"textarea",placeholder:"e.g., Always has the signature cheek scar and green eyes across all expressions"}
 ],
 fieldOptions:{
-expressions:["Joyful","Angry/Furious","Timid/Fearful","Inquisitive/Curious","Devastated/Sad","Smug/Arrogant","Shocked/Surprised","Skeptical","Wry Smile","Intense Focus"]
+expressions:["Joyful","Angry/Furious","Timid/Fearful","Inquisitive/Curious","Devastated/Sad","Smug/Arrogant","Shocked/Surprised","Skeptical","Wry Smile","Intense Focus","Micro-expression","Performance still","Eye-line locked"]
 },
 systemPrompt:`You are a character designer and expression sheet specialist. Generate a character facial expression reference board.
 
@@ -1270,9 +1270,9 @@ fields:[
 {id:"mood",label:"Mood & Atmosphere",type:"chips",placeholder:"Custom mood..."}
 ],
 fieldOptions:{
-narrativeArc:["Establishing wide shot","Medium tracking shot","Extreme close-up beat","Dynamic low-angle action shot","POV tracking shot","High-angle resolution"],
-cameraMovement:["Dolly Zoom","Whip Pan","Dutch Tilt","Drone Crane Shot","Steadicam OTS","Static Lock-off","Low-angle Tilt-up"],
-mood:["Suspenseful","High-octane action","Eerie & Quiet","Comedic & Playful","Melodramatic","Claustrophobic"]
+narrativeArc:["Establishing wide shot","Medium tracking shot","Extreme close-up beat","Dynamic low-angle action shot","POV tracking shot","High-angle resolution","Before/after cut pair","Coverage set","Reverse angle"],
+cameraMovement:["Dolly Zoom","Whip Pan","Dutch Tilt","Drone Crane Shot","Steadicam OTS","Static Lock-off","Low-angle Tilt-up","Push-in","Pull-out","Orbit implied"],
+mood:["Suspenseful","High-octane action","Eerie & Quiet","Comedic & Playful","Melodramatic","Claustrophobic","Continuity-safe","Still-frame beats"]
 },
 systemPrompt:`You are a professional cinematographer and cinematic storyboard director. Generate a highly sequential, narrative-driven storyboard panel sheet.
 
@@ -1296,8 +1296,8 @@ fields:[
 {id:"artStyle",label:"Art Style",type:"select",options:["Photorealistic studio render","Highly detailed concept art","Stylized illustration/sketch","Patent blueprint style"]}
 ],
 fieldOptions:{
-era:["Steampunk","Dieselpunk","Cyberpunk","Medieval Fantasy","Sci-Fi Space Opera","Post-Apocalyptic","Historical Victorian","Ancient Relic"],
-materials:["Brass","Polished Gold","Damascus Steel","Weathered Leather","Carbon Fiber","Bioluminescent Glass","Carved Obsidian","Forged Iron","Oak Wood"]
+era:["Steampunk","Dieselpunk","Cyberpunk","Medieval Fantasy","Sci-Fi Space Opera","Post-Apocalyptic","Historical Victorian","Ancient Relic","Contemporary practical","Near-future prop"],
+materials:["Brass","Polished Gold","Damascus Steel","Weathered Leather","Carbon Fiber","Bioluminescent Glass","Carved Obsidian","Forged Iron","Oak Wood","Worn paint","Scale reference","Insert detail"]
 },
 systemPrompt:`You are a leading film production prop master and conceptual designer. Generate a highly detailed production-grade prop/costume design sheet.
 
@@ -3001,7 +3001,7 @@ Output ONLY the JSON object. No markdown fences, no explanation, no extra text.`
 const MODEL_CARDS={
 midjourney:{
   version:"V8.1",
-  updated:"2026-07-14",
+  updated:"2026-07-15",
   identity:"Midjourney V8.1 (default since 2026-06-10) — high prompt adherence, strong detail retention, 4–5× faster than V7. Supports HD/2K.",
   format:"Output ONLY a single prompt starting with /imagine. No explanation, no markdown fences.",
   structure:["Front-load 3–5 strongest keywords first","Subject + Action","Setting / environment","Camera / lens / framing","Lighting / mood","Style / medium","Fine details","Parameters (--ar, --s, --raw, --sref, --sw, --chaos, --profile)"],
@@ -3016,12 +3016,12 @@ midjourney:{
   ],
   dos:["Use :: multi-prompt weighting when competing concepts need balance","Prefer concrete camera/lighting language over vague adjectives","Keep parameters at the end"],
   donts:["Do not invent unreleased version flags","Do not omit /imagine prefix","Do not dump long prose before the subject"],
-  techniques:[":: weight splits for subject vs style","--raw for product/layout fidelity","--sref + --sw for brand look continuity"],
+  techniques:["Params after prompt text; space before every --flag","--sref URL/code + --sw 0-1000 for look lock","--oref for person/object likeness (Omni Reference)","--raw for photoreal / product fidelity","--chaos 0-100 for grid variety then refine low","--ar for film frames (16:9, 3:2, 21:9)","--hd ~2K / --sd ~1K on V8.1 when available",":: weight splits for competing concepts","Front-load subject; name lens + light quality","Avoid SD quality-token spam (masterpiece, 8k)"],
   example:"/imagine elderly fisherman mending nets at dawn harbor, ECU weathered hands, 85mm, soft haze, cinematic still --ar 16:9 --s 200 --raw"
 },
 flux:{
   version:"FLUX.2",
-  updated:"2026-07-14",
+  updated:"2026-07-15",
   identity:"Black Forest Labs FLUX.2 — variants: [pro] production, [flex] tunable, [max] highest quality + web, [klein] open, [dev] local. Natural language or JSON structured prompting; no negative prompts.",
   format:"Output ONLY the prompt as natural language (or a single JSON object if structured mode is requested). No explanation.",
   structure:["Image type","Subject + Action","Location / context","Style / medium","Camera / lens","Lighting","Colors / materials","Effect / atmosphere"],
@@ -3031,12 +3031,12 @@ flux:{
   ],
   dos:["Describe what IS present (positive phrasing replaces negatives)","Specify materials, textures, lens, lighting concretely","JSON structured prompting is official and interchangeable with prose"],
   donts:["No negative prompts","No SDXL quality spam (masterpiece, best quality, etc.)","No weight syntax"],
-  techniques:["Subject+Action+Style+Context short form","Full form: Image type / Subject / Location / Style / Camera / Lighting / Colors / Effect","Quoted on-image text for legible lettering"],
+  techniques:["Natural full sentences — not comma keyword soup","Order: Subject → Action → Style → Context; front-load priority","No negative prompts — rephrase as positive presence","JSON structured prompts for multi-subject production","Hex colors bound to named objects (sofa #1B6B6F)","Quote on-image text; place, size, font, color","Camera/lens/film stock language for photoreal","Multi-ref: name each input role (subject/style/bg)","Medium length ~30-80 words; add only what changes","Drop MJ flags and (token:1.2) weight syntax"],
   example:"A photorealistic medium shot of a film producer at a night edit bay, soft practical lamp, 35mm, shallow DOF, warm tungsten against cool monitor glow, subtle film grain"
 },
 gptimage:{
   version:"gpt-image-2",
-  updated:"2026-07-14",
+  updated:"2026-07-15",
   identity:"OpenAI gpt-image-2 (recommended default). Multi-format prompts; strong text rendering; free size within long-edge <3840, multiples of 16, ratio ≤3:1; quality low|medium|high.",
   format:"Output ONLY a valid JSON object. No markdown fences, no commentary.",
   structure:["Background / scene first","Subject","Key details","Constraints / must_avoid","Optional layout for multi-panel"],
@@ -3047,12 +3047,12 @@ gptimage:{
   ],
   dos:["Prefer scannable production templates","Put scene before subject when composition matters","Use layout.sections for multi-panel / storyboard"],
   donts:["Do not wrap JSON in markdown fences","Do not omit type or subject"],
-  techniques:["Order: scene → subject → details → constraints","Quoted exact text for titles/signage","JSON fields: type, goal, subject, scene, style, camera, layout, details, constraints"],
+  techniques:["Order: scene → subject → details → constraints","Quote or ALL-CAPS exact on-image text; spell hard words","Multi-image: Image 1 / Image 2 + interaction roles","Edits: change only X; restate keep-everything-else","Photoreal + real-camera language over polish spam","JSON fields: type, goal, subject, scene, style, camera, layout, details, constraints","layout.sections for multi-panel / storyboard stills","quality low|medium|high for density vs speed","Iterate single-change follow-ups, not mega-prompts","Commercial layout: hierarchy, HEX, placement explicit"],
   example:'{"type":"cinematic still","goal":"key art","subject":"lone rider on ridgeline","scene":"pre-dawn desert, low fog","style":"photoreal, anamorphic","camera":"WS, 40mm, low angle","details":"dust motes, rim light","constraints":{"must_keep":["silhouette readable"],"must_avoid":["logo watermark"]}}'
 },
 nano:{
   version:"gemini-3-pro-image",
-  updated:"2026-07-14",
+  updated:"2026-07-15",
   identity:"Google Nano Banana Pro = gemini-3-pro-image. Natural language only. Core five: Subject / Composition / Action / Location / Style. Resolutions 1K/2K/4K. Reference images: up to 6 objects + 5 characters + 3 styles with explicit role assignment.",
   format:"Output ONLY natural-language prompt text. No SDXL syntax, no weights, no negative prompts, no markdown fences.",
   structure:["Subject","Composition","Action","Location","Style","Optional: Camera / Lighting / Aspect Ratio / Text Integration / Factual Constraints / Reference role map"],
@@ -3062,7 +3062,7 @@ nano:{
   ],
   dos:["Write like briefing a cinematographer","Be explicit about composition and materials","Assign reference roles when multi-image"],
   donts:["No SDXL emphasis weights","No negative prompt blocks","No parameter flag soup"],
-  techniques:["Five-element core then advanced layers","Reference role sentences","Factual constraints for product accuracy"],
+  techniques:["Photoreal template: shot type + subject + setting + light + angle + lens","Quote exact text; font style, layout, design intent","Reference roles: objects ≤6, characters ≤5, styles ≤3","Edits: change only [element]; preserve style/light/composition","Multi-image compose: element from image N → placement","Multi-turn conversation for iterative still edits","image_size 1K|2K|4K + aspect_ratio in generation settings","HEX brand colors over vague color words","Style transfer: keep composition; apply named style refs","Positive framing only — no SDXL weights or negatives"],
   example:"Medium close-up of a young director reviewing dailies on a handheld monitor, over-shoulder composition, soft window light from camera left, contemporary production office, naturalistic documentary still, 2K, shallow depth of field"
 }
 };
