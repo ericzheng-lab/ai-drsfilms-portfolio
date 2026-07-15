@@ -1320,7 +1320,7 @@ function App() {
     <div>
       <Hero accent={t.accent} rotateRole={t.rotateRole} />
       <DemoVideo />
-      <ByokStrip accent={accent} />
+      <ByokStrip accent={t.accent} />
       <ShowcaseSection accent={t.accent} />
       <CategoriesSection accent={t.accent} />
       <AudienceProofSection accent={t.accent} />
