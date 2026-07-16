@@ -138,6 +138,7 @@ function HeroNav({ accent }) {
         <a href="#categories" className="hero-nav-text" style={{ color: 'var(--muted)' }}>Categories</a>
         <a href="#anatomy" className="hero-nav-text" style={{ color: 'var(--muted)' }}>How it works</a>
         <a href="#models" className="hero-nav-text" style={{ color: 'var(--muted)' }}>Models</a>
+        <a href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer" className="hero-nav-text" style={{ color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>GitHub <span style={{ fontSize: 10 }}>↗</span></a>
         <a href="https://ai.drsfilms.com" className="hero-nav-text" style={{ color: 'var(--muted)' }}>DRS Films</a>
         <a href="/prompt-builder/prompt-builder" style={{
           padding: '7px 14px', borderRadius: 8, border: `1px solid ${accent}`, color: accent, fontWeight: 500,
@@ -399,7 +400,7 @@ function Hero({ accent, rotateRole }) {
           Select, copy, done.
         </p>
 
-        <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
           <a href="/prompt-builder/prompt-builder" style={{
             padding: '14px 26px', borderRadius: 10, background: accent, color: '#fff',
             fontWeight: 500, fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 10,
@@ -407,6 +408,14 @@ function Hero({ accent, rotateRole }) {
           }}>
             Open Prompt Builder
             <span style={{ fontFamily: 'var(--mono)', fontSize: 13, opacity: 0.8 }}>→</span>
+          </a>
+          <a href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer" style={{
+            padding: '14px 22px', borderRadius: 10,
+            background: 'rgba(255,255,255,0.72)', color: 'var(--text-2)',
+            border: '1px solid var(--border-2)', fontWeight: 500, fontSize: 15,
+            backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: 8,
+          }}>
+            <span style={{ fontSize: 16 }}>↗</span> GitHub — self-serve
           </a>
           <a href="#anatomy" style={{
             padding: '14px 22px', borderRadius: 10,
@@ -495,6 +504,10 @@ function ByokStrip({ accent }) {
             padding: '9px 16px', borderRadius: 9, border: `1px solid ${accent}`, color: accent, fontWeight: 500, fontSize: 13,
             background: 'rgba(255,255,255,0.6)',
           }}>Open with BYOK →</a>
+          <a href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer" style={{
+            padding: '9px 16px', borderRadius: 9, border: '1px solid var(--border-2)', color: 'var(--text-2)', fontWeight: 500, fontSize: 13,
+            background: 'rgba(255,255,255,0.55)',
+          }}>GitHub ↗</a>
         </div>
       </div>
       <div style={{

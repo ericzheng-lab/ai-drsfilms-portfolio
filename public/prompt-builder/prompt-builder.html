@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-j: BYOK clarity landing + top bar + mock toggle 2026-07-15 -->
+<!-- pb-sprint-k: github prominent + BYOK clarity 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -415,6 +415,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <div class="header-right" style="display:flex;align-items:center;gap:8px">
     <span class="byok-top-status" id="byokTopStatus" style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.55);font-size:11px;color:var(--muted)"></span>
     <button type="button" id="byokMockToggle" onclick="toggleMockMode()" title="Toggle demo no-key mode" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.55);font-size:11px;color:var(--muted);cursor:pointer">Try without key</button>
+    <a href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer" title="Open source on GitHub — self-serve" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.6);font-size:11px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:6px"> <span style="font-size:13px">↗</span> GitHub</a>
     <button onclick="openSettings()" title="API Settings (BYOK)" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:8px;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">⚙ <span style="font-size:11px;font-family:var(--sans)">BYOK</span></button>
   </div>
 </div>
@@ -602,6 +603,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <button class="btn" onclick="exportMd()">Export .md</button>
       <button class="btn btn-danger" onclick="confirmClearAll()">Clear All</button>
     </div>
+    <div style="font-size:11px;color:var(--dim);margin-top:4px">Open source — <a href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline">github.com/ericzheng-lab/prompt-builder</a> · self-serve, no account.</div>
 
     <!-- History (auto last-10; not the Library) -->
     <div>
