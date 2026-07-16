@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-k: github prominent + BYOK clarity 2026-07-15 -->
+<!-- pb-sprint-l: onboarding 3-step pure English 2026-07-15 2026-07-15 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -406,6 +406,26 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .settings-group label{display:block;margin-bottom:6px}
 .settings-group input,.settings-group select{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:rgba(255,255,255,0.6);font-family:'Josefin Sans',sans-serif;font-size:14px;color:var(--text);transition:border-color 0.2s}
 .settings-group input:focus,.settings-group select:focus{outline:none;border-color:var(--accent)}
+
+/* ── Onboarding tour ─────────────────────────────────────────── */
+.pb-onboarding-overlay{position:fixed;inset:0;z-index:400;display:none;background:rgba(42,36,56,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pb-onboarding-overlay[data-open="1"]{display:flex;align-items:center;justify-content:center;padding:24px}
+.pb-onboarding-card{width:min(520px,92vw);background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);border:1px solid var(--border-2, rgba(106,90,138,0.25));border-radius:16px;box-shadow:0 24px 80px rgba(42,36,56,0.28);padding:20px 20px 16px;display:flex;flex-direction:column;gap:12px}
+.pb-onboarding-kicker{font-family:var(--mono,monospace);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim,#9988aa)}
+.pb-onboarding-title{font-size:20px;font-weight:500;letter-spacing:0.02em;line-height:1.25;color:var(--text,#2a2438)}
+.pb-onboarding-body{font-size:13px;line-height:1.6;color:var(--text-2,#3d3450)}
+.pb-onboarding-body strong{color:var(--text);font-weight:600}
+.pb-onboarding-bullets{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.55;color:var(--muted,#7a6a9a)}
+.pb-onboarding-code{font-family:var(--mono,monospace);font-size:11px;background:rgba(255,255,255,0.6);border:1px solid var(--border,rgba(106,90,138,0.12));padding:2px 6px;border-radius:6px}
+.pb-onboarding-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:4px}
+.pb-onboarding-dots{display:flex;gap:6px;align-items:center}
+.pb-onboarding-dot{width:6px;height:6px;border-radius:999px;background:rgba(106,90,138,0.2)}
+.pb-onboarding-dot[data-active="1"]{background:var(--accent,#8a6aaa)}
+.pb-onboarding-btns{display:flex;gap:8px;align-items:center}
+.pb-onboarding-btn{padding:8px 12px;border-radius:10px;border:1px solid var(--border,rgba(106,90,138,0.12));background:rgba(255,255,255,0.75);font-size:12px;cursor:pointer}
+.pb-onboarding-btn.primary{background:var(--accent,#8a6aaa);color:#fff;border-color:var(--accent,#8a6aaa)}
+.pb-onboarding-btn.ghost{background:transparent;color:var(--muted,#7a6a9a)}
+
 </style>
 </head>
 <body>
@@ -4005,6 +4025,107 @@ function switchModeInBuilder(mode){
   toast("Switched to "+(mode==="film"?"Film & TV":"General")+" mode");
 }
 
+
+function setupOnboardingTour(){
+  const KEY='pb-onboarding-seen';
+  const overlay=document.getElementById('pbOnboarding');
+  const kicker=document.getElementById('pbOnbKicker');
+  const titleEl=document.getElementById('pbOnbTitle');
+  const bodyEl=document.getElementById('pbOnbBody');
+  const bulletsEl=document.getElementById('pbOnbBullets');
+  const dotsEl=document.getElementById('pbOnbDots');
+  const btnNext=document.getElementById('pbOnbNext');
+  const btnBack=document.getElementById('pbOnbBack');
+  const btnSkip=document.getElementById('pbOnbSkip');
+  if(!overlay||!titleEl||!bodyEl) return;
+
+  const steps=[
+    {
+      kicker:'Quick Tour · 1 / 3 — What this does',
+      title:'A prompt starter pack for film vocabulary',
+      body:'This is not a blank box. Pick shot size, lens, lighting, mood, and style — chips build a ready-to-paste prompt. Below are 3 ways to use it:',
+      bullets:[
+        '<strong>Select chips</strong> in the left sidebar — live preview updates on the right.',
+        '<strong>Use the AI Agent</strong> on the far right to auto-build from a short idea.',
+        '<strong>Copy → paste</strong> into Midjourney V7, Flux, GPT Image, or Nano Banana.',
+      ],
+      nextLabel:'Next — How BYOK works'
+    },
+    {
+      kicker:'Quick Tour · 2 / 3 — Your key, your data',
+      title:'Bring your own key — private by design',
+      body:'No backend. No key storage on our servers. Your key stays in <span class="pb-onboarding-code">this browser only</span> (localStorage). Calls go directly to Anthropic / OpenAI.',
+      bullets:[
+        '<strong>Try without a key:</strong> click top bar <em>Try without key</em> or add <span class="pb-onboarding-code">?mock=1</span> to the URL for canned demo replies.',
+        '<strong>Use your key:</strong> click <em>⚙ BYOK</em> → paste <span class="pb-onboarding-code">sk-ant-…</span> or OpenAI-compatible key → Save.',
+        '<strong>Privacy:</strong> Remove anytime in Settings, or clear site storage — we never see it.',
+      ],
+      nextLabel:'Next — How to use'
+    },
+    {
+      kicker:'Quick Tour · 3 / 3 — How to use',
+      title:'Pick, copy, save — then remix',
+      body:'Choose a category, tune chips or ask the Agent, copy when the preview looks right. ★ Save to Library when you want to keep it.',
+      bullets:[
+        '<strong>Preview</strong> shows model-ready output (V7 mass default for Midjourney).',
+        '<strong>★ Save</strong> builds your personal Library — agent will reference it.',
+        '<strong>GitHub:</strong> open source, self-serve — <span class="pb-onboarding-code">github.com/ericzheng-lab/prompt-builder</span>.',
+      ],
+      nextLabel:'Got it — start building'
+    }
+  ];
+
+  let idx=0;
+  function render(){
+    const s=steps[idx];
+    if(!s) return;
+    kicker.textContent=s.kicker;
+    titleEl.textContent=s.title;
+    bodyEl.innerHTML=s.body;
+    bulletsEl.innerHTML=s.bullets.map(b=>`<li>${b}</li>`).join('');
+    dotsEl.innerHTML=steps.map((_,i)=>`<span class="pb-onboarding-dot" data-active="${i===idx?'1':'0'}"></span>`).join('');
+    btnBack.style.display= idx===0 ? 'none' : '';
+    btnNext.textContent=s.nextLabel;
+    overlay.setAttribute('aria-hidden','false');
+    overlay.dataset.open='1';
+  }
+  function close(permanent){
+    overlay.dataset.open='0';
+    overlay.setAttribute('aria-hidden','true');
+    overlay.style.display='none';
+    try{ if(permanent) localStorage.setItem(KEY,'1'); }catch(e){}
+  }
+  function next(){
+    if(idx < steps.length-1){ idx++; render(); }
+    else close(true);
+  }
+  function back(){
+    if(idx>0){ idx--; render(); }
+  }
+  btnNext.addEventListener('click', next);
+  btnBack.addEventListener('click', back);
+  btnSkip.addEventListener('click', ()=>close(true));
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(true); });
+  document.addEventListener('keydown', (e)=>{ if(overlay.dataset.open==='1' && e.key==='Escape') close(true); });
+
+  // API for external triggers: window.openOnboardingTour()
+  window.openOnboardingTour = ()=>{ idx=0; overlay.style.display=''; render(); };
+  window.dismissOnboardingTour = ()=>close(true);
+
+  // Auto-trigger first-run
+  try{
+    const seen=localStorage.getItem(KEY);
+    const isMock=(new URLSearchParams(location.search).get('mock')==='1');
+    const hasKey=(typeof checkBYOKStatus==='function' && checkBYOKStatus().configured);
+    const alreadyDismissed=seen==='1';
+    if(!alreadyDismissed && !isMock && !hasKey && location.pathname.includes('prompt-builder')){
+      // Delay to let first paint finish
+      setTimeout(()=>{ overlay.style.display=''; render(); }, 700);
+    }
+  }catch(e){}
+}
+
+
 function init(){
   bindLiveBuilderInputs();
   updateBYOKIndicator();
@@ -4037,5 +4158,23 @@ init();
 // PWA service worker
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
+
+<div class="pb-onboarding-overlay" id="pbOnboarding" aria-hidden="true">
+  <div class="pb-onboarding-card" role="dialog" aria-modal="true" aria-labelledby="pbOnbTitle">
+    <div class="pb-onboarding-kicker" id="pbOnbKicker">Quick Tour · 3 steps</div>
+    <div class="pb-onboarding-title" id="pbOnbTitle">What this tool does</div>
+    <div class="pb-onboarding-body" id="pbOnbBody"></div>
+    <ul class="pb-onboarding-bullets" id="pbOnbBullets"></ul>
+    <div class="pb-onboarding-actions">
+      <div class="pb-onboarding-dots" id="pbOnbDots"></div>
+      <div class="pb-onboarding-btns">
+        <button class="pb-onboarding-btn ghost" id="pbOnbSkip">Skip</button>
+        <button class="pb-onboarding-btn" id="pbOnbBack" style="display:none">Back</button>
+        <button class="pb-onboarding-btn primary" id="pbOnbNext">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
