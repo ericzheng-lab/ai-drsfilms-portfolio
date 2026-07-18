@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>Prompt Builder — Film & AI Image</title>
-<!-- pb-sprint-m: intent search + non-AI suggestions + BYOK assist 2026-07-17 -->
+<!-- pb-sprint-n: state-driven single primary action 2026-07-17 -->
 <meta name="description" content="Build AI image prompts with film-production vocabulary, live local preview, and model-specific output for Midjourney, Flux, Nano Banana, and GPT Image.">
 <meta property="og:title" content="Prompt Builder App — Model-Ready AI Image Prompts">
 <meta property="og:description" content="Choose presets, fields, chips, and model params. Preview the final prompt live, with or without LLM enhancement.">
@@ -451,6 +451,9 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .pb-search-score{font-size:9px;color:var(--blue);background:rgba(90,138,154,.08);padding:2px 6px;border-radius:999px;margin-top:6px;display:inline-block}
 @media(max-width:760px){.pb-intent-shell{top:57px;padding:10px}.pb-intent-row input{min-width:100%;order:1}.pb-intent-row select{order:2;flex:1}.pb-intent-row button{order:3}.pb-intent-meta{width:100%;margin-left:0}}
 
+.pb-intent-mode-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;background:var(--blue)}
+#pbModeStatus[data-mode="ai"]{color:var(--green)}
+#pbModeStatus[data-mode="demo"]{color:var(--blue)}
 </style>
 </head>
 <body>
@@ -477,8 +480,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <option value="nano">Nano Banana</option>
       <option value="gptimage">GPT Image 2</option>
     </select>
-    <button type="button" class="btn" id="pbFindBtn">Find templates</button>
-    <button type="button" class="btn primary" id="pbAiBuildBtn">AI Build (BYOK)</button>
+    <button type="button" class="btn primary" id="pbPrimaryAction">Find matching templates</button>
     <span class="pb-library-ref" id="pbLibraryRef"></span>
   </div>
   <div class="pb-intent-secondary" id="pbIntentSuggestions">
@@ -489,7 +491,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <button class="pb-suggestion-pill" data-intent="neon alley rain night cinematic">Neon alley rain</button>
     <button class="pb-suggestion-pill" data-intent="storyboard sequence shot breakdown">Storyboard</button>
     <button class="pb-suggestion-pill" data-intent="portrait close-up studio lighting">Portrait</button>
-    <span class="pb-intent-meta" id="pbIntentMeta">Local search works without a key.</span>
+    <button type="button" class="pb-suggestion-pill" id="pbBrowseInstead" style="display:none">Browse templates instead</button>
+    <button type="button" class="pb-suggestion-pill" id="pbTryAiDemo">Try AI demo</button>
+    <button type="button" class="pb-suggestion-pill" id="pbAddAiKey">Add AI key</button>
+    <span class="pb-intent-meta" id="pbModeStatus">Local mode · no key required</span>
+    <span class="pb-intent-meta" id="pbIntentMeta"></span>
   </div>
   <div class="pb-intent-secondary" id="pbRecentIntents" style="display:none"></div>
   <div class="pb-smart-row" id="pbSmartRow"></div>
@@ -3537,6 +3543,7 @@ function saveSettings(){
   };
   saveApiConfig(cfg);
   updateBYOKIndicator();
+  try{pbUpdateModeUI()}catch(e){}
   document.getElementById("settingsStatus").textContent="Settings saved!";
   setTimeout(()=>{document.getElementById("settingsStatus").textContent=""},2000);
   toast("Settings saved");
@@ -4283,17 +4290,41 @@ function pbSmartSuggestions(q){
 function pbRenderSmart(q){const row=document.getElementById('pbSmartRow');if(!row)return;const list=pbSmartSuggestions(q);if(!list.length){row.dataset.on='0';row.innerHTML='';return}row.dataset.on='1';row.innerHTML='<span>Suggested to polish:</span>'+list.map(x=>`<button type="button" class="pb-smart-pill" data-value="${escAttr(x)}">${escHtml(x)}</button>`).join('');row.querySelectorAll('[data-value]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.value;for(const chip of document.querySelectorAll('.chip,.llm-chip')){if(chip.textContent.trim()===v){chip.click();return}}const s=document.getElementById('subject');if(s){s.value=(s.value+' '+v).trim();updatePreview()}}))}
 function pbUpdateLibraryBadge(model,q){const el=document.getElementById('pbLibraryRef');if(!el)return;try{const ctx=typeof getLibraryContext==='function'?getLibraryContext(model,q,5):'';if(ctx){const count=Math.min(5,(ctx.match(/^\d+\./gm)||[]).length||1);el.textContent=`Using ${count} favorite${count>1?'s':''} as reference`;el.title=ctx.slice(0,350);el.dataset.on='1'}else el.dataset.on='0'}catch(e){el.dataset.on='0'}}
 function pbUpdateAssist(q){pbRenderSmart(q);pbUpdateLibraryBadge(document.getElementById('pbIntentModel')?.value||'midjourney',q);const n=document.getElementById('pbByokNudge');if(!n)return;let ready=false;try{ready=checkBYOKStatus().configured||isMockMode()}catch(e){}n.dataset.on=(!ready&&q.length>2)?'1':'0'}
+function pbIntentMode(){try{if(isMockMode())return 'demo';if(checkBYOKStatus().configured)return 'ai'}catch(e){}return 'local'}
+function pbUpdateModeUI(){
+  const mode=pbIntentMode(),primary=document.getElementById('pbPrimaryAction'),browse=document.getElementById('pbBrowseInstead'),demo=document.getElementById('pbTryAiDemo'),add=document.getElementById('pbAddAiKey'),status=document.getElementById('pbModeStatus'),input=document.getElementById('pbIntentInput');
+  if(!primary||!status)return;
+  status.dataset.mode=mode;
+  if(mode==='local'){
+    primary.textContent='Find matching templates';status.textContent='Local mode · no key required';
+    browse.style.display='none';demo.style.display='';add.style.display='';
+    if(input)input.placeholder='Describe or search — product showcase, film poster, neon alley rain…';
+  }else if(mode==='demo'){
+    primary.textContent='Generate demo prompt';status.textContent='Demo mode · sample AI replies';
+    browse.style.display='';demo.style.display='none';add.style.display='';
+    if(input)input.placeholder='Describe what to build — demo uses sample AI replies';
+  }else{
+    primary.textContent='Build with AI';status.textContent='AI mode · key stays in this browser';
+    browse.style.display='';demo.style.display='none';add.style.display='none';
+    if(input)input.placeholder='Describe what to build — AI picks a template and fills fields';
+  }
+}
+function pbPrimaryAction(){if(pbIntentMode()==='local')pbFindTemplates(true);else pbAiBuild()}
 function pbFindTemplates(commit=true){const q=document.getElementById('pbIntentInput')?.value||'';pbRenderSearch(q,commit)}
 function pbAiBuild(){const q=(document.getElementById('pbIntentInput')?.value||'').trim();if(!q)return document.getElementById('pbIntentInput')?.focus();let ready=false;try{ready=isMockMode()||checkBYOKStatus().configured}catch(e){}if(!ready){pbUpdateAssist(q);document.getElementById('pbByokNudge')?.scrollIntoView({behavior:'smooth',block:'nearest'});return}const model=document.getElementById('pbIntentModel')?.value||'midjourney';const ai=document.getElementById('agentInput'),am=document.getElementById('agentModel'),sub=document.getElementById('subject');if(ai)ai.value=q;if(am)am.value=model;if(sub)sub.value=q;pbSaveIntent(q);pbUpdateLibraryBadge(model,q);sendAgentMessage()}
 function pbUseSuggestion(q){const input=document.getElementById('pbIntentInput');if(input)input.value=q;pbRenderSearch(q,true);pbRenderRecent()}
 function pbRenderRecent(){const row=document.getElementById('pbRecentIntents'),list=pbGetIntentHistory();if(!row)return;if(!list.length){row.style.display='none';return}row.style.display='flex';row.innerHTML='<span>Recent:</span>'+list.map(q=>`<button type="button" class="pb-recent-pill" data-q="${escAttr(q)}">${escHtml(q)}</button>`).join('');row.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>pbUseSuggestion(b.dataset.q)))}
 function pbInitIntentSearch(){
-  const input=document.getElementById('pbIntentInput'),find=document.getElementById('pbFindBtn'),ai=document.getElementById('pbAiBuildBtn'),model=document.getElementById('pbIntentModel');
+  const input=document.getElementById('pbIntentInput'),primary=document.getElementById('pbPrimaryAction'),model=document.getElementById('pbIntentModel');
   if(!input||input.dataset.bound==='1')return;input.dataset.bound='1';window._pbOriginalRenderStep1=renderStep1;
   input.addEventListener('input',()=>{clearTimeout(window._pbSearchTimer);window._pbSearchTimer=setTimeout(()=>pbRenderSearch(input.value,false),180)});
-  input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();pbFindTemplates(true)}});find?.addEventListener('click',()=>pbFindTemplates(true));ai?.addEventListener('click',pbAiBuild);model?.addEventListener('change',()=>pbUpdateLibraryBadge(model.value,input.value));
+  input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();pbPrimaryAction()}});primary?.addEventListener('click',pbPrimaryAction);model?.addEventListener('change',()=>pbUpdateLibraryBadge(model.value,input.value));
   document.querySelectorAll('[data-intent]').forEach(b=>b.addEventListener('click',()=>pbUseSuggestion(b.dataset.intent)));
-  document.getElementById('pbAddKeyBtn')?.addEventListener('click',openSettings);document.getElementById('pbTryDemoBtn')?.addEventListener('click',toggleMockMode);pbRenderRecent()
+  document.getElementById('pbBrowseInstead')?.addEventListener('click',()=>pbFindTemplates(true));
+  document.getElementById('pbTryAiDemo')?.addEventListener('click',toggleMockMode);
+  document.getElementById('pbAddAiKey')?.addEventListener('click',openSettings);
+  document.getElementById('pbAddKeyBtn')?.addEventListener('click',openSettings);document.getElementById('pbTryDemoBtn')?.addEventListener('click',toggleMockMode);
+  pbRenderRecent();pbUpdateModeUI()
 }
 function pbRealQuickReplies(msg){
   const existing=Array.isArray(msg.quick_replies)?msg.quick_replies:[],generic=['near-future snowy city','abandoned mountain station','golden-lit sci-fi alley'];
