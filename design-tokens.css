@@ -1,0 +1,59 @@
+/* ============================================================
+   drsfilms(ai.drsfilms.com)· Cinematic Dark brand tokens — v1
+   合同正本见 DESIGN.md。适用于现站(React/Vite)与 Astro 重建站,
+   以及 drsfilms 署名品牌物料(brand frames/封面/deck)。
+   ⚠️ 品牌特例仓:film-grain 与金琥珀强调在本仓是允许项(签名),
+   但有严格用量纪律;此特例不得跨仓传染。
+   ============================================================ */
+
+:root {
+  /* ---- 调色板 (LOCKED) ---- */
+  --surface:      #0d0c0a;                      /* 深暖黑(非纯黑) */
+  --surface-2:    #141210;                      /* 卡片/分层 */
+  --ink:          #ECE8E1;                      /* 暖白正文(≥7:1) */
+  --ink-muted:    rgba(236, 232, 225, .62);     /* 次级文字 */
+  --accent-gold:  #C8A964;                      /* 唯一强调:金琥珀 */
+  --line:         rgba(236, 232, 225, .12);     /* 分隔线 */
+
+  /* ---- 字型 (LOCKED;品牌特例组合,勿跨仓使用) ---- */
+  --font-display: 'Cormorant Garamond', serif;  /* 大标题/电影陈述 */
+  --font-ui:      'Montserrat', sans-serif;     /* 导航/按钮/caps 标签 */
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace; /* 数据/stats */
+  --caps-tracking: 0.08em;                      /* caps 标签最小字距 */
+
+  /* ---- 质感纪律 (LOCKED) ---- */
+  --grain-opacity-max: 0.04;   /* film-grain 覆层透明度上限(>0.06 违规) */
+  /* grain: position:fixed; inset:0; pointer-events:none; 单层,不叠加 */
+
+  /* ---- 版式 (PROPOSED) ---- */
+  --space-unit: 8px;           /* 基准 */
+  --container-max: 1200px;
+  --side-pad-min: 5%;          /* 正文侧边留白下限 */
+  --radius-max: 4px;           /* 圆角上限;禁胶囊 */
+
+  /* ---- 动效 (PROPOSED) ---- */
+  --dur-content: 200ms;        /* 普通内容 150-250ms */
+  --dur-signature-min: 400ms;  /* 签名时刻长镜头缓动 400-800ms */
+  --dur-signature-max: 800ms;
+  /* Astro Islands:重交互只存在于 1-2 个签名 island;其余静态克制 */
+}
+
+/* ---- 数据/stats 基类 ---- */
+.stat {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-content: 0ms; --dur-signature-min: 0ms; --dur-signature-max: 0ms; }
+}
+
+/* 禁用清单(品牌定制版,机器可 grep,详见 DESIGN.md §6):
+   粒子/particles / neon orb / circuit / hue-rotate 彩虹 /
+   animate-gradient 循环 / 999px 胶囊 / 大面积 #000 或 #fff 底 /
+   第二强调色 / #3b82f6 #6366f1 紫渐变 / Inter·Roboto·Arial 品牌字面 /
+   Space Grotesk / grain opacity>0.06 / 'thrilled to announce' 等 AI 腔 /
+   虚构 credits(A24 出现即删)
+   允许项(勿误杀):film-grain≤0.04 / 金琥珀 / Cormorant+Montserrat /
+   blur 仅限签名时刻景深 */
