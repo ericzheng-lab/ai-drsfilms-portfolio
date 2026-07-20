@@ -75,3 +75,14 @@
 - 验收官:§2 调色/用量、§3 字型、§6 denylist、§1 不编造(credits 比对)= 机器可验/可核查 P0;§4 气质与签名时刻质量 = 结构化人审 P1。
 
 *v1 · 2026-07-18 · P0 铸合同 loop-4(施工正本 cmrr78lrc0dg307adv66x9c2z)· 源规范:Eric 锁定之 drsfilms 品牌 memory(cinematic dark / Astro Islands / 不编造)*
+
+## 附录 A. Landing 开篇 Hook — LOCKED(全产品线通用,Eric 2026-07-19)
+
+每个对外 landing/品牌首页必须以 Three.js(或同级高级动画)作为开篇 hook。**本仓的实现载体即 §4 既有的 1-2 个 jaw-drop 签名时刻**(cinematic hero:动态 grain/体积光/视差/scroll morph)——两者是同一要求,负面清单同样约束签名时刻:
+**负面清单(原话,出现即 REJECT)**:不能直观地重复表述功能 / 不能丑陋 / 不能数据化 / 不能土鳖科技感 / 不能是演示动画。
+实现纪律:库走 CDN(Astro Islands 隔离);hook 服从本仓电影暗调语言;`prefers-reduced-motion` 降级静态帧。
+
+## 附录 B. 媒体资产回收 — LOCKED(全产品线通用,Eric 2026-07-19)
+
+「永不从零」覆盖媒体资产:既有的作品剧照、片段、真实项目素材(Brief History/流俗地/品牌案例等,以及 repo 与大脑内已有宣传资产)是一等素材,页面与物料**必须先盘点、优先回收**;守不编造铁律。
+*(源:prompt-builder 波 1 rev1 REJECT 教训,taste ledger #002)*
