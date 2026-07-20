@@ -1,0 +1,114 @@
+/* ============================================================
+   prompt-builder · design tokens — v2(方向已定:一号海报 One-Sheet)
+   合同正本见 DESIGN.md v2。
+   变更(2026-07-19):Eric 选定 One-Sheet;TBD 段转 LOCKED;
+   legacy 段保留仅作迁移对照(新代码禁止引用)。
+   应用为单文件内联 CSS;本文件是规范正本,迁移时同步回
+   prompt-builder.html 的 :root。
+   ============================================================ */
+
+:root {
+  /* ---- LOCKED · One-Sheet 调色板(唯一来源) ---- */
+  --os-white:  #FCFBF8;   /* 铜版纸白底 */
+  --os-ink:    #101010;   /* 油墨黑(对纸白 18.39:1) */
+  --os-gray:   #55565A;   /* 版面灰次级文字 */
+  --os-line:   #E3E1DA;   /* 细分隔线(只做线,不做字) */
+  --os-accent: #002FA7;   /* 克莱因蓝:全站唯一强调 */
+
+  /* ---- LOCKED · 字型(4 族顶满,禁第五族) ---- */
+  --pb-font-display: 'Anton', 'Archivo Black', sans-serif;         /* 海报巨字;禁正文 */
+  --pb-font-billing: 'Oswald', 'Archivo Narrow', sans-serif;       /* billing/窄体 caps */
+  --pb-font-ui:      'Libre Franklin', 'Public Sans', sans-serif;  /* UI 正文 */
+  --pb-font-mono:    'Sometype Mono', ui-monospace, monospace;     /* prompt/数据 ≥14px */
+  /* fallback 纪律(P1-5):品牌角色位栈中禁 Inter/Roboto/Arial/system-ui;
+     链末泛型(sans-serif/monospace)允许 */
+
+  /* ---- LOCKED · 不变量铁律 ---- */
+  --pb-mono-size-min: 14px;      /* prompt/代码字号硬下限(v2 收紧) */
+  --pb-billing-size-min: 12px;   /* billing 微缩字硬下限(P1-5) */
+  --pb-contrast-body: 4.5;       /* 正文最低对比 */
+  --pb-contrast-prompt: 7;       /* prompt 输出区最低对比 */
+  --pb-font-budget: 4;           /* 字体族上限(已顶满) */
+  --pb-file-budget: 360KB;       /* 单文件体积红线(含 4 字体加载核算) */
+  --pb-radius: 0;                /* 0 圆角全站(>0 即违规) */
+  --pb-focus-ring: 2px solid var(--os-accent);
+
+  /* ---- LOCKED · caps/billing 排版 ---- */
+  --pb-caps-tracking: 0.08em;    /* Oswald caps 最小字距 */
+  --pb-billing-squeeze: 0.92;    /* billing scaleY 下限(片尾字幕压缩) */
+
+  /* ---- 动效 ---- */
+  --pb-dur-fast: 120ms;
+  --pb-dur-base: 160ms;
+  --pb-dur-max:  200ms;
+  --pb-ease: cubic-bezier(0, 0, .2, 1);
+  /* 只动 opacity/transform;海报音量页允许一次编排式加载 stagger;
+     工作台内页动效收敛到反馈级 */
+}
+
+/* ---- 两档音量 register(LOCKED,详见 DESIGN.md §4.4) ----
+   海报音量(landing/封面/物料):Anton 巨字、大留白、蓝可做大块
+   工具音量(app 内页):Anton 仅页面标题一处;蓝只做交互细笔画;
+   高密度;billing 不出现或 about 一处 ---- */
+
+/* ---- prompt 输出基类 ---- */
+.pb-prompt {
+  font-family: var(--pb-font-mono);
+  font-size: var(--pb-mono-size-min);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  color: var(--os-ink);
+  background: #FFFFFF;
+  border: 1px solid var(--os-line);
+  border-radius: 0;
+}
+.pb-billing {
+  font-family: var(--pb-font-billing);
+  font-size: var(--pb-billing-size-min);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-gray);
+  transform: scaleY(var(--pb-billing-squeeze));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --pb-dur-fast: 0ms; --pb-dur-base: 0ms; --pb-dur-max: 0ms; }
+}
+
+/* ============================================================
+   CURRENT · legacy 紫玻璃转录(2026-07-18 实测自 main)
+   仅迁移对照;新代码/新物料禁止引用;迁移完成后整段删除。
+   ============================================================ */
+:root {
+  --legacy-bg: #ede6f2;
+  --legacy-bg-grad: linear-gradient(160deg, #f0e6f6 0%, #e6eef6 40%, #e6f6f0 100%);
+  --legacy-glass: rgba(255, 255, 255, 0.48);
+  --legacy-glass-2: rgba(255, 255, 255, 0.62);
+  --legacy-bg2: rgba(255, 255, 255, 0.45);
+  --legacy-bg3: rgba(255, 255, 255, 0.55);
+  --legacy-text: #2a2438;
+  --legacy-text-2: #3d3450;
+  --legacy-muted: #7a6a9a;
+  --legacy-dim: #9988aa;
+  --legacy-accent: #8a6aaa;
+  --legacy-accent-2: #a080c0;
+  --legacy-blue: #5a8a9a;
+  --legacy-gold: #b89a5a;
+  --legacy-green: #6a9a7a;
+  --legacy-danger: #c46a7a;
+  --legacy-border: rgba(106, 90, 138, 0.14);
+  --legacy-border-2: rgba(106, 90, 138, 0.28);
+  --legacy-radius: 14px;
+  --legacy-radius-sm: 10px;
+  --legacy-radius-xs: 7px;
+  --legacy-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --legacy-serif: 'Fraunces', Georgia, serif;
+  --legacy-sans: 'Josefin Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* 禁用清单 v2(机器可 grep,详见 DESIGN.md §6):
+   backdrop-filter / blur( / 品牌面 linear-gradient(紫系尤禁) /
+   #3b82f6 / glow / film-grain / saturate( / 任何模糊阴影 /
+   border-radius>0 / 999px / 第五字体族 / Anton 用于正文 /
+   品牌位 Inter·Roboto·Arial / JetBrains Mono / Cormorant·Montserrat /
+   Space Grotesk / billing<12px / 克莱因蓝外第二强调 */

@@ -1,13 +1,8 @@
-const CACHE_NAME = 'prompt-builder-v4-byok-hotfix-2026-07-15';
+const CACHE_NAME = 'prompt-builder-v5-onesheet-2026-07-20';
 const ASSETS = [
-  './',
-  './index.html',
-  './prompt-builder.html',
-  './landing-bundle.jsx',
-  './tweaks-panel.jsx',
   './manifest.json',
   './favicon.svg',
-  './release-package/web-shots/landing-homepage.png',
+  './release-package/demo.mp4',
   './release-package/web-shots/builder-direct-mode.png',
   './release-package/PICS/showcase-creative-range-what-can-you-build.jpg',
   './release-package/PICS/audience-who-uses-prompt-builder.jpg',
@@ -34,11 +29,34 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  const req=event.request;
-  const isJsx=req.url.includes('landing-bundle.jsx')||req.url.includes('tweaks-panel.jsx')||req.url.includes('index.html');
-  if(isJsx){
-    event.respondWith(fetch(req).then(r=>{ const c=r.clone(); caches.open(CACHE_NAME).then(cache=>cache.put(req,c)); return r; }).catch(()=>caches.match(req)));
-  }else{
-    event.respondWith(caches.match(req).then(response=>response||fetch(req)));
+  const req = event.request;
+  if (req.method !== 'GET') return;
+
+  const url = new URL(req.url);
+  const isDocument = req.mode === 'navigate' ||
+    url.pathname.endsWith('/index.html') ||
+    url.pathname.endsWith('/prompt-builder.html');
+
+  if (isDocument) {
+    event.respondWith(
+      fetch(req).then(response => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+        }
+        return response;
+      }).catch(async () => (await caches.match(req)) || caches.match('./index.html'))
+    );
+    return;
   }
+
+  event.respondWith(
+    caches.match(req).then(response => response || fetch(req).then(networkResponse => {
+      if (networkResponse && networkResponse.ok && url.origin === self.location.origin) {
+        const copy = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+      }
+      return networkResponse;
+    }))
+  );
 });

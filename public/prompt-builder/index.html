@@ -1,77 +1,1000 @@
 <!DOCTYPE html>
+<!--
+  prompt-builder · landing — One-Sheet rev3 (wave 1, final pre-release)
+  Contract: DESIGN.md v3 (LOCKED) @ feat/design-p0-contracts — incl. §4.6 hook / §4.7 asset recycling
+  Register: poster volume (landing = promotional material tier)
+  Author: EZ Art Direction · 2026-07-19
+  rev2 changes:
+  - §4.6 opening hook "REGISTRATION": Three.js ink particles drift out of chaos
+    and pull into register as a printed frame + Klein-blue crop marks. Isomorphic
+    with "say the picture in your head, clearly" — never a literal product demo.
+    reduced-motion / low-end devices / no WebGL / no JS all fall back to a static poster frame (CSS).
+  - §4.7 all seven release-package assets recycled via live-relative paths, none bundled:
+    demo.mp4 (PLATE 01, main visual area), five PICS (PLATES 02-06),
+    builder-direct-mode.png (PLATE 07, replaces the rev1 wireframe, labeled as current build).
+  - three / gsap load from CDN, never inlined, excluded from the single-file budget (§4.6).
+  rev3 change: page copy is English-only (bilingual agent input remains a product feature).
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prompt Builder — Film & AI Image Prompt Generator | Eric Zheng</title>
-<meta name="description" content="Build production-ready AI image prompts in shot language. 100+ presets for Midjourney, Flux, Nano Banana, and GPT Image. By Eric Zheng, Sundance-nominated film producer.">
-<meta property="og:title" content="Prompt Builder — Film & AI Image Prompt Generator">
-<meta property="og:description" content="100+ presets built from real film vocabulary. Shot sizes, lighting, lenses — pick what you need, copy a model-ready prompt. By Eric Zheng (DRS Films).">
+<title>Prompt Builder — Film &amp; AI Image Prompt Generator | Eric Zheng</title>
+<meta name="description" content="Say the picture in your head, clearly. 100+ film-vocabulary presets for Midjourney, Flux, Nano Banana, and GPT Image. By Eric Zheng, producer of Sundance nominee Brief History of A Family.">
+<meta property="og:title" content="Prompt Builder — Film &amp; AI Image Prompt Generator">
+<meta property="og:description" content="100+ presets built from real film vocabulary. Shot sizes, lighting, lenses — pick what you need, copy a model-ready prompt.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Prompt Builder">
 <meta property="og:url" content="https://ai.drsfilms.com/prompt-builder/">
-<meta property="og:image" content="release-package/social-cards/post-launch.png">
-<meta property="og:image:alt" content="Prompt Builder — build production-ready AI image prompts from film vocabulary">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Prompt Builder — Film & AI Image Prompt Generator">
-<meta name="twitter:description" content="100+ presets from real film vocabulary. Pick what you need, copy a model-ready prompt.">
-<meta name="twitter:image" content="release-package/social-cards/post-launch.png">
-<meta name="twitter:image:alt" content="Prompt Builder — build production-ready AI image prompts from film vocabulary">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Prompt Builder","description":"Film & AI image prompt builder with 100+ production presets for Midjourney, Flux, Nano Banana, and GPT Image","url":"https://ai.drsfilms.com/prompt-builder/","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Eric Zheng","url":"https://ai.drsfilms.com","jobTitle":"Film Producer & AI Tool Builder","affiliation":{"@type":"Organization","name":"DRS Films"}}}
-</script>
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#8a6aaa">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Prompt Builder">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta property="og:image" content="https://ai.drsfilms.com/prompt-builder/release-package/PICS/preset-library-100-plus-catalog-infographic.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<!-- Font budget option B: role-specific text subsets; same URLs are reused by landing and app. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;display=swap&amp;text=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+%26.-%2F%3A" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald%3Awght%40400%3B500&amp;display=swap&amp;text=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+%26.-%2F%3A%3F" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin%3Awght%40400%3B600&amp;display=swap&amp;text=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+%21%22%23%24%25%26%27%28%29%2A%2B%2C-.%2F%3A%3B%3C%3D%3E%3F%40%5B%5C%5D%5E_%60%7B%7C%7D~" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sometype+Mono%3Awght%40400%3B500&amp;display=swap&amp;text=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+%21%22%23%24%25%26%27%28%29%2A%2B%2C-.%2F%3A%3B%3C%3D%3E%3F%40%5B%5C%5D%5E_%60%7B%7C%7D~" rel="stylesheet">
 <style>
+  /* ============ tokens (source of truth: design-tokens.css v2) ============ */
   :root {
-    --bg:#ede6f2;
-    --bg-grad: linear-gradient(160deg,#f0e6f6 0%,#e6eef6 40%,#e6f6f0 100%);
-    --glass:rgba(255,255,255,0.48);
-    --glass-2:rgba(255,255,255,0.62);
-    --border:rgba(106,90,138,0.14);
-    --border-2:rgba(106,90,138,0.28);
-    --text:#2a2438;
-    --text-2:#3d3450;
-    --muted:#7a6a9a;
-    --dim:#9988aa;
-    --accent:#8a6aaa;
-    --accent-soft:rgba(138,106,170,0.10);
-    --accent-2:#5a8a9a;
-    --gold:#b89a5a;
-    --radius:14px;
-    --radius-sm:10px;
-    --radius-xs:7px;
-    --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --serif:'Fraunces', Georgia, serif;
-    --sans:'Josefin Sans', ui-sans-serif, system-ui, sans-serif;
+    --os-white:  #FCFBF8;
+    --os-ink:    #101010;
+    --os-gray:   #55565A;
+    --os-line:   #E3E1DA;
+    --os-accent: #002FA7;
+    --os-surface: #FFFFFF; /* pure-white surface for prompt/mono blocks (sanctioned by tokens v2 .pb-prompt) */
+    --pb-font-display: 'Anton', 'Archivo Black', sans-serif;
+    --pb-font-billing: 'Oswald', 'Archivo Narrow', sans-serif;
+    --pb-font-ui:      'Libre Franklin', 'Public Sans', sans-serif;
+    --pb-font-mono:    'Sometype Mono', ui-monospace, monospace;
+    --pb-dur-fast: 120ms;
+    --pb-dur-base: 160ms;
+    --pb-dur-max:  200ms;
+    --pb-ease: cubic-bezier(0, 0, .2, 1);
+    --nav-h: 70px;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg);background-image:var(--bg-grad);background-attachment:fixed;color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  ::selection{background:rgba(138,106,170,0.25)}
-  #root{min-height:100vh}
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--os-white);
+    color: var(--os-ink);
+    font-family: var(--pb-font-ui);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--os-accent); color: var(--os-surface); }
+  a { color: inherit; text-decoration: none; }
+  a:focus-visible, button:focus-visible, video:focus-visible {
+    outline: 2px solid var(--os-accent);
+    outline-offset: 2px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 6vw; }
+
+  /* ============ type roles ============ */
+  .display {
+    font-family: var(--pb-font-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 0.94;
+    letter-spacing: 0.005em;
+  }
+  .caps {
+    font-family: var(--pb-font-billing);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 12.5px;
+  }
+  .mono {
+    font-family: var(--pb-font-mono);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+  }
+
+  /* ============ load choreography (one-time stagger) ============ */
+  @keyframes os-rise { to { opacity: 1; transform: translateY(0); } }
+  @keyframes os-rule { to { opacity: 1; transform: scaleX(1); } }
+  .st { opacity: 0; transform: translateY(14px); animation: os-rise var(--pb-dur-max) var(--pb-ease) forwards; }
+  .st-1 { animation-delay: 60ms; }
+  .st-2 { animation-delay: 160ms; }
+  .st-3 { animation-delay: 260ms; }
+  .st-4 { animation-delay: 360ms; }
+  .st-5 { animation-delay: 460ms; }
+  .st-6 { animation-delay: 560ms; }
+  .hero-rule {
+    height: 10px; background: var(--os-accent);
+    opacity: 0; transform: scaleX(0); transform-origin: left center;
+    animation: os-rule var(--pb-dur-max) var(--pb-ease) 300ms forwards;
+  }
+
+  /* ============ nav ============ */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 15px 6vw; min-height: var(--nav-h);
+    border-bottom: 1px solid var(--os-ink);
+    background: var(--os-white);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .nav-mark { display: flex; align-items: baseline; gap: 10px; }
+  .nav-mark .display { font-size: 18px; letter-spacing: 0.04em; }
+  .nav-mark .caps { color: var(--os-gray); font-size: 12px; }
+  .nav-links { display: flex; align-items: center; gap: 26px; }
+  .nav-links a.caps {
+    color: var(--os-gray); font-size: 12px;
+  }
+  .nav-links a.caps:hover { color: var(--os-accent); }
+  .btn {
+    display: inline-block;
+    font-family: var(--pb-font-billing); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.12em; font-size: 13px;
+    padding: 12px 22px;
+    border: 1px solid var(--os-ink);
+    color: var(--os-ink);
+  }
+  .btn:hover { border-color: var(--os-accent); color: var(--os-accent); }
+  .btn-solid { background: var(--os-accent); border-color: var(--os-accent); color: var(--os-surface); }
+  .btn-solid:hover { background: var(--os-ink); border-color: var(--os-ink); color: var(--os-surface); }
+  .nav-cta { padding: 9px 16px; font-size: 12px; }
+
+  /* ============ §4.6 HOOK "REGISTRATION" ============
+     Ink particles (the unformed picture in your head) pull into register
+     as a printed frame; Klein-blue particles settle into corner crop marks.
+     Default = static poster frame (what no-JS / degraded paths see);
+     upgraded to the animation only when JS + WebGL are available. */
+  .hook {
+    position: relative;
+    min-height: calc(100svh - var(--nav-h));
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid var(--os-ink);
+    overflow: hidden;
+  }
+  .hook canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .hook-stage {
+    position: relative;
+    width: min(76vw, 1080px);
+    aspect-ratio: 2.39 / 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  @media (max-aspect-ratio: 4/5), (max-width: 640px) {
+    .hook-stage { width: min(84vw, 420px); aspect-ratio: 27 / 40; } /* portrait = 27x40 one-sheet poster ratio */
+  }
+  /* static poster frame: 1px ink border + blue crop marks (fallback baseline, hidden once JS takes over) */
+  .hook-frame { position: absolute; inset: 0; border: 1px solid var(--os-ink); }
+  .hook-live .hook-frame { display: none; }
+  .cropmark { position: absolute; width: 18px; height: 18px; border: 0 solid var(--os-accent); }
+  .cropmark.tl { top: -26px; left: -26px; border-right-width: 2px; border-bottom-width: 2px; }
+  .cropmark.tr { top: -26px; right: -26px; border-left-width: 2px; border-bottom-width: 2px; }
+  .cropmark.bl { bottom: -26px; left: -26px; border-right-width: 2px; border-top-width: 2px; }
+  .cropmark.br { bottom: -26px; right: -26px; border-left-width: 2px; border-top-width: 2px; }
+  .hook-live .cropmark { display: none; }
+  .hook-content { position: relative; text-align: center; padding: 0 24px; z-index: 2; }
+  .hook-kicker { color: var(--os-gray); margin-bottom: 22px; }
+  .hook h1 { font-size: clamp(40px, 6.2vw, 96px); }
+  .hook h1 .blue { color: var(--os-accent); }
+  .hook-sub {
+    margin-top: 24px; color: var(--os-gray);
+    font-size: 15px; letter-spacing: 0.18em;
+  }
+  .hook-cue {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+    color: var(--os-gray); font-size: 11px; letter-spacing: 0.22em;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    z-index: 2;
+  }
+  .hook-cue .tick { width: 1px; height: 34px; background: var(--os-ink); }
+  /* hook copy enters late, as the particles approach register */
+  .hook .st-h1 { animation-delay: 1350ms; }
+  .hook .st-h2 { animation-delay: 1550ms; }
+  .hook .st-h3 { animation-delay: 1750ms; }
+
+  /* ============ hero (poster volume) ============ */
+  .hero { padding: 9vh 0 64px; border-bottom: 1px solid var(--os-ink); }
+  .hero-kicker { color: var(--os-accent); margin-bottom: 26px; }
+  .hero h2.display { font-size: clamp(48px, 7.8vw, 124px); margin-bottom: 0; }
+  .hero h2 .blue { color: var(--os-accent); }
+  .hero-rule { margin-top: 26px; }
+  .hero-grid { margin-top: 8px; }
+  .hero-sub {
+    font-size: 18px; color: var(--os-gray); max-width: 560px;
+    margin: 26px 0 34px;
+  }
+  .hero-sub strong { color: var(--os-ink); font-weight: 600; }
+  .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+  .spec-strip {
+    border: 1px solid var(--os-ink);
+    display: flex; flex-wrap: wrap;
+  }
+  .spec-strip .cell {
+    flex: 1 1 150px; padding: 16px 18px;
+    border-right: 1px solid var(--os-line);
+  }
+  .spec-strip .cell:last-child { border-right: 0; }
+  .spec-strip .v { font-family: var(--pb-font-mono); font-size: 24px; font-variant-numeric: tabular-nums; display: block; }
+  .spec-strip .v em { font-style: normal; color: var(--os-accent); }
+  .spec-strip .k { color: var(--os-gray); font-size: 11.5px; letter-spacing: 0.14em; }
+
+  /* ============ plate (§4.7 asset mounting frame) ============ */
+  .plate { border: 1px solid var(--os-ink); background: var(--os-surface); }
+  .plate-head {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+    padding: 10px 16px;
+    background: var(--os-ink); color: var(--os-white);
+  }
+  .plate-head .caps { font-size: 11.5px; letter-spacing: 0.16em; }
+  .plate img, .plate video { display: block; width: 100%; height: auto; }
+  .plate img { width: calc(100% - 36px); margin: 18px; border: 1px solid var(--os-line); } /* tipped-in mount */
+  .plate-bleed { border-left: 0; border-right: 0; }
+  .plate-bleed img { width: 100%; margin: 0; border: 0; border-top: 1px solid var(--os-line); }
+  .plate-cap { margin-top: 12px; color: var(--os-gray); font-size: 13.5px; max-width: 760px; }
+  .plate-cap b { color: var(--os-ink); font-weight: 600; }
+  .hero-plate { margin-top: 56px; margin-bottom: 56px; }
+
+  /* ============ section skeleton ============ */
+  section { padding: 84px 0; border-bottom: 1px solid var(--os-ink); }
+  .sec-head { display: flex; align-items: baseline; gap: 18px; margin-bottom: 14px; }
+  .sec-no { font-family: var(--pb-font-mono); font-size: 14px; color: var(--os-accent); }
+  .sec-kicker { color: var(--os-gray); }
+  h2.display { font-size: clamp(34px, 4.6vw, 64px); margin-bottom: 18px; }
+  .sec-lede { font-size: 17px; color: var(--os-gray); max-width: 620px; margin-bottom: 44px; }
+
+  /* Who it serves */
+  .who-list { border-top: 1px solid var(--os-ink); margin-top: 44px; }
+  .who-row {
+    display: grid; grid-template-columns: 70px 240px 1fr; gap: 20px;
+    align-items: baseline; padding: 22px 0;
+    border-bottom: 1px solid var(--os-line);
+  }
+  .who-row .role { font-family: var(--pb-font-billing); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; font-size: 19px; }
+  .who-row .use { color: var(--os-gray); }
+
+  /* Pick your goal */
+  .goal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); border: 1px solid var(--os-ink); margin-top: 44px; }
+  .goal-col { border-right: 1px solid var(--os-line); }
+  .goal-col:last-child { border-right: 0; }
+  .goal-col h3 {
+    font-family: var(--pb-font-billing); font-weight: 500; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 13px 16px; border-bottom: 1px solid var(--os-ink);
+    background: var(--os-white);
+  }
+  .goal-col h3 .gi { color: var(--os-accent); margin-right: 8px; font-family: var(--pb-font-mono); }
+  .goal-col ul { list-style: none; }
+  .goal-col li { padding: 12px 16px; border-bottom: 1px solid var(--os-line); }
+  .goal-col li:last-child { border-bottom: 0; }
+  .goal-col .p-name { display: block; font-weight: 600; font-size: 14.5px; }
+  .goal-col .p-desc { display: block; color: var(--os-gray); font-size: 13px; margin-top: 2px; }
+
+  /* Anatomy / how it works */
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+  .chip {
+    font-family: var(--pb-font-mono); font-size: 14px;
+    padding: 8px 13px; border: 1px solid var(--os-ink);
+    background: var(--os-surface);
+  }
+  .chip .cx { color: var(--os-accent); margin-right: 7px; }
+  .prompt-block {
+    font-family: var(--pb-font-mono); font-size: 15px; line-height: 1.75;
+    text-align: left; color: var(--os-ink); background: var(--os-surface);
+    border: 1px solid var(--os-ink);
+    padding: 26px 28px;
+    user-select: all;
+  }
+  .prompt-block .cmd { color: var(--os-accent); font-weight: 500; }
+  .prompt-block .tok { border-bottom: 2px solid var(--os-accent); }
+  .prompt-caption { margin-top: 14px; color: var(--os-gray); font-size: 13.5px; }
+  .prompt-caption b { color: var(--os-ink); font-weight: 600; }
+
+  /* Models */
+  .models { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); border: 1px solid var(--os-ink); border-top: 0; }
+  .model { border-right: 1px solid var(--os-line); padding: 24px 22px 26px; }
+  .model:last-child { border-right: 0; }
+  .model .m-no { font-family: var(--pb-font-mono); font-size: 14px; color: var(--os-accent); }
+  .model h3 { font-family: var(--pb-font-billing); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; font-size: 18px; margin: 8px 0 10px; }
+  .model p { color: var(--os-gray); font-size: 14px; min-height: 66px; }
+  .model .syntax { display: inline-block; margin-top: 14px; font-family: var(--pb-font-mono); font-size: 14px; border: 1px solid var(--os-line); padding: 6px 10px; background: var(--os-surface); }
+
+  /* BYOK */
+  .byok-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: start; }
+  .byok-list { list-style: none; border-top: 1px solid var(--os-ink); }
+  .byok-list li { padding: 16px 0; border-bottom: 1px solid var(--os-line); display: grid; grid-template-columns: 26px 1fr; gap: 12px; }
+  .byok-list .sq { width: 12px; height: 12px; background: var(--os-accent); margin-top: 5px; }
+  .byok-list b { font-weight: 600; }
+  .byok-list .mono { font-size: 14px; background: var(--os-surface); border: 1px solid var(--os-line); padding: 1px 6px; }
+
+  /* Author */
+  .author-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+  .author-name { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+  .author-name span { color: var(--os-gray); font-weight: 400; }
+  .author-cred { margin-top: 18px; }
+
+  /* Final CTA */
+  .final { text-align: left; }
+  .final h2.display { font-size: clamp(48px, 8vw, 120px); }
+  .final .blue { color: var(--os-accent); }
+
+  /* ============ footer + billing block (the only one on the site) ============ */
+  footer { padding: 64px 6vw 44px; }
+  .billing {
+    font-family: var(--pb-font-billing);
+    font-weight: 400;
+    text-transform: uppercase;
+    color: var(--os-gray);
+    text-align: center;
+    transform: scaleY(0.92);
+    line-height: 1.9;
+    max-width: 980px; margin: 0 auto 40px;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+  }
+  .billing .bb-role { font-size: 12px; letter-spacing: 0.18em; margin: 0 6px; }
+  .billing .bb-name { font-size: 15px; font-weight: 500; color: var(--os-ink); letter-spacing: 0.12em; margin: 0 6px; }
+  .billing .bb-title { font-size: 19px; font-weight: 500; color: var(--os-accent); letter-spacing: 0.14em; }
+  .foot-meta {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    border-top: 1px solid var(--os-ink); padding-top: 22px;
+    font-family: var(--pb-font-mono); font-size: 14px; color: var(--os-gray);
+  }
+  .foot-meta a { color: var(--os-gray); border-bottom: 1px solid var(--os-line); }
+  .foot-meta a:hover { color: var(--os-accent); border-color: var(--os-accent); }
+
+  /* ============ responsive ============ */
+  @media (max-width: 1020px) {
+    .nav-links a.caps { display: none; }
+  }
+  @media (max-width: 960px) {
+    .byok-grid, .author-grid { grid-template-columns: 1fr; gap: 32px; }
+    .who-row { grid-template-columns: 50px 1fr; }
+    .who-row .use { grid-column: 2; }
+  }
+
+  /* ============ reduced-motion: honored globally (§3.6) ============ */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .st, .hero-rule { animation: none; opacity: 1; transform: none; }
+  }
 </style>
 </head>
 <body>
-  <div id="root"></div>
 
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<nav aria-label="Main">
+  <div class="nav-mark">
+    <span class="display">Prompt&nbsp;Builder</span>
+    <span class="caps">Film &amp; AI Image</span>
+  </div>
+  <div class="nav-links">
+    <a class="caps" href="#categories">Categories</a>
+    <a class="caps" href="#anatomy">How it works</a>
+    <a class="caps" href="#models">Models</a>
+    <a class="caps" href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a class="caps" href="https://ai.drsfilms.com" target="_blank" rel="noopener noreferrer">DRS Films</a>
+    <a class="btn btn-solid nav-cta" href="/prompt-builder/prompt-builder">Open the tool →</a>
+  </div>
+</nav>
 
-  <script type="text/babel" src="tweaks-panel.jsx"></script>
-  <script type="text/babel" src="landing-bundle.jsx"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js?v=2026-07-16').then(r=>r.update()).catch(() => {});
+<!-- ============ §4.6 HOOK · REGISTRATION ============
+     Concept: the unformed picture in your head = drifting ink particles;
+     saying it clearly = particles pulling into register as a printed frame,
+     Klein blue settling into crop marks. Isomorphic, never illustrative; no UI, no data. -->
+<header class="hook" id="hook" aria-label="Opening — ink particles registering into a printed frame">
+  <canvas id="hook-canvas" aria-hidden="true"></canvas>
+  <div class="hook-stage" id="hook-stage">
+    <div class="hook-frame" aria-hidden="true">
+      <span class="cropmark tl"></span><span class="cropmark tr"></span>
+      <span class="cropmark bl"></span><span class="cropmark br"></span>
+    </div>
+    <div class="hook-content">
+      <p class="caps hook-kicker st st-h1">A film &amp; AI image prompt workbench</p>
+      <h1 class="display st st-h2">Say the picture<br>in your head. <span class="blue">Clearly.</span></h1>
+      <p class="caps hook-sub st st-h3">The picture, pulled into register.</p>
+    </div>
+  </div>
+  <div class="hook-cue caps" aria-hidden="true">
+    <span class="tick"></span>
+    <span>Scroll</span>
+  </div>
+</header>
+
+<!-- ============ HERO + PLATE 01 main visual area ============ -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <p class="caps hero-kicker st st-1">Film &amp; AI Image · Prompt Workbench · No.001</p>
+    <h2 class="display st st-2">The Prompt<br>Starter Pack<br><span class="blue">For Visual<br>Storytellers.</span></h2>
+    <div class="hero-rule" role="presentation"></div>
+    <div class="hero-grid">
+      <div>
+        <p class="hero-sub st st-3">No prompt expertise needed. Pick what looks right — <strong>shot, lighting, mood, style</strong> — and get a perfectly formatted prompt for Midjourney, Flux, Nano Banana, and GPT Image. Select, copy, done.</p>
+        <div class="hero-ctas st st-4">
+          <a class="btn btn-solid" href="/prompt-builder/prompt-builder">Open Prompt Builder →</a>
+          <a class="btn" href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer">GitHub · Source</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- §4.7 PLATE 01 · demo.mp4 (recycled: main visual area) -->
+    <figure class="plate hero-plate st st-5">
+      <div class="plate-head">
+        <span class="caps">Plate 01 — The Trailer · 17 sec</span>
+        <span class="caps">From the release package</span>
+      </div>
+      <video id="trailer" controls muted loop playsinline preload="metadata"
+             src="release-package/demo.mp4"
+             aria-label="Prompt Builder trailer — seventeen seconds through the tool"></video>
+    </figure>
+
+    <div class="spec-strip mono st st-6">
+      <div class="cell"><span class="v"><em>100+</em></span><span class="caps k">Presets</span></div>
+      <div class="cell"><span class="v"><em>4</em></span><span class="caps k">AI Models</span></div>
+      <div class="cell"><span class="v"><em>1</em></span><span class="caps k">HTML File</span></div>
+      <div class="cell"><span class="v"><em>0</em></span><span class="caps k">Accounts</span></div>
+      <div class="cell"><span class="v">BYOK</span><span class="caps k">Your Key, Your Data</span></div>
+      <div class="cell"><span class="v">EN·ZH</span><span class="caps k">Agent Input</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 01 THE BLANK-BOX PROBLEM ============ -->
+<section id="problem">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-no">01</span><span class="caps sec-kicker">The problem</span></div>
+    <h2 class="display">The blank box<br>wastes good ideas</h2>
+    <p class="sec-lede">Start with nothing, end up with mediocre. Start with clarity — structure, vocabulary, intent — and end up with cinematic. That difference is the whole product.</p>
+    <figure class="plate">
+      <div class="plate-head">
+        <span class="caps">Plate 02 — Before / After</span>
+        <span class="caps">From the release package</span>
+      </div>
+      <img src="release-package/PICS/before-after-blank-box-to-chips.jpg"
+           alt="Before and after comparison: an empty prompt box labeled 'the blank-box problem' versus a structured prompt assembled from selected chips — medium close-up, 85mm anamorphic, Rembrandt key, cinematic noir"
+           loading="lazy" width="3264" height="2448">
+    </figure>
+    <p class="plate-cap"><b>Left:</b> the empty box every tool gives you. <b>Right:</b> the same intent, said in shot language.</p>
+  </div>
+</section>
+
+<!-- ============ 02 WHO IT SERVES ============ -->
+<section id="who">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-no">02</span><span class="caps sec-kicker">Who it serves</span></div>
+    <h2 class="display">Built for people<br>who think visually</h2>
+    <p class="sec-lede">Directors, designers, marketers, and explorers do not need the same blank text box. They need a way to express visual intent quickly and consistently.</p>
+    <figure class="plate">
+      <div class="plate-head">
+        <span class="caps">Plate 03 — Four Chairs on Set</span>
+        <span class="caps">From the release package</span>
+      </div>
+      <img src="release-package/PICS/audience-who-uses-prompt-builder.jpg"
+           alt="Who uses Prompt Builder — four quadrants: the Director building mood boards and storyboards, the Designer creating product visuals and key art, the Marketer designing campaign visuals, and the Explorer experimenting with styles and moods"
+           loading="lazy" width="3264" height="2448">
+    </figure>
+    <div class="who-list">
+      <div class="who-row"><span class="mono" style="color:var(--os-accent)">A</span><span class="role">Director</span><span class="use">Mood boards and storyboards, in cinematic presets</span></div>
+      <div class="who-row"><span class="mono" style="color:var(--os-accent)">B</span><span class="role">Designer</span><span class="use">Product visuals and key art, in commercial presets</span></div>
+      <div class="who-row"><span class="mono" style="color:var(--os-accent)">C</span><span class="role">Marketer</span><span class="use">Campaign images and social content that converts</span></div>
+      <div class="who-row"><span class="mono" style="color:var(--os-accent)">D</span><span class="role">Explorer</span><span class="use">Styles, moods, and references to spark new ideas</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 PICK YOUR GOAL ============ -->
+<section id="categories">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-no">03</span><span class="caps sec-kicker">Pick your goal</span></div>
+    <h2 class="display">A preset for everything<br>you want to make</h2>
+    <p class="sec-lede">Mood boards, style frames, character sheets, storyboards, key art — 100+ presets across every visual category, each pre-loaded with options. Just select and copy.</p>
+    <figure class="plate">
+      <div class="plate-head">
+        <span class="caps">Plate 04 — The Catalog · 100+ Presets</span>
+        <span class="caps">From the release package</span>
+      </div>
+      <img src="release-package/PICS/preset-library-100-plus-catalog-infographic.jpg"
+           alt="Prompt Builder catalog infographic — shot-language chip board, model and output panel, live prompt preview, and a stats row: 100+ presets, 4 models, works offline, installable PWA"
+           loading="lazy" width="3312" height="2480">
+    </figure>
+    <div class="goal-grid">
+      <div class="goal-col">
+        <h3><span class="gi">i</span>Pre-production</h3>
+        <ul>
+          <li><span class="p-name">Mood Board</span><span class="p-desc">Visual tone &amp; atmosphere reference</span></li>
+          <li><span class="p-name">Style Frame</span><span class="p-desc">Key moment visual — look &amp; feel</span></li>
+          <li><span class="p-name">Color Script</span><span class="p-desc">Color progression across scenes</span></li>
+          <li><span class="p-name">Storyboard</span><span class="p-desc">Sequential shot-by-shot breakdown</span></li>
+        </ul>
+      </div>
+      <div class="goal-col">
+        <h3><span class="gi">ii</span>Character</h3>
+        <ul>
+          <li><span class="p-name">Character Design</span><span class="p-desc">Full character concept sheet</span></li>
+          <li><span class="p-name">Character Sheet</span><span class="p-desc">Multi-angle consistency sheet</span></li>
+          <li><span class="p-name">Expression Sheet</span><span class="p-desc">Emotional range reference</span></li>
+        </ul>
+      </div>
+      <div class="goal-col">
+        <h3><span class="gi">iii</span>Environment</h3>
+        <ul>
+          <li><span class="p-name">Scene Concept</span><span class="p-desc">Environment concept art</span></li>
+          <li><span class="p-name">Panorama / Establishing</span><span class="p-desc">Wide establishing shot</span></li>
+          <li><span class="p-name">Lighting Study</span><span class="p-desc">Lighting variation reference</span></li>
+        </ul>
+      </div>
+      <div class="goal-col">
+        <h3><span class="gi">iv</span>Storyboard &amp; Sequence</h3>
+        <ul>
+          <li><span class="p-name">Shot Sequence</span><span class="p-desc">Multi-shot narrative sequence</span></li>
+          <li><span class="p-name">Comic / Manga Page</span><span class="p-desc">Panel-based visual storytelling</span></li>
+        </ul>
+      </div>
+      <div class="goal-col">
+        <h3><span class="gi">v</span>Production &amp; VFX</h3>
+        <ul>
+          <li><span class="p-name">Prop / Costume</span><span class="p-desc">Detailed prop or costume reference</span></li>
+          <li><span class="p-name">VFX Reference</span><span class="p-desc">Visual effects breakdown</span></li>
+          <li><span class="p-name">Film Poster / Key Art</span><span class="p-desc">Marketing key visual</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 HOW IT WORKS ============ -->
+<section id="anatomy">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-no">04</span><span class="caps sec-kicker">How it works</span></div>
+    <h2 class="display">Pick what looks right.<br>The tool writes the syntax.</h2>
+    <p class="sec-lede">You never need to memorize a single parameter. Choose from film vocabulary — the prompt assembles itself, formatted for the model you pick.</p>
+    <div class="chips" aria-label="Selected presets">
+      <span class="chip"><span class="cx">+</span>epic wide shot</span>
+      <span class="chip"><span class="cx">+</span>35mm anamorphic</span>
+      <span class="chip"><span class="cx">+</span>low-angle dusk light</span>
+      <span class="chip"><span class="cx">+</span>awe-struck and foreboding</span>
+      <span class="chip"><span class="cx">+</span>Villeneuve grandeur</span>
+      <span class="chip"><span class="cx">+</span>2.39:1</span>
+    </div>
+    <div class="prompt-block" role="figure" aria-label="Assembled prompt example">
+      <span class="cmd">/imagine prompt:</span> monumental brutalist steampunk cityscape, modern man alone on a windswept hill, <span class="tok">epic wide shot</span>, <span class="tok">35mm anamorphic</span>, <span class="tok">low-angle dusk light</span>, teal-and-amber industrial haze, <span class="tok">awe-struck and foreboding</span>, <span class="tok">Villeneuve grandeur</span>, Ridley Scott industrial worldbuilding, volumetric smoke <span class="cmd">--ar 2.39:1 --style raw</span>
+    </div>
+    <p class="prompt-caption"><b>Underlined tokens</b> come straight from your selections. Everything else — ordering, separators, parameters — is assembled by the tool.</p>
+  </div>
+</section>
+
+<!-- ============ 05 ONE SCENE, FOUR FORMATS ============ -->
+<section id="models">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-no">05</span><span class="caps sec-kicker">Output formats</span></div>
+    <h2 class="display">One scene.<br>Four formats.</h2>
+    <p class="sec-lede">Each model speaks its own syntax. The same weathered detective in a rain-slicked alley, translated four ways — you just pick the model and copy.</p>
+    <figure class="plate" style="margin-bottom:0">
+      <div class="plate-head">
+        <span class="caps">Plate 05 — The Same Shot, Translated</span>
+        <span class="caps">From the release package</span>
+      </div>
+      <img src="release-package/PICS/one-scene-four-formats-model-comparison.jpg"
+           alt="One scene, four formats — the same detective scene written as Midjourney slash-imagine parameters, Flux natural language, Nano Banana conversational description, and GPT Image structured JSON"
+           loading="lazy" width="4800" height="3584">
+    </figure>
+    <div class="models">
+      <div class="model">
+        <span class="m-no mono">M1</span>
+        <h3>Midjourney</h3>
+        <p>Photorealistic, cinematic. Parameters for aspect ratio, stylization, style raw.</p>
+        <span class="syntax">--ar 2.39:1 --style raw</span>
+      </div>
+      <div class="model">
+        <span class="m-no mono">M2</span>
+        <h3>Flux 2 Max</h3>
+        <p>Detailed natural-language descriptions with explicit camera and lens specs.</p>
+        <span class="syntax">⟨ prose ⟩</span>
+      </div>
+      <div class="model">
+        <span class="m-no mono">M3</span>
+        <h3>Nano Banana</h3>
+        <p>Conversational. Think describing a scene to a cinematographer over coffee.</p>
+        <span class="syntax">⟨ dialogue ⟩</span>
+      </div>
+      <div class="model">
+        <span class="m-no mono">M4</span>
+        <h3>GPT Image 2</h3>
+        <p>Structured output for multi-panel layouts and controlled compositions.</p>
+        <span class="syntax">⟨ structured ⟩</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 WHAT CAN YOU BUILD ============ -->
+<section id="showcase">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-no">06</span><span class="caps sec-kicker">Creative range</span></div>
+    <h2 class="display">What can<br>you build?</h2>
+    <p class="sec-lede">Product shots, film posters, infographics, maps, character design, storyboards, key art — twelve directions out of the same vocabulary.</p>
+  </div>
+  <figure class="plate plate-bleed">
+    <div class="plate-head">
+      <span class="caps">Plate 06 — Twelve Directions</span>
+      <span class="caps">From the release package</span>
+    </div>
+    <img src="release-package/PICS/showcase-creative-range-what-can-you-build.jpg"
+         alt="What can you build — a twelve-tile showcase: product, film poster, infographic, map, character design, mood board, storyboard, portrait, environment, UI mockup, style frame, and key art"
+         loading="lazy" width="3264" height="2448">
+  </figure>
+  <div class="wrap">
+    <p class="plate-cap">All tiles generated from Prompt Builder presets — film, commercial, editorial, data, and creative categories.</p>
+  </div>
+</section>
+
+<!-- ============ 07 THE INTERFACE, TODAY ============ -->
+<section id="interface">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-no">07</span><span class="caps sec-kicker">Product proof</span></div>
+    <h2 class="display">A working interface,<br>not a prompt list</h2>
+    <p class="sec-lede">The core workflow is real and live today: choose visual language, assemble locally, then copy a model-ready prompt.</p>
+    <figure class="plate">
+      <div class="plate-head">
+        <span class="caps">Plate 07 — Direct Mode · Current Build V1</span>
+        <span class="caps">Real screenshot · reskin lands in wave 2</span>
+      </div>
+      <img src="release-package/web-shots/builder-direct-mode.png"
+           alt="Real screenshot of the current Prompt Builder interface in direct mode — scene concept fields on the left with weather, era, palette and camera-angle chips selected, and a live GPT Image JSON prompt preview on the right"
+           loading="lazy" width="1440" height="1050">
+    </figure>
+    <p class="plate-cap"><b>Honest label:</b> this is the current V1 interface. The One-Sheet reskin of the tool itself ships in wave 2 — this still will be refreshed then.</p>
+  </div>
+</section>
+
+<!-- ============ 08 BYOK ============ -->
+<section id="byok">
+  <div class="wrap">
+    <div class="byok-grid">
+      <div>
+        <div class="sec-head"><span class="sec-no">08</span><span class="caps sec-kicker">BYOK — your key, your data</span></div>
+        <h2 class="display">Works offline.<br>No account. No setup.</h2>
+        <p class="sec-lede" style="margin-bottom:0">The whole preset library ships in one HTML file. Add an API key if you want AI to enhance your prompts further — but great results don't need it.</p>
+      </div>
+      <ul class="byok-list">
+        <li><span class="sq" role="presentation"></span><span><b>Try without a key</b> — add <span class="mono">?mock=1</span> to the URL for canned replies and a portfolio demo. <a href="/prompt-builder/prompt-builder?mock=1" style="color:var(--os-accent);border-bottom:1px solid var(--os-accent)">Open demo mode →</a></span></li>
+        <li><span class="sq" role="presentation"></span><span><b>Your key stays yours</b> — a static page with no backend: prompts assemble in your browser, and your key is only ever sent to the model provider you choose.</span></li>
+        <li><span class="sq" role="presentation"></span><span><b>English &amp; Chinese</b> — with a key, describe your shot to the agent in either language; it returns a model-ready prompt either way.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 09 AUTHOR ============ -->
+<section id="author">
+  <div class="wrap">
+    <div class="author-grid">
+      <div>
+        <div class="sec-head"><span class="sec-no">09</span><span class="caps sec-kicker">Built by a producer, not a prompt engineer</span></div>
+        <h2 class="display">Fifteen years of<br>film vocabulary</h2>
+      </div>
+      <div>
+        <p class="author-name">Eric Zheng — <span>Producer &amp; AI builder. DRS Films.</span></p>
+        <p style="color:var(--os-gray)">Producer behind Sundance nominee <em>Brief History of A Family</em> (Berlinale Panorama, 60+ territories) and an $8M+ commercial portfolio at Final Frontier. Fifteen years of film vocabulary — shot sizes, lighting setups, lens choices — distilled into one-click presets.</p>
+        <p class="caps author-cred" style="color:var(--os-gray);font-size:12.5px;letter-spacing:0.1em">SUNDANCE NOMINEE · BERLINALE PANORAMA · GOLD HOUSE · EMBA QUANTIC</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="final" style="border-bottom:0">
+  <div class="wrap">
+    <h2 class="display">Select. Copy.<br><span class="blue">Done.</span></h2>
+    <div class="hero-ctas" style="margin-top:36px">
+      <a class="btn btn-solid" href="/prompt-builder/prompt-builder">Open Prompt Builder →</a>
+      <a class="btn" href="/prompt-builder/prompt-builder?mock=1">Try demo mode</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER · BILLING BLOCK (the only one) ============ -->
+<footer>
+  <div class="billing" aria-label="Billing block">
+    <span class="bb-role">DRS Films</span> <span class="bb-role">presents</span>
+    <span class="bb-name">a Prompt Builder production</span>
+    <span class="bb-title">“The Prompt Starter Pack”</span><br>
+    <span class="bb-role">written, produced &amp; shipped by</span> <span class="bb-name">Eric Zheng</span>
+    <span class="bb-role">presets</span> <span class="bb-name">100+</span>
+    <span class="bb-role">models</span> <span class="bb-name">Midjourney · Flux · Nano Banana · GPT Image</span><br>
+    <span class="bb-role">format</span> <span class="bb-name">single HTML file</span>
+    <span class="bb-role">accounts</span> <span class="bb-name">none</span>
+    <span class="bb-role">tracking</span> <span class="bb-name">none</span>
+    <span class="bb-role">key</span> <span class="bb-name">BYOK — your key, your data</span>
+  </div>
+  <div class="foot-meta">
+    <span>PROMPT BUILDER · V2 · ONE-SHEET · REV2</span>
+    <span>STATIC HTML · NO ACCOUNT · NO TRACKING</span>
+    <span>© 2026 <a href="https://ai.drsfilms.com" target="_blank" rel="noopener noreferrer">DRS FILMS</a> · <a href="https://github.com/ericzheng-lab/prompt-builder" target="_blank" rel="noopener noreferrer">GITHUB</a> · <a href="https://www.linkedin.com/in/ericzhengyue/" target="_blank" rel="noopener noreferrer">LINKEDIN</a></span>
+  </div>
+</footer>
+
+<!-- ============ behavior: trailer plays in view / pauses out of view (respects manual pause + Save-Data) ============ -->
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var saveData = navigator.connection && navigator.connection.saveData;
+  var v = document.getElementById('trailer');
+  if (v && !reduce && !saveData && 'IntersectionObserver' in window) {
+    var inView = false, userPaused = false;
+    v.addEventListener('pause', function () { if (inView) userPaused = true; }); // a pause while in view = user intent
+    v.addEventListener('play',  function () { userPaused = false; });
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        inView = e.isIntersecting;
+        if (inView) { if (!userPaused) v.play().catch(function(){}); }
+        else { v.pause(); }
+      });
+    }, { threshold: 0.35 });
+    io.observe(v);
+  }
+})();
+</script>
+
+<!-- ============ §4.6 HOOK · Three.js "REGISTRATION" (CDN, not inlined, outside file budget) ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }
+</script>
+<script type="module">
+/* HOOK "REGISTRATION"
+   - Particles = ink: drifting (an unformed thought) -> registered (a clearly said frame).
+   - Blue particles settle into corner crop marks + one circle-cross registration
+     target at the top-edge midpoint (native print language).
+   - A small share of ink dust never registers (some of what's in your head goes
+     unsaid) and fades as registration completes.
+   - Degradation: reduced-motion / no WebGL / low-end devices (cross-browser
+     heuristic) / CDN failure / no JS -> static poster frame (shown by default;
+     no failure path ever adds hook-live). */
+(async function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var shortSide = Math.min(window.innerWidth, window.innerHeight);
+  var lowEnd = ((navigator.deviceMemory || 8) < 4 || (navigator.hardwareConcurrency || 8) <= 3) && shortSide < 760;
+  var canvas = document.getElementById('hook-canvas');
+  var stage  = document.getElementById('hook-stage');
+  var hook   = document.getElementById('hook');
+  if (reduce || lowEnd || !canvas || !window.WebGLRenderingContext) return; // keep the static poster frame
+
+  let THREE;
+  try { THREE = await import('three'); } catch (e) { return; } // CDN failure -> static frame
+
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: false, powerPreference: 'low-power' });
+  } catch (e) { return; }
+
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(DPR);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.OrthographicCamera(0, 1, 1, 0, -10, 10); // pixel coordinate space, rebuilt on resize
+  var W = 0, H = 0;
+
+  var COUNT = shortSide < 760 ? 4200 : 9000;
+  var INK = new THREE.Color('#101010');
+  var BLUE = new THREE.Color('#002FA7');
+
+  var aStart  = new Float32Array(COUNT * 3);
+  var aTarget = new Float32Array(COUNT * 3);
+  var aMeta   = new Float32Array(COUNT * 4); // delay (2.0 = never), blue, size, phase
+  var geo = new THREE.BufferGeometry();
+
+  /* random jitter generated once so the ink texture stays stable across resize rebuilds */
+  var jit = new Float32Array(COUNT * 2);
+  for (var z = 0; z < COUNT * 2; z++) jit[z] = Math.random() * 2 - 1;
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  /* targets: frame perimeter + corner crop marks (blue) + top-center circle-cross registration target (blue) */
+  function buildTargets() {
+    var r = stage.getBoundingClientRect();
+    var hr = hook.getBoundingClientRect();
+    var x0 = r.left - hr.left, y0 = r.top - hr.top, fw = r.width, fh = r.height;
+    var per = (fw + fh) * 2;
+    var nBlue  = Math.floor(COUNT * 0.085);
+    var nDrift = Math.floor(COUNT * 0.07);
+    var nReg   = Math.floor(nBlue * 0.45); // share of blue particles assigned to the registration target
+    for (var i = 0; i < COUNT; i++) {
+      var isBlue  = i < nBlue;
+      var isDrift = !isBlue && i >= COUNT - nDrift;
+      var tx, ty;
+      if (isBlue && i < nReg) {
+        /* registration target: top-edge midpoint, circle (r=9) + cross (+/-15) — the classic mark */
+        var cx0 = x0 + fw / 2, cy0 = y0;
+        if (i % 2 === 0) {
+          var ang = (i / nReg) * 6.28318 * 2 + jit[i * 2] * 0.2;
+          tx = cx0 + Math.cos(ang) * 9; ty = cy0 + Math.sin(ang) * 9;
+        } else {
+          var t1 = ((i / nReg) % 1) * 30 - 15;
+          if (i % 4 === 1) { tx = cx0 + t1; ty = cy0; } else { tx = cx0; ty = cy0 + t1; }
+        }
+        tx += jit[i * 2] * 0.7; ty += jit[i * 2 + 1] * 0.7;
+      } else if (isBlue) {
+        /* crop marks: exact same geometry as the static CSS — base point 8px outside each corner, legs extending 18px outward */
+        var k = i - nReg;
+        var corner = k % 4;
+        var legH = (k >> 2) % 2 === 0;
+        var t = (jit[i * 2 + 1] * 0.5 + 0.5) * 18;
+        var bx = corner % 2 === 0 ? x0 - 8 : x0 + fw + 8;
+        var by = corner < 2 ? y0 - 8 : y0 + fh + 8;
+        var dirx = corner % 2 === 0 ? -1 : 1;
+        var diry = corner < 2 ? -1 : 1;
+        if (legH) { tx = bx + dirx * t; ty = by; } else { tx = bx; ty = by + diry * t; }
+        tx += jit[i * 2] * 0.7; ty += jit[i * 2 + 1] * 0.7;
+      } else if (isDrift) {
+        tx = (jit[i * 2] * 0.5 + 0.5) * W; ty = (jit[i * 2 + 1] * 0.5 + 0.5) * H; // ink dust that never registers
+      } else {
+        /* scatter along the frame perimeter, +/-1.8px ink jitter (tight, so the registered edge reads solid) */
+        var d = ((i * 2654435761) % 100000) / 100000 * per;
+        if (d < fw)                { tx = x0 + d;                 ty = y0; }
+        else if (d < fw + fh)      { tx = x0 + fw;                ty = y0 + (d - fw); }
+        else if (d < fw * 2 + fh)  { tx = x0 + (d - fw - fh);     ty = y0 + fh; }
+        else                       { tx = x0;                     ty = y0 + (d - fw * 2 - fh); }
+        tx += jit[i * 2] * 1.8; ty += jit[i * 2 + 1] * 1.8;
+      }
+      aTarget[i * 3] = tx; aTarget[i * 3 + 1] = ty; aTarget[i * 3 + 2] = 0;
+      aMeta[i * 4]     = isDrift ? 2.0 : ((jit[i * 2] * 0.5 + 0.5) * 0.55);
+      aMeta[i * 4 + 1] = isBlue ? 1 : 0;
+      aMeta[i * 4 + 2] = isBlue ? rand(2.4, 3.2) : rand(1.4, 2.6);
+      aMeta[i * 4 + 3] = Math.random() * 6.283;
     }
-  </script>
+    geo.attributes.aTarget.needsUpdate = true;
+    geo.attributes.aMeta.needsUpdate = true;
+  }
+
+  function buildStarts() {
+    for (var i = 0; i < COUNT; i++) {
+      aStart[i * 3]     = rand(-0.08, 1.08) * W;
+      aStart[i * 3 + 1] = rand(-0.08, 1.08) * H;
+      aStart[i * 3 + 2] = 0;
+    }
+    geo.attributes.aStart.needsUpdate = true;
+  }
+
+  geo.setAttribute('aStart',  new THREE.BufferAttribute(aStart, 3));
+  geo.setAttribute('aTarget', new THREE.BufferAttribute(aTarget, 3));
+  geo.setAttribute('aMeta',   new THREE.BufferAttribute(aMeta, 4));
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(COUNT * 3), 3)); // placeholder
+
+  var uniforms = {
+    uTime:     { value: 0 },
+    uProgress: { value: 0 },
+    uMouse:    { value: new THREE.Vector2(-9999, -9999) },
+    uDPR:      { value: DPR },
+    uInk:      { value: INK },
+    uBlue:     { value: BLUE }
+  };
+
+  var mat = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    transparent: true,
+    depthTest: false,
+    blending: THREE.NormalBlending,
+    vertexShader: [
+      'attribute vec3 aStart;',
+      'attribute vec3 aTarget;',
+      'attribute vec4 aMeta;',
+      'uniform float uTime; uniform float uProgress; uniform vec2 uMouse; uniform float uDPR;',
+      'varying float vBlue; varying float vAlpha;',
+      'void main() {',
+      '  float delay = aMeta.x; float blue = aMeta.y; float size = aMeta.z; float phase = aMeta.w;',
+      '  /* drift: ink dust on paper, slow and directionless */',
+      '  vec3 drift = aStart;',
+      '  drift.x += sin(uTime * 0.35 + phase * 2.1 + aStart.y * 0.013) * 26.0;',
+      '  drift.y += cos(uTime * 0.28 + phase * 1.7 + aStart.x * 0.011) * 22.0;',
+      '  /* micro-breathing after registration (+/-1px) */',
+      '  vec3 set = aTarget;',
+      '  set.x += sin(uTime * 0.9 + phase) * 1.0;',
+      '  set.y += cos(uTime * 0.8 + phase * 1.3) * 1.0;',
+      '  float p = smoothstep(delay, delay + 0.38, uProgress);',
+      '  p = p * p * (3.0 - 2.0 * p);',
+      '  vec3 pos = mix(drift, set, p);',
+      '  /* pointer: gentle push, like breath scattering ink dust */',
+      '  vec2 dm = pos.xy - uMouse;',
+      '  float dist = length(dm);',
+      '  float push = smoothstep(150.0, 0.0, dist) * 16.0 * (1.0 - p * 0.65);',
+      '  pos.xy += normalize(dm + 0.0001) * push;',
+      '  vBlue = blue;',
+      '  /* registered points solidify; never-registering dust (delay=2.0) fades with progress — clarity must actually read clean */',
+      '  float drifterFade = 1.0 - step(1.5, delay) * uProgress * 0.62;',
+      '  vAlpha = mix(0.55, 0.95, p) * (blue > 0.5 ? 1.0 : 0.9) * drifterFade;',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);',
+      '  gl_PointSize = size * uDPR;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform vec3 uInk; uniform vec3 uBlue;',
+      'varying float vBlue; varying float vAlpha;',
+      'void main() {',
+      '  vec2 c = gl_PointCoord - 0.5;',
+      '  if (dot(c, c) > 0.25) discard;', // round dot, hard-edged ink, no light effects
+      '  vec3 col = mix(uInk, uBlue, vBlue);',
+      '  gl_FragColor = vec4(col, vAlpha);',
+      '}'
+    ].join('\n')
+  });
+
+  scene.add(new THREE.Points(geo, mat));
+
+  function doResize() {
+    var r = hook.getBoundingClientRect();
+    var w = Math.max(1, Math.round(r.width));
+    var h = Math.max(1, Math.round(r.height));
+    if (w === W && h === H) return; // ignore phantom resizes (iOS URL-bar collapse etc.)
+    W = w; H = h;
+    renderer.setSize(W, H, false);
+    camera.left = 0; camera.right = W; camera.top = 0; camera.bottom = H;
+    camera.updateProjectionMatrix();
+    buildStarts(); buildTargets();
+  }
+  doResize();
+  var rzT = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(rzT); rzT = setTimeout(doResize, 150); // debounce so drag-resize doesn't re-upload buffers every frame
+  });
+
+  hook.addEventListener('pointermove', function (e) {
+    var r = hook.getBoundingClientRect();
+    uniforms.uMouse.value.set(e.clientX - r.left, e.clientY - r.top);
+  });
+  hook.addEventListener('pointerleave', function () {
+    uniforms.uMouse.value.set(-9999, -9999);
+  });
+
+  /* WebGL context lost -> fall back to the static poster frame, never leave a blank */
+  canvas.addEventListener('webglcontextlost', function (e) {
+    e.preventDefault();
+    hook.classList.remove('hook-live');
+    setRunning(false);
+  });
+
+  hook.classList.add('hook-live'); // hide the static frame, canvas takes over
+
+  /* choreography: 1s drift -> 2.2s registration (pacing adapted from the ammo library's timeline-page-load) */
+  function startTimeline() {
+    if (window.gsap) {
+      gsap.to(uniforms.uProgress, { value: 1, duration: 2.2, ease: 'power2.inOut', delay: 1.0 });
+    } else {
+      var t0 = null;
+      (function step(ts) {
+        if (t0 === null) t0 = ts;
+        var t = (ts - t0) / 1000 - 1.0;
+        var k = Math.min(Math.max(t / 2.2, 0), 1);
+        uniforms.uProgress.value = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        if (k < 1) requestAnimationFrame(step);
+      })(performance.now());
+    }
+  }
+  startTimeline();
+
+  /* render loop: fully parked when the hook is offscreen or the tab is hidden (no idle rAF) */
+  var running = false, rafOn = false, inView = true, clock = new THREE.Clock();
+  function loop() {
+    if (!running) { rafOn = false; return; }
+    uniforms.uTime.value = clock.getElapsedTime();
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  }
+  function setRunning(v) {
+    running = v;
+    if (v && !rafOn) { rafOn = true; requestAnimationFrame(loop); }
+  }
+  setRunning(true);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (e) { inView = e.isIntersecting; setRunning(inView && !document.hidden); });
+    }, { threshold: 0.05 }).observe(hook);
+  }
+  document.addEventListener('visibilitychange', function () {
+    setRunning(inView && !document.hidden); // returning to the tab must not wake a scene that is scrolled out of view
+  });
+})();
+</script>
+<script src="sw-register.js" defer></script>
+
 </body>
 </html>
