@@ -7,17 +7,24 @@
 <title>Yue (Eric) Zheng · ElevenLabs Forward Deployed Creative · Private Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Waldenburg';src:url(https://eleven-public-cdn.elevenlabs.io/marketing_website/_next/static/chunks/src/app/_ui/fonts/waldenburg/KMR-Waldenburg-Buch-latin.1f7863d3c4317f3d.woff2?dpl=ff9f41692968251da445f4ae2d460066367d6e40) format("woff2");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Waldenburg';src:url(https://eleven-public-cdn.elevenlabs.io/marketing_website/_next/static/chunks/src/app/_ui/fonts/waldenburg/KMR-Waldenburg-Normal-latin.47fcefe5bf77b4e5.woff2?dpl=ff9f41692968251da445f4ae2d460066367d6e40) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Waldenburg';src:url(https://eleven-public-cdn.elevenlabs.io/marketing_website/_next/static/chunks/src/app/_ui/fonts/waldenburg/KMR-Waldenburg-Fett-latin.e6b0db8ee0a63897.woff2?dpl=ff9f41692968251da445f4ae2d460066367d6e40) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url(https://eleven-public-cdn.elevenlabs.io/marketing_website/_next/static/chunks/src/app/_ui/fonts/geist-mono/GeistMono-Regular.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url(https://eleven-public-cdn.elevenlabs.io/marketing_website/_next/static/chunks/src/app/_ui/fonts/geist-mono/GeistMono-Medium.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+</style>
 <style>
 :root{
   --ink:#000000;
   --ink-2:#1c1c1c;
   --muted:#3d3d3d;
-  --paper:#fdfcfc;
+  --paper:#ffffff;
   --surface:#ffffff;
   --line:#e5e5e5;
   --line-dark:#d4d4d4;
-  --signal:#00ccbc;
+  --signal:#f41a2f;
   --signal-ink:#ffffff;
   --blue:#0a59d2;
   --pad:clamp(20px,4.5vw,72px);
@@ -31,7 +38,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 img{display:block;max-width:100%}
 button{font:inherit}
 .wrap{width:min(var(--max),100%);margin:auto;padding-inline:var(--pad)}
-.mono,.eyebrow,.label,.tag,.meta,.index,.stat b,.work-meta,.workflow b,.topbar{font-family:"IBM Plex Mono",monospace}
+.mono,.eyebrow,.label,.tag,.meta,.index,.stat b,.work-meta,.workflow b,.topbar{font-family:"Geist Mono",monospace}
 .topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;padding:10px var(--pad);background:rgba(18,25,27,.98);color:#f7f8f4;border-bottom:1px solid var(--line-dark);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 .topbar .flag{background:var(--signal);color:var(--signal-ink);font-weight:600;padding:5px 8px}
 .topbar .role{color:#cbd3d1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -39,7 +46,7 @@ button{font:inherit}
 .hero{background:var(--paper);color:var(--ink);border-bottom:1px solid var(--line)}
 .hero-grid{min-height:78vh;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.55fr);gap:clamp(42px,8vw,130px);align-items:end;padding-block:clamp(88px,13vh,150px) 50px}
 .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#aeb9bb}
-h1{font-size:clamp(51px,8vw,120px);line-height:.89;letter-spacing:-.065em;margin:18px 0 28px;max-width:1100px}
+h1{font:700 clamp(48px,8vw,116px)/.92 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.04em;color:var(--ink);margin:18px 0 28px;max-width:1100px}
 h1 em{font-style:normal;color:var(--signal)}
 .lede{font-size:clamp(18px,1.85vw,27px);line-height:1.36;max-width:860px;color:#d8dfdd;margin:0}
 .identity{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:36px;padding-top:18px;border-top:1px solid #536064;color:#c7d0ce;font-size:13px}
@@ -47,7 +54,7 @@ h1 em{font-style:normal;color:var(--signal)}
 .hero-aside{border-left:1px solid var(--line);padding-left:24px}
 .hero-aside .label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .hero-aside p{font-size:15px;color:var(--ink-2);margin:11px 0 24px}
-.hero-aside a{display:inline-block;background:var(--signal);color:var(--signal-ink);padding:10px 13px;text-decoration:none;font:600 11px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.04em;border-radius:99px}
+.hero-aside a{display:inline-block;background:var(--signal);color:var(--signal-ink);padding:10px 13px;text-decoration:none;font:600 11px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.04em;border-radius:8px}
 .cred{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface)}
 .stat{padding:20px var(--pad);border-right:1px solid var(--line);min-height:92px}
 .stat:last-child{border-right:0}
