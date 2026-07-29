@@ -42,38 +42,38 @@ img{display:block;max-width:100%}
 button{font:inherit}
 .wrap{width:min(var(--max),100%);margin:auto;padding-inline:var(--pad)}
 .mono,.eyebrow,.label,.tag,.meta,.index,.stat b,.work-meta,.workflow b,.topbar{font-family:"Geist Mono",monospace}
-.topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;padding:10px var(--pad);background:rgba(18,25,27,.98);color:#f7f8f4;border-bottom:1px solid var(--line-dark);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
-.topbar .flag{background:var(--signal);color:var(--signal-ink);font-weight:600;padding:5px 8px}
-.topbar .role{color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar .date{color:#888;white-space:nowrap}
+.topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px;padding:18px var(--pad);background:rgba(255,255,255,.96);color:var(--ink);border-bottom:1px solid var(--line);font-size:12px;letter-spacing:0}
+.topbar .flag{background:transparent;color:var(--ink);font:700 25px/1 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.045em;padding:0}
+.topbar .role{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 13px/1.2 Inter,Arial,sans-serif}
+.topbar .date{color:var(--muted);white-space:nowrap;font:500 11px/1.2 "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em}
 .hero{background:var(--paper);color:var(--ink);border-bottom:1px solid var(--line)}
-.hero-grid{min-height:78vh;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.55fr);gap:clamp(42px,8vw,130px);align-items:end;padding-block:clamp(44px,6vh,75px) 25px}
+.hero-grid{min-height:0;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:clamp(32px,5vw,76px);align-items:start;padding-block:clamp(42px,7vh,74px) 34px}
 .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#666}
-h1{font:700 clamp(32px,4.5vw,56px)/1.08 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.025em;color:var(--ink);margin:18px 0 20px;max-width:800px}
+h1{font:700 clamp(42px,5.4vw,78px)/1.02 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.035em;color:var(--ink);margin:16px 0 20px;max-width:930px}
 h1 em{font-style:normal;color:var(--signal)}
-.lede{font-size:clamp(18px,1.85vw,27px);line-height:1.36;max-width:860px;color:#444;margin:0}
-.identity{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:#555;font-size:13px}
+.lede{font-size:clamp(17px,1.35vw,21px);line-height:1.42;max-width:820px;color:var(--ink-2);margin:0}
+.identity{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:24px;padding-top:14px;border-top:1px solid var(--line);color:#555;font-size:13px}
 .identity strong{color:var(--ink)}
-.hero-aside{border-left:1px solid var(--line);padding-left:24px}
+.hero-aside{border-left:1px solid var(--line);padding:18px 0 0 24px;margin-top:76px}
 .hero-aside .label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.hero-aside p{font-size:15px;color:var(--ink-2);margin:11px 0 24px}
-.hero-aside a{display:inline-block;background:var(--ink);color:#fff;padding:10px 13px;text-decoration:none;font:600 11px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em;border-radius:8px}
+.hero-aside p{font-size:15px;line-height:1.52;color:var(--ink-2);margin:11px 0 18px}
+.hero-aside a{display:inline-block;background:var(--ink);color:#fff;padding:10px 13px;text-decoration:none;font:600 11px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em;border-radius:999px}
 .cred{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface)}
 .stat{padding:10px var(--pad);border-right:1px solid var(--line);min-height:92px;background:var(--card);position:relative}.stat::after{content:"";position:absolute;width:var(--dot-size);height:var(--dot-size);background:var(--dot-color);border-radius:50%;top:-3px;left:-3px}
 .stat:last-child{border-right:0}
 .stat b{display:block;color:var(--signal);font-size:21px;line-height:1.1}
 .stat span{display:block;color:var(--muted);font-size:11px;margin-top:7px}
-.nav{position:sticky;top:43px;z-index:20;display:flex;gap:20px;overflow:auto;background:rgba(251,252,249,.98);border-bottom:1px solid var(--line);padding:13px var(--pad)}
-.nav a{text-decoration:none;white-space:nowrap;color:var(--muted);font:500 10px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.07em}
+.nav{position:sticky;top:62px;z-index:20;display:flex;gap:26px;overflow:auto;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);padding:12px var(--pad)}
+.nav a{text-decoration:none;white-space:nowrap;color:var(--muted);font:500 11px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.05em}
 .nav a:hover{color:var(--ink)}
 main{padding-bottom:70px}
-section{padding-block:clamp(60px,8vw,100px);border-bottom:1px solid var(--line)}
-.section-head{display:grid;grid-template-columns:120px minmax(0,1fr);gap:26px;align-items:start;margin-bottom:34px}
+section{padding-block:clamp(36px,5vw,68px);border-bottom:1px solid var(--line);position:relative}
+.section-head{display:grid;grid-template-columns:120px minmax(0,1fr);gap:22px;align-items:start;margin-bottom:24px}
 .index{font-size:11px;color:var(--muted);padding-top:9px}
-h2{font-size:clamp(36px,5.4vw,76px);line-height:.96;letter-spacing:-.05em;margin:0;max-width:1050px}
+h2{font:700 clamp(32px,4.2vw,58px)/1.02 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.035em;margin:0;max-width:980px}
 .subhead{font-size:17px;color:var(--muted);max-width:800px;margin:15px 0 0}
-.work-stack{display:grid;gap:22px}
-.work{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:clamp(12px,2vw,20px);position:relative}.work::after{content:"";position:absolute;width:var(--dot-size);height:var(--dot-size);background:var(--dot-color);border-radius:50%;top:-3px;left:-3px}
+.work-stack{display:grid;gap:16px}
+.work{border:1px solid var(--line);background:var(--card);border-radius:24px;padding:clamp(16px,2vw,24px)}
 .work.lead,.work.feature{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr)}
 .work-body{padding:clamp(22px,3vw,38px);display:flex;flex-direction:column;justify-content:center}
 .work-meta{font-size:10px;line-height:1.5;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:14px}
@@ -88,11 +88,11 @@ h2{font-size:clamp(36px,5.4vw,76px);line-height:.96;letter-spacing:-.05em;margin
 .video img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;transition:transform .2s ease,filter .2s ease}
 .video:hover img{transform:scale(1.012);filter:brightness(.82)}
 .video-ui{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:space-between;padding:15px;pointer-events:none}
-.play{display:inline-grid;place-items:center;min-width:74px;height:44px;background:var(--signal);color:var(--signal-ink);font:600 11px "IBM Plex Mono",monospace;letter-spacing:.06em}
-.watch{background:rgba(18,25,27,.9);padding:8px 10px;font:500 9px "IBM Plex Mono",monospace;letter-spacing:.05em}
+.play{display:inline-grid;place-items:center;width:54px;height:54px;border-radius:50%;background:#fff;color:var(--ink);font:600 11px "Geist Mono",monospace;letter-spacing:.06em;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.watch{background:rgba(0,0,0,.82);padding:8px 10px;font:500 9px "Geist Mono",monospace;letter-spacing:.05em}
 .video-frame{position:relative;min-height:360px;background:#0d1112}
 .video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.video-fallback{position:absolute;right:10px;bottom:10px;z-index:2;background:rgba(18,25,27,.92);color:#fff;padding:7px 9px;text-decoration:none;font:500 9px "IBM Plex Mono",monospace}
+.video-fallback{position:absolute;right:10px;bottom:10px;z-index:2;background:rgba(0,0,0,.88);color:#fff;padding:7px 9px;text-decoration:none;font:500 9px "Geist Mono",monospace;border-radius:6px}
 .support-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .support-grid .video{min-height:300px;aspect-ratio:16/9}
 .work.compact{display:grid;grid-template-columns:minmax(260px,.46fr) 1fr}
@@ -100,7 +100,7 @@ h2{font-size:clamp(36px,5.4vw,76px);line-height:.96;letter-spacing:-.05em;margin
 .workflow-wrap{margin-top:26px}
 .arc{border:1px solid var(--line);background:var(--surface);margin-bottom:18px}
 .arc img{width:100%;height:auto}
-.arc figcaption{padding:10px 13px;border-top:1px solid var(--line);font:10px/1.45 "IBM Plex Mono",monospace;color:var(--muted)}
+.arc figcaption{padding:10px 13px;border-top:1px solid var(--line);font:10px/1.45 "Geist Mono",monospace;color:var(--muted)}
 .workflow{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--line);background:var(--surface)}
 .workflow div{min-height:150px;padding:18px 16px;border-right:1px solid var(--line);position:relative}
 .workflow div:last-child{border-right:0}
@@ -109,7 +109,7 @@ h2{font-size:clamp(36px,5.4vw,76px);line-height:.96;letter-spacing:-.05em;margin
 .workflow strong{display:block;font-size:15px;margin-bottom:7px}
 .workflow p{font-size:11px;color:var(--muted);margin:0}
 details{margin-top:18px;border:1px solid var(--line);background:var(--surface)}
-summary{cursor:pointer;padding:14px 16px;font:500 10px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;list-style:none}
+summary{cursor:pointer;padding:14px 16px;font:500 10px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.06em;list-style:none}
 summary::-webkit-details-marker{display:none}
 summary:after{content:"+";float:right;color:var(--blue);font-size:16px}
 details[open] summary:after{content:"–"}
@@ -117,7 +117,7 @@ details[open] summary:after{content:"–"}
 .storyboard img{width:min(1000px,100%);margin:auto}
 .storyboard p{font-size:11px;color:var(--muted);margin:10px auto 0;max-width:1000px}
 .method-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--surface)}
-.method{padding:18px;border:1px solid var(--line);background:var(--card);border-radius:8px;margin-bottom:6px;position:relative}.method::after{content:"";position:absolute;width:var(--dot-size);height:var(--dot-size);background:var(--dot-color);border-radius:50%;top:-3px;left:-3px}
+.method{padding:18px;border:1px solid var(--line);background:var(--card);border-radius:20px;margin-bottom:6px}
 .method:last-child{border-right:0}
 .method .label{font-size:9px;color:var(--blue);text-transform:uppercase;letter-spacing:.07em}
 .method strong{display:block;font-size:18px;line-height:1.15;margin:22px 0 8px}
@@ -125,20 +125,24 @@ details[open] summary:after{content:"–"}
 .links{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
 .link-card{display:block;border:1px solid var(--line);background:var(--surface);padding:20px;text-decoration:none}
 .link-card:hover{background:#e9eee8}
-.link-card small{display:block;font:9px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:22px}
+.link-card small{display:block;font:9px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:22px}
 .link-card strong{font-size:19px}
 .link-card p{font-size:12px;color:var(--muted);margin:7px 0 0}
 .fit-grid{display:grid;grid-template-columns:repeat(2,1fr);border:1px solid var(--line);background:var(--surface)}
-.fit{padding:18px;border:1px solid var(--line);background:var(--card);border-radius:8px;margin-bottom:6px;position:relative}.fit::after{content:"";position:absolute;width:var(--dot-size);height:var(--dot-size);background:var(--dot-color);border-radius:50%;top:-3px;left:-3px}
+.cred,.workflow,.method-grid,.fit-grid,.arc,details{position:relative}
+.cred::before,.workflow::before,.method-grid::before,.fit-grid::before,.arc::before,details::before,.cred::after,.workflow::after,.method-grid::after,.fit-grid::after,.arc::after,details::after{content:"";position:absolute;width:var(--dot-size);height:var(--dot-size);background:var(--dot-color);border-radius:50%;top:-3px;z-index:4}
+.cred::before,.workflow::before,.method-grid::before,.fit-grid::before,.arc::before,details::before{left:-3px}
+.cred::after,.workflow::after,.method-grid::after,.fit-grid::after,.arc::after,details::after{right:-3px}
+.fit{padding:18px;border:1px solid var(--line);background:var(--card);border-radius:20px;margin-bottom:6px}
 .fit:nth-child(2n){border-right:0}.fit:nth-last-child(-n+2){border-bottom:0}
 .fit .label{font-size:9px;color:var(--blue);text-transform:uppercase;letter-spacing:.06em}
 .fit strong{display:block;font-size:18px;margin:13px 0 6px}
 .fit p{font-size:12px;color:var(--muted);margin:0}
-.close{margin-top:38px;background:var(--signal);color:var(--signal-ink);padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end}
-.close h3{font-size:clamp(28px,4vw,54px);line-height:1;letter-spacing:-.045em;margin:0}
-.close p{max-width:720px;margin:13px 0 0}
-.close a{display:inline-block;background:var(--ink);color:#fff;padding:12px 16px;text-decoration:none;font:600 11px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em;border-radius:8px;white-space:nowrap}
-footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45px;color:var(--muted);font:9px/1.5 "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.04em}
+.close{margin-top:24px;background:var(--card);color:var(--ink);padding:clamp(22px,3vw,34px);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;border:1px solid var(--line);border-radius:20px;position:relative}
+.close h3{font:700 clamp(28px,3.4vw,50px)/1.02 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.035em;margin:0}
+.close p{max-width:720px;color:var(--muted);margin:10px 0 0}
+.close a{display:inline-block;background:var(--ink);color:#fff;padding:12px 16px;text-decoration:none;font:600 11px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;white-space:nowrap}
+footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45px;color:var(--muted);font:9px/1.5 "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em}
 @media(max-width:1050px){
   .cred{grid-template-columns:1fr 1fr}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line-dark)}
   .workflow{grid-template-columns:repeat(3,1fr)}.workflow div:nth-child(3n){border-right:0}.workflow div:nth-child(-n+3){border-bottom:1px solid var(--line)}
@@ -146,8 +150,8 @@ footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45
 }
 @media(max-width:820px){
   .topbar{grid-template-columns:auto 1fr}.topbar .date{display:none}
-  .hero-grid{grid-template-columns:1fr;min-height:auto}.hero-aside{border-left:0;border-top:1px solid #536064;padding:20px 0 0}
-  .nav{top:43px}.section-head{grid-template-columns:1fr}.index{padding:0}
+  .hero-grid{grid-template-columns:1fr;min-height:auto}.hero-aside{border-left:0;border-top:1px solid var(--line);padding:18px 0 0;margin-top:30px}
+  .nav{top:62px}.section-head{grid-template-columns:1fr}.index{padding:0}
   .work.lead,.work.feature,.work.compact{grid-template-columns:1fr}.work.feature .video{order:0}.work.feature .work-body{order:1}
   .support-grid{grid-template-columns:1fr}.video,.work.compact .video{min-height:0;aspect-ratio:16/9}
   .links,.fit-grid{grid-template-columns:1fr}.fit{border-right:0!important}.fit:nth-last-child(-n+2){border-bottom:1px solid var(--line)}.fit:last-child{border-bottom:0}
@@ -165,23 +169,23 @@ footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45
 </head>
 <body>
 <header class="topbar">
-  <span class="flag">Private application portfolio</span>
-  <span class="role">ElevenLabs · Forward Deployed Creative [US]</span>
+  <span class="flag">ElevenLabs</span>
+  <span class="role">Private application portfolio · Forward Deployed Creative [US]</span>
   <span class="date">29 Jul 2026 · Noindex</span>
 </header>
 <section class="hero" id="top">
   <div class="wrap hero-grid">
     <div>
       <div class="eyebrow">Yue (Eric) Zheng · AI Creative Director · Forward Deployed Creative</div>
-      <h1>From VO, sound design, dubbing and ADR to film and AI—and a system the enterprise creative and production team can <em>reuse.</em></h1>
-      <p class="lede">I embed with enterprise creative and production teams to map voice, image, video and dubbing pipelines, deploy ElevenLabs tools into real workflows, and leave reusable templates, case studies and workshops that make adoption stick.</p>
+      <h1>From VO, sound design, dubbing and ADR to film and <em>AI.</em></h1>
+      <p class="lede">I embed with enterprise creative and production teams to map voice, image, video and dubbing pipelines, deploy ElevenLabs tools into real workflows, and leave reusable systems, templates, case studies and workshops that make adoption stick.</p>
       <div class="identity"><span><strong>Greater New York</strong></span><span><strong>U.S. Permanent Resident</strong></span></div>
     </div>
     <aside class="hero-aside">
       <div class="label">Application thesis</div>
       <p>Voice, image, video and dubbing value matter. So does the deployable system behind it: mapped pipelines, controllable tools, visible review points and reusable templates.</p>
       <a href="#work">View deployed workflows</a>
-      <a href="https://vimeo.com/1174467043" target="_blank" rel="noopener noreferrer" style="margin-top:10px;background:transparent;color:#f5f7f2;border:1px solid #536064">Traditional showreel 2026 ↗</a>
+      <a href="https://vimeo.com/1174467043" target="_blank" rel="noopener noreferrer" style="margin-top:10px;background:transparent;color:var(--ink);border:1px solid var(--line)">Traditional showreel 2026 ↗</a>
     </aside>
   </div>
   <div class="cred" aria-label="Production credentials">
