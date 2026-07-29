@@ -35,19 +35,19 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;background:var(--paper)}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Inter,Arial,sans-serif}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Inter,Arial,sans-serif;overflow-x:hidden}
 a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--signal);outline-offset:3px}
 img{display:block;max-width:100%}
 button{font:inherit}
-.wrap{width:min(var(--max),100%);margin:auto;padding-inline:var(--pad)}
+.wrap{width:min(var(--max),100%);margin:auto;padding-inline:var(--pad);min-width:0}
 .mono,.eyebrow,.label,.tag,.meta,.index,.stat b,.work-meta,.workflow b,.topbar{font-family:"Geist Mono",monospace}
-.topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px;padding:18px var(--pad);background:rgba(255,255,255,.96);color:var(--ink);border-bottom:1px solid var(--line);font-size:12px;letter-spacing:0}
+.topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:28px;padding:18px var(--pad);background:rgba(255,255,255,.96);color:var(--ink);border-bottom:1px solid var(--line);font-size:12px;letter-spacing:0;min-width:0}
 .topbar .flag{background:transparent;color:var(--ink);font:700 25px/1 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.045em;padding:0}
-.topbar .role{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 13px/1.2 Inter,Arial,sans-serif}
+.topbar .role{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 13px/1.2 Inter,Arial,sans-serif;min-width:0}
 .topbar .date{color:var(--muted);white-space:nowrap;font:500 11px/1.2 "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em}
 .hero{background:var(--paper);color:var(--ink);border-bottom:1px solid var(--line)}
-.hero-grid{min-height:0;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:clamp(32px,5vw,76px);align-items:start;padding-block:clamp(42px,7vh,74px) 34px}
+.hero-grid{min-height:0;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:clamp(26px,4vw,64px);align-items:start;padding-block:clamp(42px,7vh,74px) 34px}
 .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#666}
 h1{font:700 clamp(42px,5.4vw,78px)/1.02 "Waldenburg",Inter,Arial,sans-serif;letter-spacing:-.035em;color:var(--ink);margin:16px 0 20px;max-width:930px}
 h1 em{font-style:normal;color:var(--signal)}
@@ -66,7 +66,7 @@ h1 em{font-style:normal;color:var(--signal)}
 .nav{position:sticky;top:62px;z-index:20;display:flex;gap:26px;overflow:auto;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);padding:12px var(--pad)}
 .nav a{text-decoration:none;white-space:nowrap;color:var(--muted);font:500 11px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.05em}
 .nav a:hover{color:var(--ink)}
-main{padding-bottom:70px}
+main{padding-bottom:70px;min-width:0}
 section{padding-block:clamp(36px,5vw,68px);border-bottom:1px solid var(--line);position:relative}
 .section-head{display:grid;grid-template-columns:120px minmax(0,1fr);gap:22px;align-items:start;margin-bottom:24px}
 .index{font-size:11px;color:var(--muted);padding-top:9px}
