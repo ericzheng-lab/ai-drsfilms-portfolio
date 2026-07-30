@@ -57,6 +57,9 @@ h1 em{font-style:normal;color:var(--signal)}
 .hero-aside{border-left:1px solid var(--line);padding:18px 0 0 24px;margin-top:76px}
 .hero-aside .label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .hero-aside p{font-size:15px;line-height:1.52;color:var(--ink-2);margin:11px 0 18px}
+.product-proof{margin:0 0 18px;padding:14px 15px;background:#f5f8ff;border:1px solid #d5dfed;border-radius:16px;color:#052f70}
+.product-proof span{display:block;font:500 9px/1.3 "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.07em;color:var(--blue);margin-bottom:7px}
+.product-proof strong{display:block;font:600 14px/1.42 Inter,Arial,sans-serif}
 .hero-aside a{display:inline-block;background:var(--ink);color:#fff;padding:10px 13px;text-decoration:none;font:600 11px "Geist Mono",monospace;text-transform:uppercase;letter-spacing:.04em;border-radius:999px}
 .cred{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface)}
 .stat{padding:10px var(--pad);border-right:1px solid var(--line);min-height:92px;background:var(--card);position:relative}.stat::after{content:"";position:absolute;width:var(--dot-size);height:var(--dot-size);background:var(--dot-color);border-radius:50%;top:-3px;left:-3px}
@@ -84,6 +87,7 @@ h2{font:700 clamp(32px,4.2vw,58px)/1.02 "Waldenburg",Inter,Arial,sans-serif;lett
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin:17px 0}
 .tag{font-size:9px;text-transform:uppercase;letter-spacing:.055em;border:1px solid var(--line);padding:5px 7px;background:var(--paper);color:var(--ink-2)}
 .tag.signal{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+.tag.product{background:#f5f8ff;border-color:#cbd9ec;color:#052f70;font-weight:600}
 .video{position:relative;display:block;min-height:360px;background:#0d1112;overflow:hidden;color:#fff;text-decoration:none}
 .video img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;transition:transform .2s ease,filter .2s ease}
 .video:hover img{transform:scale(1.012);filter:brightness(.82)}
@@ -184,6 +188,7 @@ footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45
     <aside class="hero-aside">
       <div class="label">Application thesis</div>
       <p>Enterprise adoption depends on more than a strong demo: the workflow needs clear inputs, visible review points and a handoff the creative team can repeat.</p>
+      <div class="product-proof"><span>Direct ElevenLabs product proof</span><strong>ElevenLabs voice used in two finished films: One Click Mute and HOME × SMARTHOME — Manga Cut.</strong></div>
       <a href="#work">View selected AI work</a>
       <a href="https://vimeo.com/1174467043" target="_blank" rel="noopener noreferrer" style="margin-top:10px;background:transparent;color:var(--ink);border:1px solid var(--line)">Traditional showreel 2026 ↗</a>
     </aside>
@@ -209,8 +214,8 @@ footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45
         <div class="work-meta">01 · Lead workflow case · 0:47 · Unlisted spec commercial</div>
         <h3>One Click Mute</h3>
         <p>An exhausted office worker triggers a luminous break into a bioluminescent release world. The final product plate stays legible while the environment, motion and emotional register transform.</p>
-        <div class="tags"><span class="tag signal">End-to-end</span><span class="tag">Visual Bible</span><span class="tag">Shot Plan</span><span class="tag">State Logic</span><span class="tag">Edit + Sound</span></div>
-        <p class="credit"><strong>Eric’s role:</strong> 0-to-1 creation—concept, visual development, storyboard, prompting, AI image/video generation, direction, edit, and sound/post.</p>
+        <div class="tags"><span class="tag signal">End-to-end</span><span class="tag product">ElevenLabs Voice</span><span class="tag">Visual Bible</span><span class="tag">Shot Plan</span><span class="tag">State Logic</span><span class="tag">Edit + Sound</span></div>
+        <p class="credit"><strong>Eric’s role:</strong> 0-to-1 creation—concept, visual development, storyboard, prompting, AI image/video generation, direction, edit, and sound/post. <strong>Voice:</strong> ElevenLabs.</p>
       </div>
     </article>
     <article class="work feature">
@@ -222,8 +227,8 @@ footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45
         <div class="work-meta">02 · Public direction proof · 2:05</div>
         <h3>HOME × SMARTHOME — Manga Cut</h3>
         <p>The same smart-home story translated into manga language while preserving story intent, sequence continuity and product logic.</p>
-        <div class="tags"><span class="tag signal">Direction</span><span class="tag">Style Translation</span><span class="tag">Manga Grammar</span><span class="tag">Sequence Continuity</span></div>
-        <p class="credit"><strong>Eric’s role:</strong> full visual execution—direction, style translation, prompting, AI image/video generation, edit, and post. <strong>Story/idea:</strong> JJ Lin.</p>
+        <div class="tags"><span class="tag signal">Direction</span><span class="tag product">ElevenLabs Voice</span><span class="tag">Style Translation</span><span class="tag">Manga Grammar</span><span class="tag">Sequence Continuity</span></div>
+        <p class="credit"><strong>Eric’s role:</strong> full visual execution—direction, style translation, prompting, AI image/video generation, edit, and post. <strong>Story/idea:</strong> JJ Lin. <strong>Voice:</strong> ElevenLabs.</p>
       </div>
     </article>
     <div class="support-grid">
@@ -313,7 +318,7 @@ footer{display:flex;justify-content:space-between;gap:24px;padding-block:28px 45
   <div class="section-head"><div class="index">05 / ROLE FIT</div><div><h2>Enterprise production depth meets hands-on AI creation.</h2><p class="subhead">The evidence combines global brand delivery, sound and film craft, workflow architecture and accountable human review.</p></div></div>
   <div class="fit-grid">
     <article class="fit"><div class="label">Enterprise client leadership</div><strong>Integrated production at global scale.</strong><p>Across Final Frontier and prior roles, led an $8M+ branded portfolio for Nike, Tencent, Riot Games, miHoYo, L’Oréal and BMW; at Final Frontier, drove $6M+ revenue in 18 months.</p></article>
-    <article class="fit"><div class="label">Audio and VO foundation</div><strong>Sound craft before generative AI.</strong><p>At Ker Sound, progressed from sound editor to producer/studio manager, coordinating international audio teams and voice-over sessions across film, AAA games and broadcast.</p></article>
+    <article class="fit"><div class="label">Audio and ElevenLabs proof</div><strong>Sound craft before—and inside—generative AI.</strong><p>At Ker Sound, progressed from sound editor to producer/studio manager across film, AAA games and broadcast. Direct product proof: ElevenLabs voice in One Click Mute and HOME × SMARTHOME — Manga Cut.</p></article>
     <article class="fit"><div class="label">Workflow architecture</div><strong>Brief → prototype → review → handoff.</strong><p>One Click Mute makes the method visible through a visual bible, shot architecture, state logic, routed inputs and corrective review.</p></article>
     <article class="fit"><div class="label">Hands-on AI production</div><strong>Tools and governance that support the work.</strong><p>Built practical creative-production surfaces, reusable prompt/model libraries and governed workflows while keeping human quality, rights and brand-safety review authoritative.</p></article>
   </div>
