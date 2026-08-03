@@ -9,3 +9,7 @@
 /hims/*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
   Cache-Control: private, no-store
+
+/ascap/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: private, no-store
