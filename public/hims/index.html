@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <meta name="referrer" content="no-referrer">
+  <title>Eric Zheng · Sr. Producer · Hims &amp; Hers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#101010;
+      --paper:#f5f2eb;
+      --white:#fff;
+      --red:#b92e28;
+      --green:#174c3c;
+      --muted:#6c6861;
+      --line:#c9c4ba;
+      --soft:#e9e4da;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:'DM Sans',Arial,sans-serif;padding:0 6vw 72px;line-height:1.5}
+    a{color:inherit}
+    .topline{height:8px;background:var(--red);margin:0 -6vw}
+    nav{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--ink);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+    nav .mark{font-weight:700}
+    nav .role{color:var(--muted)}
+    .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:48px;min-height:620px;align-items:end;padding:84px 0 64px;border-bottom:1px solid var(--ink)}
+    .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.16em;font-weight:700;color:var(--red);margin-bottom:18px}
+    h1,h2,h3,p{margin-top:0}
+    h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(62px,8vw,126px);line-height:.84;letter-spacing:-.045em;margin-bottom:28px;max-width:900px}
+    .lede{font-size:clamp(18px,2.1vw,27px);line-height:1.28;max-width:820px;margin-bottom:0}
+    .hero-side{border-left:1px solid var(--ink);padding-left:28px}
+    .hero-side .thesis{font-family:'Instrument Serif',Georgia,serif;font-size:30px;line-height:1.12;margin-bottom:26px}
+    .hero-side .meta{display:grid;gap:0;border-top:1px solid var(--line)}
+    .hero-side .meta div{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+    .hero-side .meta span:first-child{color:var(--muted)}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--ink)}
+    .metric{padding:30px 20px 28px 0;border-right:1px solid var(--line)}
+    .metric:not(:first-child){padding-left:24px}
+    .metric:last-child{border-right:0}
+    .metric strong{font-family:'Instrument Serif',Georgia,serif;font-size:48px;font-weight:400;line-height:1;display:block;margin-bottom:8px}
+    .metric span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    section{padding:84px 0;border-bottom:1px solid var(--ink)}
+    .section-head{display:grid;grid-template-columns:160px 1fr;gap:40px;margin-bottom:42px}
+    .section-num{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--red)}
+    h2{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(44px,5vw,76px);line-height:.95;font-weight:400;letter-spacing:-.025em;margin-bottom:18px}
+    .section-intro{font-size:18px;max-width:760px;color:#2e2c29}
+    .mosaic{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;height:420px;margin-bottom:38px}
+    .mosaic a{display:block;position:relative;overflow:hidden;background:#191919}
+    .mosaic img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease}
+    .mosaic a:hover img{transform:scale(1.025)}
+    .mosaic .cap{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+    .case-grid{display:grid;grid-template-columns:1fr 1fr;gap:54px}
+    .case-copy h3{font-family:'Instrument Serif',Georgia,serif;font-size:35px;font-weight:400;margin-bottom:16px}
+    .case-copy p{font-size:16px;max-width:680px}
+    .facts{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--ink)}
+    .fact{padding:17px 14px 17px 0;border-bottom:1px solid var(--line);font-size:13px}
+    .fact:nth-child(odd){border-right:1px solid var(--line);padding-right:18px}
+    .fact:nth-child(even){padding-left:18px}
+    .fact strong{display:block;font-size:14px;margin-bottom:4px}
+    .film-grid{display:grid;grid-template-columns:.7fr 1.3fr;gap:54px;align-items:start}
+    .poster{background:#111;min-height:600px;overflow:hidden}
+    .poster img{width:100%;height:100%;object-fit:cover;display:block}
+    .film-copy .pull{font-family:'Instrument Serif',Georgia,serif;font-size:40px;line-height:1.08;margin:6px 0 30px}
+    .proof-list{list-style:none;padding:0;margin:0;border-top:1px solid var(--ink)}
+    .proof-list li{display:grid;grid-template-columns:120px 1fr;gap:22px;padding:16px 0;border-bottom:1px solid var(--line);font-size:14px}
+    .proof-list b{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .system{background:var(--ink);color:var(--white);margin:0 -6vw;padding:90px 6vw;border-bottom:0}
+    .system .section-num{color:#ed655b}
+    .system .section-intro{color:#cbc7c0}
+    .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:38px 0 30px;border-top:1px solid #555;border-bottom:1px solid #555}
+    .step{padding:24px 18px 28px;border-right:1px solid #555;min-height:160px}
+    .step:last-child{border-right:0}
+    .step em{display:block;font-style:normal;color:#ed655b;font-size:11px;letter-spacing:.12em;margin-bottom:26px}
+    .step strong{display:block;font-family:'Instrument Serif',Georgia,serif;font-size:27px;font-weight:400;line-height:1.05;margin-bottom:10px}
+    .step span{font-size:12px;color:#b7b3ac}
+    .system-note{max-width:900px;font-size:18px;color:#e6e2db}
+    .fit-table{border-top:1px solid var(--ink)}
+    .fit-row{display:grid;grid-template-columns:1fr 1.4fr 1.4fr;gap:28px;padding:20px 0;border-bottom:1px solid var(--line);font-size:14px}
+    .fit-row.header{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+    .fit-row strong{font-size:15px}
+    .fit-row .status{color:var(--green);font-weight:700}
+    .gap-box{margin-top:36px;background:var(--soft);padding:28px;display:grid;grid-template-columns:180px 1fr;gap:28px}
+    .gap-box h3{font-family:'Instrument Serif',Georgia,serif;font-size:30px;font-weight:400;margin:0}
+    .gap-box ul{margin:0;padding-left:18px}
+    .sources{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .source{padding:18px 0;border-top:1px solid var(--line);font-size:13px}
+    .source a{font-weight:700;text-underline-offset:4px}
+    footer{padding:72px 0 0;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end}
+    footer h2{font-size:60px;margin-bottom:10px}
+    footer p{margin-bottom:6px}
+    .cta{display:inline-block;padding:14px 18px;background:var(--ink);color:#fff;text-decoration:none;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .disclaimer{font-size:11px;color:var(--muted);max-width:760px;margin-top:22px}
+    @media (max-width:900px){
+      body{padding:0 5vw 50px}.topline,.system{margin-left:-5vw;margin-right:-5vw}.system{padding-left:5vw;padding-right:5vw}
+      .hero,.film-grid,.case-grid{grid-template-columns:1fr}.hero{min-height:auto;padding-top:58px}.hero-side{border-left:0;border-top:1px solid var(--ink);padding:28px 0 0}
+      .metrics{grid-template-columns:repeat(2,1fr)}.metric:nth-child(2){border-right:0}.metric:nth-child(3),.metric:nth-child(4){border-top:1px solid var(--line)}
+      .section-head{grid-template-columns:1fr;gap:12px}.mosaic{grid-template-columns:1fr;height:auto}.mosaic a{height:260px}.flow{grid-template-columns:1fr}.step{border-right:0;border-bottom:1px solid #555;min-height:auto}.fit-row{grid-template-columns:1fr}.fit-row.header{display:none}.gap-box{grid-template-columns:1fr}.sources{grid-template-columns:1fr}footer{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="topline"></div>
+  <nav>
+    <div class="mark">Eric Zheng</div>
+    <div class="role">Sr. Producer · Hims &amp; Hers</div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Selected production evidence · prepared 03 Aug 2026</div>
+      <h1>Senior production from brief through delivery.</h1>
+      <p class="lede">15+ years across film, branded production, post and audio—including more than five years leading branded campaigns from the production-company side.</p>
+    </div>
+    <aside class="hero-side">
+      <p class="thesis">A hands-on senior producer who can protect the idea, run the production and carry quality through post.</p>
+      <div class="meta">
+        <div><span>Based</span><strong>Greater New York</strong></div>
+        <div><span>Work status</span><strong>U.S. Permanent Resident</strong></div>
+        <div><span>Role mode</span><strong>US Remote · Available for required shoot travel</strong></div>
+        <div><span>Portfolio</span><strong>drsfilms.com</strong></div>
+      </div>
+    </aside>
+  </header>
+
+  <div class="metrics" aria-label="Career proof points">
+    <div class="metric"><strong>15+</strong><span>years across production and post</span></div>
+    <div class="metric"><strong>$8M+</strong><span>aggregate branded portfolio</span></div>
+    <div class="metric"><strong>$2.5M</strong><span>international feature co-production</span></div>
+    <div class="metric"><strong>60+</strong><span>territories for feature release</span></div>
+  </div>
+
+  <section id="scale">
+    <div class="section-head">
+      <div class="section-num">01 / SCALE</div>
+      <div>
+        <h2>Branded production control.</h2>
+        <p class="section-intro">The work crosses live action, product launches, game cinematics, photography, animation, post and sound. The producer job underneath is consistent: translate the brief, align the partners, make the trade-offs visible, and keep delivery moving.</p>
+      </div>
+    </div>
+
+    <div class="mosaic" aria-label="Selected branded work">
+      <a href="https://vimeo.com/476258858" target="_blank" rel="noopener noreferrer"><img src="https://www.drsfilms.com/_assets/v11/aa34b5796594368577f1798de56200b94e227dad.png" alt="Coach brand film produced by Eric Zheng"><span class="cap">Coach · Brand film · Producer</span></a>
+      <a href="https://vimeo.com/1172775488" target="_blank" rel="noopener noreferrer"><img src="https://www.drsfilms.com/_assets/v11/3c11112f72247101909dcd07fab2dcf92901984b.png" alt="Beats Flex campaign produced by Eric Zheng"><span class="cap">Beats · Product launch · Producer</span></a>
+      <a href="https://vimeo.com/1090618108" target="_blank" rel="noopener noreferrer"><img src="https://www.drsfilms.com/_assets/v11/bd17c2cff3ca0ae938c5751adb941dce66b8c7cf.png" alt="Tencent Dungeon Fighter Cinematics executive produced by Eric Zheng"><span class="cap">Tencent · Cinematics · Executive Producer</span></a>
+    </div>
+
+    <div class="case-grid">
+      <div class="case-copy">
+        <h3>From brief to overlapping delivery.</h3>
+        <p>Eric led branded production for Tencent, Riot Games, miHoYo, Nike, L’Oréal and BMW within an $8M+ aggregate portfolio across Final Frontier and prior roles. The remit covered workback schedules, scopes and estimates, budgets and margin, director/studio selection, client presentations, vendor coordination, review gates, post and final delivery.</p>
+        <p>As Executive Producer on a three-film Tencent DNF package exceeding RMB 6M, he managed client-facing production gates and the animatic-to-production handoff; the package expanded when the client requested two additional films without a new pitch.</p>
+      </div>
+      <div class="facts">
+        <div class="fact"><strong>Production range</strong>Live action · photography · CG/animation · post · sound</div>
+        <div class="fact"><strong>Commercial control</strong>SOWs · estimates · budgets · margin · paid scope</div>
+        <div class="fact"><strong>People</strong>Clients · cross-functional creatives · senior stakeholders · directors · studios · crews · vendors</div>
+        <div class="fact"><strong>Delivery</strong>Stage gates · asset flow · feedback rules · final handoff</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="judgment">
+    <div class="section-head">
+      <div class="section-num">02 / JUDGMENT</div>
+      <div>
+        <h2>Narrative stakes. Delivery rigor.</h2>
+        <p class="section-intro">A producer for high-visibility brand work still needs taste: what to protect, what to simplify, when the material is ready, and how to carry quality through post.</p>
+      </div>
+    </div>
+
+    <div class="film-grid">
+      <a class="poster" href="https://www.imdb.com/title/tt26749327/" target="_blank" rel="noopener noreferrer"><img src="https://www.drsfilms.com/_assets/v11/f542fa3f51613c8126bd7b41ea0ffdf8dce0958d.png" alt="Brief History of a Family official poster"></a>
+      <div class="film-copy">
+        <div class="eyebrow">Brief History of a Family · Producer</div>
+        <p class="pull">A $2.5M international feature for which Eric coordinated tri-national post, mastering and festival delivery; the film was released across 60+ territories.</p>
+        <ul class="proof-list">
+          <li><b>Selection</b><span>Sundance World Cinema Dramatic Competition · Grand Jury nominee</span></li>
+          <li><b>Festival</b><span>Berlinale Panorama</span></li>
+          <li><b>Post</b><span>Tri-national coordination · mastering · festival delivery</span></li>
+          <li><b>Reception</b><span>Metascore 80 · Rotten Tomatoes 92%</span></li>
+          <li><b>Value here</b><span>Editorial judgment, senior stakeholder alignment and calm delivery across a high-stakes release path.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="system" id="system">
+    <div class="section-head">
+      <div class="section-num">03 / WORKFLOW</div>
+      <div>
+        <h2>Clearer handoffs. Faster decisions.</h2>
+        <p class="section-intro">At Final Frontier, Eric created practical intake, responsibility-routing, onboarding and internal-review workflows that made scope, ownership, approvals and asset status easier to manage across concurrent projects.</p>
+      </div>
+    </div>
+
+    <div class="flow" aria-label="Three-stage production workflow">
+      <div class="step"><em>01</em><strong>Define</strong><span>Brief · deliverables · ownership · decision makers</span></div>
+      <div class="step"><em>02</em><strong>Advance</strong><span>Scope · review gates · feedback rules · asset state</span></div>
+      <div class="step"><em>03</em><strong>Approve</strong><span>Quality · rights · cost · final release and delivery</span></div>
+    </div>
+    <p class="system-note">He continues to test production tools where they improve planning or version control, while keeping creative, rights, cost and release decisions under accountable human approval.</p>
+  </section>
+
+  <section id="fit">
+    <div class="section-head">
+      <div class="section-num">ROLE FIT</div>
+      <div>
+        <h2>What maps directly.</h2>
+        <p class="section-intro">The fit is strongest where the role joins campaign-scale production, post depth, partner management and workflow experimentation.</p>
+      </div>
+    </div>
+
+    <div class="fit-table" role="table" aria-label="Role fit map">
+      <div class="fit-row header" role="row"><div>Hims need</div><div>Evidence</div><div>Fit</div></div>
+      <div class="fit-row" role="row"><strong>Prep, shoot &amp; post</strong><span>Brief translation, production planning, partner selection, live-action shoots, editorial, CG/animation, color, sound and final delivery.</span><span class="status">Direct fit</span></div>
+      <div class="fit-row" role="row"><strong>Overlapping campaigns</strong><span>Workback schedules, scopes, estimates, budgets, stage gates and concurrent delivery across global branded work.</span><span class="status">Direct fit</span></div>
+      <div class="fit-row" role="row"><strong>Vendors &amp; specialist teams</strong><span>Directors, studios, crews and external production partners selected against creative, schedule and commercial criteria.</span><span class="status">Direct fit</span></div>
+      <div class="fit-row" role="row"><strong>Post-production depth</strong><span>Feature mastering, professional audio, voice-over sessions, asset/version tracking and final delivery.</span><span class="status">Direct fit</span></div>
+      <div class="fit-row" role="row"><strong>Workflow experimentation</strong><span>Practical intake, routing, review and asset-status improvements with accountable human approvals.</span><span class="status">Direct, bounded</span></div>
+    </div>
+  </section>
+
+  <section id="why-hims">
+    <div class="section-head">
+      <div class="section-num">WHY HIMS</div>
+      <div>
+        <h2>Brand craft with accountability.</h2>
+        <p class="section-intro">Hims &amp; Hers needs a producer who can move culturally visible ideas through complex production without losing speed, craft or accountability. Eric’s fit is the combination of campaign-scale branded production, hands-on partner leadership and unusually deep post-production experience.</p>
+      </div>
+    </div>
+    <div class="sources">
+      <div class="source"><a href="https://jobs.ashbyhq.com/hims-and-hers/63d3600d-37ef-4e26-a075-bb2cbb6bcafa" target="_blank" rel="noopener noreferrer">Official Sr. Producer role</a><br>US Remote · Creative · posted 29 Jun 2026</div>
+      <div class="source"><a href="https://investors.hims.com/news/news-details/2026/Hims--Hers-Returns-to-the-Big-Game-with-a-Message-to-All-Americans-The-Era-of-Health-as-a-Luxury-is-Over/default.aspx" target="_blank" rel="noopener noreferrer">2026 Big Game campaign</a><br>“Rich People Live Longer” · disruptive healthcare-access message</div>
+      <div class="source"><a href="https://www.sec.gov/Archives/edgar/data/1773751/000177375126000022/hims-20251231.htm" target="_blank" rel="noopener noreferrer">2025 Form 10-K</a><br>Diversified marketing mix · analytics and budget-return accountability</div>
+      <div class="source"><a href="https://www.hims.com/careers-professionals" target="_blank" rel="noopener noreferrer">Professional careers</a><br>Remote-first in the United States</div>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <div class="eyebrow">Eric Zheng · Greater New York</div>
+      <h2>Let’s deliver bold work at production scale.</h2>
+      <p><a href="mailto:eric.zheng@drsfilms.com">eric.zheng@drsfilms.com</a> · <a href="https://www.linkedin.com/in/ericzhengyue" target="_blank" rel="noopener noreferrer">LinkedIn</a> · <a href="https://www.drsfilms.com" target="_blank" rel="noopener noreferrer">Selected work</a></p>
+      <p class="disclaimer">Independent applicant page prepared for role review. Hims &amp; Hers names and source material are referenced for context only; this page is not sponsored by or affiliated with Hims &amp; Hers. No confidential Final Frontier source records are displayed.</p>
+    </div>
+    <a class="cta" href="https://www.drsfilms.com" target="_blank" rel="noopener noreferrer">View selected work</a>
+  </footer>
+</body>
+</html>
