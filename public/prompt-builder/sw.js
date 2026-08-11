@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prompt-builder-v5-onesheet-2026-07-20';
+const CACHE_NAME = 'prompt-builder-v6-mj-v8.2-2026-08-11';
 const ASSETS = [
   './manifest.json',
   './favicon.svg',
