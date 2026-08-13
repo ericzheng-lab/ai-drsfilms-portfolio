@@ -2,7 +2,7 @@
 
 > 优先级:本文件 > vault CLAUDE.md > `~/.claude/CLAUDE.md`(全局)。全局的 Hard Gates 任何情况下不被覆盖。
 > 本文件只写已对照 `origin/main`(2026-08-11 核实,head ecc72e8 之后)核实过的事实。未核实的声明不写。
-> GitHub 仓库名是 `ericzheng-lab/ai-drsfilms-portfolio`,与本机本地文件夹名 `ai-dsrfilms-com` 不一致 —— 引用时注意区分,不要假设两者字面一致。
+> GitHub 仓库名是 `ericzheng-lab/ai-drsfilms-portfolio`。本机实际 clone 路径(2026-08-13 核实存在):`/Users/yuezheng/Documents/VSCODE_CC/projects/ai-drsfilms-portfolio` —— 文件夹名已于 2026-08-13 从旧名 `ai-dsrfilms-com` 改成与 GitHub 仓库名一致,旧路径 `~/Documents/EZ_Github/ai-dsrfilms-com` 已不存在。
 
 ## ⚠️ 这是生产站点,push 到 main = 自动生产部署
 
@@ -20,7 +20,7 @@ AI 作品展示站(`package.json` name = `ai-portfolio-site`)。栈:React 18.3.1
 
 - 本文件
 - `LOOP-STATE.md` —— 存在,记录的是最近一次已完成的 L2 loop(Alibaba Startup Deck,PR #10,已 squash-merge 为 `71a37122e12157c42c4c79164cd1834efdb8bce4`,production 已核实 2026-08-11T03:41Z)。这是历史记录,不是进行中状态;新的多步任务开始时按协议新建/覆盖。
-- `WEBSITE_CONTEXT.md` —— **内容含已过期的绝对路径**,已核实:文中项目路径写的是 `/Users/yuezheng/Documents/New project 3/ai-portfolio-site`,与本机实际 clone 路径 `~/Documents/EZ_Github/ai-dsrfilms-com` 不符;文中 vault 路径缺少 `Other computers/My MacBook Air` 这一级、且带了不存在的 `Documents/` 层级,与全局 CLAUDE.md 记录的真实 vault 路径矛盾。**按这份文件里的路径操作前先核实路径是否还存在**,不要假设它是最新的。本次任务未修改此文件(超出本 PR 范围)。
+- `WEBSITE_CONTEXT.md` —— 绝对路径已于 2026-08-13 修正(本 PR)。修正内容:项目路径由 `/Users/yuezheng/Documents/New project 3/ai-portfolio-site` 改为现路径;vault 路径补回 `Other computers/My MacBook Air` 这一级、去掉多余的 `Documents/` 层级。⚠️ 遗留:该文件列出的 vault 源文件中,`AI视频发布矩阵/00-项目首页.md` 在整个 vault 内已搜不到(2026-08-13 核实),文中标注为待确认,未删除。**按这份文件里的路径操作前仍建议先核实路径是否还存在。**
 - `CONTENT_INVENTORY.md` —— 内容清单,未逐条核实,按需读取。
 
 ## 设计锁
