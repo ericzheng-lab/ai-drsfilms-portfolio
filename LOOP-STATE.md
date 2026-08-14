@@ -53,8 +53,9 @@ patching.
 - [x] D3: no guaranteed-null DOM reference left behind (`#rotationOverlay` fully removed).
 - [x] D4: regression gate added and proven in both directions — green on the fix, red when
       pointed at the pre-fix file (exit 1).
-- [ ] D5: CI green on Node 20 (verified by the Draft PR's `checks` job, not locally —
-      Node 20 is not installed on this machine).
+- [x] D5: CI green on Node 20 — run 31847479535 on PR #15, `checks` job succeeded on
+      Node 20.20.2 with `inline-js: PASSED -- 22 HTML file(s), 18 inline script block(s)`,
+      and the `deploy` job correctly reported `skipped` on a `pull_request` event.
 - [ ] D6: **merge + live verification — blocked on Eric.** `push` is not `live`.
 
 ## Regression gate
