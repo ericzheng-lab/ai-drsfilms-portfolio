@@ -844,17 +844,6 @@
             letter-spacing: 0.1em;
         }
 
-        /* ── Mobile Responsive (≤768px) ── */
-
-        /* ── Mobile dots navigation ── */
-
-        /* ── Landscape rotation overlay ── */
-        @keyframes rotate-hint {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(90deg); }
-            50% { transform: rotate(90deg); }
-            75% { transform: rotate(0deg); }
-        }
     </style>
 </head>
 <body class="overflow-hidden min-h-screen flex flex-col justify-between select-none">
@@ -2112,39 +2101,6 @@
                 prevSlide();
             }
         });
-
-        // Mobile touch swipe gestures
-if (touchEndX > touchStartX + threshold) {
-                prevSlide();
-            }
-        }
-    
-    <script>
-        // ── Orientation detection ──
-        (function() {
-            var overlay = document.getElementById('rotationOverlay');
-            var gate = document.getElementById('passwordGate');
-
-            function checkOrientation() {
-                var isPortrait = window.matchMedia('(orientation: portrait)').matches;
-                if (isPortrait) {
-                    overlay.style.display = 'flex';
-                    if (gate && !gate.classList.contains('hidden')) {
-                        gate.style.display = 'none';
-                    }
-                } else {
-                    overlay.style.display = 'none';
-                    if (gate && !gate.classList.contains('hidden')) {
-                        gate.style.display = 'flex';
-                    }
-                }
-            }
-
-            window.addEventListener('orientationchange', checkOrientation);
-            window.addEventListener('resize', checkOrientation);
-            checkOrientation();
-        })();
-    </script>
 
     </script>
 </body>
