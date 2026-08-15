@@ -105,7 +105,19 @@ Two case-insensitive hits for `ttlbp` in `public/code-theory/index.html` and
       inline block of `public/wonder/index.html` produced
       `inline-js: FAILED -- 1 broken block(s)`, `SyntaxError: Unexpected token '}'`, exit 1.
       File restored; `git status` shows the deletion only.
-- [ ] D5: **merge + live verification — blocked on Eric.** `push` is not `live`.
+- [x] D5: CI agrees with the local number on its own Node 20 — run 31856163588 on commit
+      403bb8b, `checks` succeeded on Node 20.20.2 with
+      `inline-js: PASSED -- 21 HTML file(s), 14 inline script block(s)`, and `deploy`
+      correctly reported `skipped` on a `pull_request` event.
+- [ ] D6: **merge + live verification — blocked on Eric.** `push` is not `live`.
+
+AUDIT 403bb8b: none — no independent blind audit was run on this commit. Every number above
+is self-verified by the commands shown, and CI re-ran the gate independently on Node 20, but
+that is the same check, not a second pair of eyes. Weigh D1–D5 accordingly.
+
+USABLE 403bb8b: not yet in effect. The branch is correct and CI is green, but the page is
+still live at https://ai.drsfilms.com/TTL-BP/ and stays live until Eric merges — in this repo
+merge is the deploy. Nothing else on the site changes when he does.
 
 ## How to verify after merge — compare bytes, not status codes
 
