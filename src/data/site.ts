@@ -20,8 +20,8 @@ export type Project = {
 
 export const navItems = [
   { id: "work", label: "Work", number: "01" },
-  { id: "studio", label: "AI Studio", number: "02" },
-  { id: "stack", label: "AI Stack", number: "03" },
+  { id: "studio", label: "Studio", number: "02" },
+  { id: "stack", label: "Stack", number: "03" },
   { id: "openclaw", label: "OpenClaw", number: "04" },
   { id: "github", label: "GitHub", number: "05" },
   { id: "contact", label: "Contact", number: "06" },
@@ -105,32 +105,17 @@ export const projects: Project[] = [
   {
     id: "production-bridge",
     number: "006",
-    title: "15 Years of Film Production",
-    eyebrow: "Traditional portfolio at drsfilms.com",
+    title: "Film Production Bridge",
+    eyebrow: "Traditional production foundation",
     type: "film",
     year: "2026",
     status: "Archive",
     description:
-      "The production base behind the AI work: feature film financing and delivery, S-tier commercial and CG animation pipelines, global vendors, and post-production judgment.",
-    proof: "Grounds the AI portfolio in real production work: Sundance/Berlinale feature experience, Tencent/Riot/miHoYo/Nike campaigns, and international delivery.",
-    tags: ["Film", "Executive Producer", "CG", "Post", "Global Production"],
+      "Feature film financing and delivery, S-tier commercial and CG animation pipelines, global vendors, and post-production judgment.",
+    proof: "Sundance / Berlinale feature, Tencent / Riot / miHoYo / Nike campaigns, international delivery.",
+    tags: ["Film", "Executive Producer", "CG", "Post"],
     image: "/uploads/pasted-1776995420940-0.png",
     link: "https://www.drsfilms.com",
-  },
-  {
-    id: "ai-portfolio",
-    number: "007",
-    title: "AI Portfolio Website",
-    eyebrow: "This site",
-    type: "website",
-    year: "2026",
-    status: "Live",
-    description:
-      "A maintainable AI-native personal site for ai.drsfilms.com, rebuilt from a Claude design export into a structured React/Vite project.",
-    proof: "Shows AI-assisted design translated into maintainable code, structured content, local preview, and Cloudflare Pages deployment readiness.",
-    tags: ["React", "Vite", "Cloudflare Pages", "AI Design"],
-    image: "/uploads/pasted-1776995493459-0.png",
-    repo: "https://github.com/ericzheng-lab/ai-drsfilms-portfolio",
   },
 ];
 

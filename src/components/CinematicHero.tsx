@@ -6,32 +6,32 @@
  * resize, reduced-motion, mode switching, and cleanup.
  */
 import { useEffect, useRef, useCallback } from "react";
-import type { HeroMode } from "../three/createCinematicHero";
+import type { HeroForm } from "../three/createPointCloudHero";
 
 type HeroScene = {
-  update: (progress: number, mode: HeroMode, mouseX: number, mouseY: number) => void;
+  update: (progress: number, pinnedForm: HeroForm | null, mouseX: number, mouseY: number) => void;
   resize: (w: number, h: number) => void;
   dispose: () => void;
 };
 
 interface CinematicHeroProps {
   progress: number;
-  mode: HeroMode;
+  pinnedForm: HeroForm | null;
   reducedMotion?: boolean;
 }
 
-export default function CinematicHero({ progress, mode, reducedMotion }: CinematicHeroProps) {
+export default function CinematicHero({ progress, pinnedForm, reducedMotion }: CinematicHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<HeroScene | null>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const progressRef = useRef(progress);
-  const modeRef = useRef<HeroMode>(mode);
+  const pinnedFormRef = useRef<HeroForm | null>(pinnedForm);
   const rafRef = useRef(0);
   const loadedRef = useRef(false);
 
   // Keep refs in sync
   progressRef.current = progress;
-  modeRef.current = mode;
+  pinnedFormRef.current = pinnedForm;
 
   // Lazy-load Three.js scene
   useEffect(() => {
@@ -41,9 +41,9 @@ export default function CinematicHero({ progress, mode, reducedMotion }: Cinemat
 
     let disposed = false;
 
-    import("../three/createCinematicHero").then((mod) => {
+    import("../three/createPointCloudHero").then((mod) => {
       if (disposed) return;
-      const scene = mod.createCinematicHero(canvas);
+      const scene = mod.createPointCloudHero(canvas);
       sceneRef.current = scene;
 
       // Ensure correct initial size — canvas layout may not be ready yet
@@ -59,7 +59,7 @@ export default function CinematicHero({ progress, mode, reducedMotion }: Cinemat
         if (disposed) return;
         scene.update(
           progressRef.current,
-          modeRef.current,
+          pinnedFormRef.current,
           mouseRef.current.x,
           mouseRef.current.y
         );

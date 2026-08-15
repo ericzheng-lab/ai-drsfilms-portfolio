@@ -1,3 +1,6 @@
+// DEPRECATED: superseded by ./createPointCloudHero (the "Hero.html" point-cloud
+// morph ported from Claude Design). Kept only because HeroMode is exported from
+// here and re-imported (type-only) by CinematicHero.tsx and App.tsx.
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";

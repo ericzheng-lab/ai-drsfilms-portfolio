@@ -1,46 +1,69 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import type { HeroMode } from "./three/createCinematicHero";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import type { HeroForm } from "./three/createPointCloudHero";
 import {
   ArrowUpRight,
-  Braces,
+  Code2,
   ExternalLink,
-  Film,
   Github,
-  Layers3,
   Maximize2,
   Minimize2,
-  Sparkles,
 } from "lucide-react";
 import { agents, navItems, projects, repositories, stackGroups } from "./data/site";
 
 const CinematicHero = lazy(() => import("./components/CinematicHero"));
 
 const sectionIds = navItems.map((item) => item.id);
+
+const SECTION_BG: Record<string, string> = {
+  top: "#0c0a08",
+  showreel: "#0d0b08",
+  work: "#0c0c0c",
+  studio: "#0b0c0f",
+  stack: "#090c12",
+  openclaw: "#080c14",
+  github: "#070b13",
+  contact: "#060a12",
+};
+
+function hexToRgb(hex: string) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
-const smoothstep = (edge0: number, edge1: number, value: number) => {
-  const t = clamp01((value - edge0) / (edge1 - edge0));
-  return t * t * (3 - 2 * t);
-};
-const mapRange = (inMin: number, inMax: number, outMin: number, outMax: number, value: number) => {
-  const t = clamp01((value - inMin) / (inMax - inMin));
-  return outMin + (outMax - outMin) * t;
-};
+
+const HERO_STATES: { form: HeroForm; idx: string; name: string; sub: string }[] = [
+  { form: 0, idx: "01", name: "Lens", sub: "the eye" },
+  { form: 1, idx: "02", name: "Aperture", sub: "capture" },
+  { form: 2, idx: "03", name: "Reel", sub: "film" },
+  { form: 3, idx: "04", name: "Signal", sub: "sound" },
+  { form: 4, idx: "05", name: "Network", sub: "systems" },
+];
 
 export function App() {
   const [active, setActive] = useState("work");
 
-  // Nav active section observer
+  // Nav active section observer + section-driven nav background
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) setActive(entry.target.id);
+          if (entry.isIntersecting) {
+            setActive(entry.target.id);
+            const bg = SECTION_BG[entry.target.id];
+            const navEl = document.getElementById("topNav");
+            if (bg && navEl) {
+              navEl.style.background = `rgba(${hexToRgb(bg)}, 0.86)`;
+            }
+          }
         });
       },
       { rootMargin: "-35% 0px -55% 0px", threshold: 0.01 },
     );
 
-    sectionIds.forEach((id) => {
+    [...sectionIds, "top"].forEach((id) => {
       const section = document.getElementById(id);
       if (section) observer.observe(section);
     });
@@ -93,7 +116,7 @@ export function App() {
 
   return (
     <div className="site-shell">
-      <Sidebar active={active} />
+      <Nav active={active} />
       <main>
         <Hero />
         <ShowreelSection />
@@ -108,43 +131,35 @@ export function App() {
   );
 }
 
-function Sidebar({ active }: { active: string }) {
+function Nav({ active }: { active: string }) {
   return (
-    <aside className="sidebar">
-      <a className="identity" href="#top" aria-label="Eric Zheng AI Portfolio home">
-        <span>Eric Zheng</span>
-        <small>AI-Native Filmmaker & Builder</small>
+    <nav className="nav" id="topNav">
+      <a className="nav__brand" href="#top">
+        Eric Zheng
+        <small>· DRS Films · AI Portfolio</small>
       </a>
-
-      <nav aria-label="Primary navigation">
+      <div className="nav__links">
         {navItems.map((item) => (
           <a className={active === item.id ? "is-active" : ""} href={`#${item.id}`} key={item.id}>
-            <span>{item.number}</span>
             {item.label}
           </a>
         ))}
-      </nav>
-
-      <div className="sidebar__footer">
-        <a className="availability" href="#contact">
-          <span />
-          Get in Touch
-        </a>
-        <a href="https://www.drsfilms.com" rel="noreferrer" target="_blank">
-          DRS Films <ArrowUpRight size={14} />
-        </a>
-        <a href="https://github.com/ericzheng-lab" rel="noreferrer" target="_blank">
-          GitHub <ArrowUpRight size={14} />
+      </div>
+      <div className="nav__right">
+        <span className="nav__dot" />
+        <span>ai.drsfilms.com</span>
+        <a className="nav__drslink" href="https://www.drsfilms.com" rel="noreferrer" target="_blank">
+          Open DRS Films <ArrowUpRight size={12} />
         </a>
       </div>
-    </aside>
+    </nav>
   );
 }
 
 function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [hoverMode, setHoverMode] = useState<HeroMode>("default");
+  const [pinnedForm, setPinnedForm] = useState<HeroForm | null>(null);
   const reducedMotion = useMemo(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     [],
@@ -155,9 +170,11 @@ function Hero() {
     const value = Number(raw);
     return Number.isFinite(value) ? clamp01(value) : null;
   }, []);
-  const debugMode = useMemo<HeroMode | null>(() => {
-    const raw = new URLSearchParams(window.location.search).get("heroDebugMode");
-    return raw === "film" || raw === "tools" || raw === "agents" ? raw : null;
+  const debugForm = useMemo<HeroForm | null>(() => {
+    const raw = new URLSearchParams(window.location.search).get("heroDebugForm");
+    if (raw == null) return null;
+    const value = Number(raw);
+    return value >= 0 && value <= 4 ? (value as HeroForm) : null;
   }, []);
 
   useEffect(() => {
@@ -175,62 +192,31 @@ function Hero() {
   }, []);
 
   const effectiveProgress = debugProgress ?? scrollProgress;
-  const copyExit = smoothstep(0.54, 0.78, effectiveProgress);
-  const buttonsReveal = smoothstep(0.72, 0.88, effectiveProgress);
-  const buttonsLive = buttonsReveal > 0.12 && effectiveProgress < 0.995;
-  const sceneMode: HeroMode = debugMode ?? (buttonsLive ? hoverMode : "default");
-  const phase = effectiveProgress < 0.54 ? "copy" : effectiveProgress < 0.72 ? "transition" : effectiveProgress < 0.94 ? "buttons" : "handoff";
-  const heroVars = {
-    "--copy-shift": `${copyExit * -160}px`,
-    "--copy-opacity": `${1 - copyExit}`,
-    "--buttons-opacity": buttonsReveal.toFixed(3),
-    "--buttons-shift": `${(1 - buttonsReveal) * 42}px`,
-  } as CSSProperties;
-
-  const handleModeEnter = (mode: HeroMode) => setHoverMode(mode);
-  const resetMode = () => setHoverMode("default");
+  const effectivePinned = debugForm ?? pinnedForm;
 
   return (
-    <section className="hero-wrap" id="top" ref={heroRef} data-hero-phase={phase} data-scene-mode={sceneMode} style={heroVars}>
+    <section className="hero-wrap" id="top" ref={heroRef}>
       <div className="hero" id="hero">
         <Suspense fallback={null}>
-          <CinematicHero progress={effectiveProgress} mode={sceneMode} reducedMotion={reducedMotion} />
+          <CinematicHero progress={effectiveProgress} pinnedForm={effectivePinned} reducedMotion={reducedMotion} />
         </Suspense>
-
-        <div className="node-labels" id="nodeLabels">
-          <div className="node-label" data-node="0">
-            <div className="tag">
-              <span className="idx">N.01</span>
-              <span className="name">OPENCLAW</span>
-            </div>
-            <span className="sub">multi-agent operations</span>
-          </div>
-          <div className="node-label" data-node="1">
-            <div className="tag">
-              <span className="idx">N.02</span>
-              <span className="name">CANVAS</span>
-            </div>
-            <span className="sub">prompt → frame interface</span>
-          </div>
-          <div className="node-label" data-node="2">
-            <div className="tag">
-              <span className="idx">N.03</span>
-              <span className="name">PIPELINE</span>
-            </div>
-            <span className="sub">publishing matrix</span>
-          </div>
-          <div className="node-label" data-node="3">
-            <div className="tag">
-              <span className="idx">N.04</span>
-              <span className="name">MEMORY</span>
-            </div>
-            <span className="sub">obsidian writeback</span>
-          </div>
-        </div>
+        <div className="hero__scrim" />
 
         <div className="hud">
+          <header className="hud__top">
+            <div className="hud__crest">
+              <small>ai.drsfilms.com · 2026</small>
+            </div>
+            <div className="hud__channel">
+              <span>
+                <span className="dot" />
+                LIVE · AI-NATIVE PRODUCTION SYSTEM
+              </span>
+            </div>
+          </header>
+
           <div className="hud__copy">
-            <p className="hud__identity">Eric Zheng · Film Producer & AI Systems Builder</p>
+            <p className="hud__identity">Eric Zheng · Film Producer &amp; AI Systems Builder</p>
             <h1 className="hud__title">
               <span className="br">I produce films.</span>
               <span className="br">I build AI systems.</span>
@@ -253,43 +239,25 @@ function Hero() {
           </div>
         </div>
 
-        <div className="hero-mode-stage" data-visible={buttonsLive ? "true" : "false"} data-mode={sceneMode}>
-          <div className="hero-mode-stage__eyebrow">Phase hook · buttons</div>
-          <div className="hero-mode-stage__grid" onMouseLeave={resetMode}>
-            <button
-              className={`hero-mode-card${sceneMode === "film" ? " is-active" : ""}`}
-              onFocus={() => handleModeEnter("film")}
-              onMouseEnter={() => handleModeEnter("film")}
-              type="button"
-            >
-              <span className="hero-mode-card__label">Film</span>
-              <span className="hero-mode-card__meta">direction · production energy</span>
-            </button>
-            <button
-              className={`hero-mode-card${sceneMode === "tools" ? " is-active" : ""}`}
-              onFocus={() => handleModeEnter("tools")}
-              onMouseEnter={() => handleModeEnter("tools")}
-              type="button"
-            >
-              <span className="hero-mode-card__label">Tools</span>
-              <span className="hero-mode-card__meta">interfaces · workflow systems</span>
-            </button>
-            <button
-              className={`hero-mode-card${sceneMode === "agents" ? " is-active" : ""}`}
-              onBlur={resetMode}
-              onFocus={() => handleModeEnter("agents")}
-              onMouseEnter={() => handleModeEnter("agents")}
-              type="button"
-            >
-              <span className="hero-mode-card__label">Agents</span>
-              <span className="hero-mode-card__meta">automation · orchestration layer</span>
-            </button>
-          </div>
-        </div>
-
         <div className="scroll-hint" id="scrollHint">
           <span>Scroll · engage</span>
           <span className="line" />
+        </div>
+
+        <div className="hero-states" id="heroStates">
+          {HERO_STATES.map((state) => (
+            <button
+              className={`hero-state${state.form === 0 && effectivePinned === null ? " is-active" : ""}`}
+              data-form={state.form}
+              key={state.form}
+              onClick={() => setPinnedForm(state.form)}
+              type="button"
+            >
+              <span className="hs-idx">{state.idx}</span>
+              <span className="hs-name">{state.name}</span>
+              <span className="hs-sub">{state.sub}</span>
+            </button>
+          ))}
         </div>
 
         <div className="timecode">
@@ -326,13 +294,14 @@ function ShowreelSection() {
   }, [expanded]);
 
   return (
-    <section className="section showreel fade-in" id="showreel">
+    <section className="section fade-in" id="showreel">
+      <div className="section-num" aria-hidden="true">00</div>
       <div className="showreel__layout">
-        <header className="showreel__meta">
-          <p>00 / Reel</p>
+        <div className="showreel__meta">
+          <p className="eyebrow">00 · Reel</p>
           <h2>AI-Native Creative Portfolio Reel</h2>
-          <span>Small ambient preview. Expand only when needed.</span>
-        </header>
+          <p>Small ambient preview. Expand when needed. Grounded in real production output, not stock footage.</p>
+        </div>
         <div className={`showreel__frame ${expanded ? "is-expanded" : ""}`}>
           <button
             aria-label={expanded ? "Close expanded video" : "Expand video"}
@@ -361,251 +330,22 @@ function ShowreelSection() {
   );
 }
 
-function Metric({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="metric">
-      <strong>{value}</strong>
-      <span>{label}</span>
-    </div>
-  );
-}
-
-function HeroTicker() {
-  const items = [
-    "AI-Native Filmmaker",
-    "Builder",
-    "Executive Producer",
-    "AI Architect",
-    "OpenClaw",
-  ];
-
-  return (
-    <div className="hero-ticker" aria-hidden="true">
-      <div>
-        {Array.from({ length: 8 }).flatMap((_, repeat) =>
-          items.map((item) => (
-            <span key={`${repeat}-${item}`}>
-              {item}
-              <b>◆</b>
-            </span>
-          )),
-        )}
-      </div>
-    </div>
-  );
-}
-
-type NodePoint = {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  r: number;
-  color: string;
-  pulse: number;
-};
-
-function NeuralCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const colors = ["#16d9ff", "#ffc65a", "#a75bff"];
-    let width = 0;
-    let height = 0;
-    let frame = 0;
-    let animationFrame = 0;
-    let nodes: NodePoint[] = [];
-    let pointer = { x: 0, y: 0, active: false };
-    const connectDistance = 160;
-    const mouseAttract = 150;
-    const mouseForce = 0.0105;
-
-    const makeNodes = () => {
-      nodes = Array.from({ length: 55 }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.2,
-        vy: (Math.random() - 0.5) * 0.2,
-        r: Math.random() * 1.15 + 0.65,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        pulse: Math.random() * Math.PI * 2,
-      }));
-    };
-
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      const ratio = window.devicePixelRatio || 1;
-      width = rect.width;
-      height = rect.height;
-      canvas.width = Math.floor(width * ratio);
-      canvas.height = Math.floor(height * ratio);
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      makeNodes();
-    };
-
-    const onPointerMove = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      pointer = {
-        x,
-        y,
-        active: x >= 0 && x <= rect.width && y >= 0 && y <= rect.height,
-      };
-    };
-
-    const draw = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      nodes.forEach((node, index) => {
-        node.pulse += 0.009;
-        const dx = pointer.x - node.x;
-        const dy = pointer.y - node.y;
-        const dist = Math.hypot(dx, dy);
-
-        if (pointer.active && dist < mouseAttract && dist > 0) {
-          node.vx += (dx / dist) * mouseForce;
-          node.vy += (dy / dist) * mouseForce;
-        }
-
-        node.vx *= 0.985;
-        node.vy *= 0.985;
-        node.x += node.vx;
-        node.y += node.vy;
-
-        if (node.x < 0) {
-          node.x = 0;
-          node.vx *= -1;
-        }
-        if (node.x > width) {
-          node.x = width;
-          node.vx *= -1;
-        }
-        if (node.y < 0) {
-          node.y = 0;
-          node.vy *= -1;
-        }
-        if (node.y > height) {
-          node.y = height;
-          node.vy *= -1;
-        }
-      });
-
-      for (let i = 0; i < nodes.length; i += 1) {
-        for (let j = i + 1; j < nodes.length; j += 1) {
-          const a = nodes[i];
-          const b = nodes[j];
-          const dist = Math.hypot(a.x - b.x, a.y - b.y);
-          if (dist < connectDistance) {
-            const alpha = (1 - dist / connectDistance) * 0.28;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(111, 135, 255, ${alpha})`;
-            ctx.lineWidth = 0.7;
-            ctx.stroke();
-          }
-        }
-      }
-
-      nodes.forEach((node) => {
-        const dx = pointer.x - node.x;
-        const dy = pointer.y - node.y;
-        const dist = Math.hypot(dx, dy);
-        if (pointer.active && dist < mouseAttract) {
-          const alpha = (1 - dist / mouseAttract) * 0.45;
-          ctx.beginPath();
-          ctx.moveTo(node.x, node.y);
-          ctx.lineTo(pointer.x, pointer.y);
-          ctx.strokeStyle = withAlpha(node.color, alpha);
-          ctx.lineWidth = 0.7;
-          ctx.stroke();
-        }
-      });
-
-      if (pointer.active) {
-        const glow = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 80);
-        glow.addColorStop(0, "rgba(91, 212, 255, 0.08)");
-        glow.addColorStop(1, "transparent");
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(pointer.x, pointer.y, 80, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      nodes.forEach((node) => {
-        const pulsed = node.r + Math.sin(node.pulse) * 0.35;
-        const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, pulsed * 5);
-        glow.addColorStop(0, withAlpha(node.color, 0.18));
-        glow.addColorStop(1, "transparent");
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, pulsed * 5, 0, Math.PI * 2);
-        ctx.fillStyle = glow;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, pulsed, 0, Math.PI * 2);
-        ctx.fillStyle = node.color;
-        ctx.fill();
-      });
-
-      ctx.shadowBlur = 0;
-      frame += 1;
-      animationFrame = window.requestAnimationFrame(draw);
-    };
-
-    resize();
-    draw();
-
-    window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", onPointerMove);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", onPointerMove);
-    };
-  }, []);
-
-  return <canvas className="neural-canvas" ref={canvasRef} aria-hidden="true" />;
-}
-
-function withAlpha(color: string, alpha: number) {
-  const clamped = Math.max(0, Math.min(1, alpha));
-
-  if (color.startsWith("#")) {
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${clamped})`;
-  }
-
-  return color;
-}
-
 function SectionHeader({
-  id,
   number,
+  id,
   title,
   summary,
+  cyan,
 }: {
-  id: string;
   number: string;
+  id: string;
   title: string;
-  summary: string;
+  summary?: string;
+  cyan?: boolean;
 }) {
   return (
-    <div className="section-header">
-      <div>
-        <span>{number}</span>
-        <p>{id}</p>
-      </div>
+    <div className={`section-header${cyan ? " cyan-accent" : ""}`}>
+      <div className="section-header__meta">{number} · {id}</div>
       <h2>{title}</h2>
       {summary && <p>{summary}</p>}
     </div>
@@ -615,50 +355,48 @@ function SectionHeader({
 function WorkGrid() {
   return (
     <section className="section fade-in" id="work">
+      <div className="section-num" aria-hidden="true">01</div>
       <SectionHeader
-        id="Selected Work"
         number="01"
+        id="Work"
         title="Proof, not decoration."
-        summary="Each card should demonstrate a specific ability: AI film direction, tool design, system building, or production automation."
+        summary="Each card demonstrates a specific ability: AI film direction, tool design, system building, or production automation."
       />
 
-      <div className="project-grid">
-        {projects.map((project) => (
-          <article className={`project-card project-card--${project.type}`} key={project.id}>
-            <div className="project-card__media">
+      <div className="work-grid">
+        {projects.map((project, index) => (
+          <article className={`project-card fade-in fade-in-delay-${(index % 3) + 1}`} key={project.id}>
+            <div className="card-media">
               <ProjectVisual project={project} />
-              <div className="project-card__type">
-                {project.type === "film" ? <Film size={14} /> : <Layers3 size={14} />}
-                {project.type}
-              </div>
+              <div className="card-type">{cardType(project.type)}</div>
             </div>
-            <div className="project-card__body">
-              <div className="project-card__meta">
+            <div className="card-body">
+              <div className="card-meta">
                 <span>{project.number}</span>
                 <span>{project.year}</span>
-                <span>{project.status}</span>
+                <span className={cardStatusClass(project.status)}>{project.status}</span>
               </div>
               <h3>{project.title}</h3>
-              <p className="project-card__eyebrow">{project.eyebrow}</p>
+              <p className="card-eyebrow">{project.eyebrow}</p>
               <p>{project.description}</p>
-              <div className="proof-note">
+              <div className="card-proof">
                 <span>Proof</span>
                 <p>{project.proof}</p>
               </div>
-              <div className="tag-list">
+              <div className="tags">
                 {project.tags.map((tag) => (
                   <span key={tag}>{tag}</span>
                 ))}
               </div>
-              <div className="project-card__links">
+              <div className="card-links">
                 {project.link && (
                   <a href={project.link} rel="noreferrer" target="_blank">
-                    Visit <ArrowUpRight size={14} />
+                    Live <ArrowUpRight size={12} />
                   </a>
                 )}
                 {project.repo && (
                   <a href={project.repo} rel="noreferrer" target="_blank">
-                    Code <Github size={14} />
+                    GitHub <ArrowUpRight size={12} />
                   </a>
                 )}
               </div>
@@ -670,62 +408,110 @@ function WorkGrid() {
   );
 }
 
+function cardType(type: (typeof projects)[number]["type"]) {
+  switch (type) {
+    case "film":
+      return "Film";
+    case "tool":
+      return "Tool";
+    case "system":
+      return "System";
+    case "code":
+      return "Code";
+    default:
+      return "Web";
+  }
+}
+
+function cardStatusClass(status: (typeof projects)[number]["status"]) {
+  switch (status) {
+    case "Live":
+    case "Archive":
+      return "card-status-live";
+    case "In Progress":
+      return "card-status-prog";
+    default:
+      return "card-status-proto";
+  }
+}
+
+function Waveform() {
+  const bars = useMemo(
+    () =>
+      Array.from({ length: 28 }, (_, i) => ({
+        height: 6 + Math.random() * 34,
+        delay: i * 0.055,
+        opacity: 0.5 + Math.random() * 0.5,
+      })),
+    [],
+  );
+  return (
+    <div className="cv-waveform">
+      {bars.map((bar, i) => (
+        <div
+          className="bar"
+          key={i}
+          style={{ height: `${bar.height}px`, animationDelay: `${bar.delay}s`, opacity: bar.opacity }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function ProjectVisual({ project }: { project: (typeof projects)[number] }) {
   if (project.id === "openclaw-creative-os") {
     return (
-      <div className="project-visual project-visual--image">
-        <img src="/generated/openclaw-creative-os.png" alt="" />
+      <div className="cv">
+        <div className="cv-nodes">
+          <span>General<br />Commander</span>
+          <span>Engineer<br />Technical</span>
+          <span>Creator<br />Content</span>
+          <span>Wiseman<br />Knowledge</span>
+        </div>
       </div>
     );
   }
 
   if (project.id === "ai-video-studio") {
     return (
-      <div className="project-visual project-visual--image">
-        <img src="/generated/ai-video-studio.png" alt="" />
+      <div className="cv">
+        <Waveform />
       </div>
     );
   }
 
   if (project.id === "ai-publishing-matrix") {
     return (
-      <div className="project-visual project-visual--image">
-        <img src="/generated/publishing-matrix.png" alt="" />
+      <div className="cv">
+        <div className="cv-grid">
+          {["YouTube", "Bilibili", "RedNote", "LinkedIn", "Twitter", "Archive"].map((platform) => (
+            <span key={platform}><b /> {platform}</span>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (project.id === "career-ops") {
     return (
-      <div className="project-visual project-visual--code">
-        {["JD ingest", "Score", "Resume", "Cover letter", "Track"].map((step) => (
-          <div className="code-row" key={step}>
-            <span>$</span>
-            <strong>{step}</strong>
-          </div>
-        ))}
+      <div className="cv">
+        <div className="cv-terminal">
+          {["JD ingest + score", "Resume targeting", "Cover letter gen", "Application track"].map((step) => (
+            <div className="row" key={step}>
+              <span>$</span>
+              <strong>{step}</strong>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (project.id === "production-bridge") {
     return (
-      <div className="project-visual project-visual--film">
-        <div className="film-strip">
+      <div className="cv">
+        <div className="cv-filmstrip">
           {["Sundance", "Berlinale", "Tencent", "Nike", "miHoYo"].map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </div>
-        <div className="visual-caption">drsfilms.com &rarr;</div>
-      </div>
-    );
-  }
-
-  if (project.id === "ai-portfolio") {
-    return (
-      <div className="project-visual project-visual--website">
-        <div className="site-map">
-          {["React", "Vite", "Data", "Cloudflare"].map((item) => (
             <span key={item}>{item}</span>
           ))}
         </div>
@@ -734,24 +520,28 @@ function ProjectVisual({ project }: { project: (typeof projects)[number] }) {
   }
 
   return (
-    <div className="project-visual project-visual--canvas">
-      <div className="canvas-orbit" />
-      <div className="canvas-card">Prompt / Generate / Remix</div>
+    <div className="cv">
+      <div className="cv-canvas">
+        <div className="orbit" />
+        <div className="label">Prompt / Generate / Remix</div>
+      </div>
     </div>
   );
 }
 
 function StudioSection() {
   return (
-    <section className="section section--split fade-in" id="studio">
+    <section className="section fade-in" id="studio">
+      <div className="section-num" aria-hidden="true">02</div>
       <SectionHeader
-        id="AI Studio"
         number="02"
+        id="Studio"
         title="Tools for directors, not just prompts."
-        summary="This section frames AI as a production instrument: input, model choice, generation, review, remix, and documented output."
+        summary="AI as a production instrument — input, model choice, generation, review, remix, documented output."
+        cyan
       />
 
-      <div className="split-layout">
+      <div className="studio-layout">
         <div className="studio-copy">
           <div className="micro-label">Tool Concept</div>
           <h3>AI Canvas Studio</h3>
@@ -763,12 +553,12 @@ function StudioSection() {
           <div className="studio-points">
             {[
               ["Prompt to frame", "Turn visual intent into a repeatable shot-development process."],
-              ["API stack", "Custom-curated and self-built API stack for model selection, routing, and output handling."],
+              ["API stack", "Custom-curated API stack for model selection, routing, and output handling."],
               ["Production memory", "Preserve decisions so experiments become reusable pipeline knowledge."],
-            ].map(([title, text]) => (
-              <div key={title}>
-                <span>{title}</span>
-                <p>{text}</p>
+            ].map(([label, text]) => (
+              <div className="point" key={label}>
+                <span className="point-label">{label}</span>
+                <p className="point-text">{text}</p>
               </div>
             ))}
           </div>
@@ -782,19 +572,12 @@ function StudioSection() {
 function StudioVideo() {
   return (
     <div className="studio-video" aria-label="AI Canvas Studio demo video">
-      <div className="canvas-demo__topline studio-video__topline">
+      <div className="studio-video__bar">
         <span>Live Prototype</span>
         <small>AI Canvas Demo</small>
       </div>
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        src="/media/ai-canvas-web.mp4"
-      />
-      <div className="studio-video__caption">Browser-native interface study / prompt to generated frame</div>
+      <video autoPlay loop muted playsInline preload="metadata" src="/media/ai-canvas-web.mp4" />
+      <div className="studio-video__caption">Browser-native interface study · prompt to generated frame</div>
     </div>
   );
 }
@@ -802,20 +585,22 @@ function StudioVideo() {
 function StackSection() {
   return (
     <section className="section fade-in" id="stack">
+      <div className="section-num" aria-hidden="true">03</div>
       <SectionHeader
-        id="AI Production Stack"
         number="03"
+        id="Stack"
         title="Make the knowledge visible."
-        summary="A clearer map of the tools, models, APIs, and production workflows behind the work."
+        summary="Tools, models, APIs, and production workflows behind the work."
+        cyan
       />
 
       <div className="stack-grid">
         {stackGroups.map((group, index) => (
-          <article className="stack-card" key={group.title}>
+          <article className={`stack-card fade-in fade-in-delay-${(index % 4) + 1}`} key={group.title}>
             <div className="stack-card__num">{String(index + 1).padStart(2, "0")}</div>
             <h3>{group.title}</h3>
             <p>{group.summary}</p>
-            <div className="tag-list">
+            <div className="tags">
               {group.tools.map((tool) => (
                 <span key={tool}>{tool}</span>
               ))}
@@ -834,83 +619,82 @@ function OpenClawSection() {
   const workflows = [
     {
       label: "Job Monitoring",
-      desc: "Career-Ops workflow for JD analysis, resume targeting, score reports, generated CV outputs, and application tracking.",
+      desc: "Career-Ops workflow for JD analysis, resume targeting, score reports, and application tracking.",
     },
     {
       label: "Obsidian Memory",
-      desc: "Project pages, frontmatter, double links, source indexes, and path tables turn scattered AI outputs into reusable operating memory.",
+      desc: "Project pages, frontmatter, double links, source indexes, and path tables as operating memory.",
     },
     {
       label: "Content Pipeline",
-      desc: "AI video publishing matrix for turning finished work into platform-specific release packages, behind-the-scenes notes, and technical posts.",
+      desc: "AI video publishing matrix for platform-specific release packages and technical posts.",
     },
     {
       label: "Browser Automation",
-      desc: "Browser and API workflows support research, structured extraction, web tasks, and repeatable reporting when a task needs external context.",
+      desc: "Browser and API workflows for research, structured extraction, and repeatable reporting.",
     },
     {
       label: "Rule-Bound Handoff",
-      desc: "TEAM-RULEBOOK, agent role files, and Discord mention protocols keep delegation, review, and long-message reports from becoming chaotic.",
-    },
-    {
-      label: "Human Review Gates",
-      desc: "The system separates diagnosis from publishing: agents recommend, Eric confirms, then selected outputs become release packages.",
-    },
-    {
-      label: "Discord Coordination",
-      desc: "Discord channels and threads act as the control surface, separating HARNESS, AI content, Career-Ops, and film-production contexts.",
+      desc: "TEAM-RULEBOOK, agent role files, and Discord mention protocols keep delegation structured.",
     },
   ];
   const governance = [
     {
       label: "Rule Loading",
-      desc: "Agents start from TEAM-RULEBOOK, TEAM-DIRECTORY, SKILL-REGISTRY, SOUL.md, and AGENTS.md instead of relying on hidden chat memory.",
+      desc: "Agents start from TEAM-RULEBOOK, SOUL.md, and AGENTS.md instead of relying on hidden chat memory.",
     },
     {
       label: "Role Boundaries",
-      desc: "Each agent has a defined scope, handoff behavior, stop condition, and channel/thread context.",
+      desc: "Each agent has defined scope, handoff behavior, stop condition, and channel/thread context.",
     },
     {
       label: "Error Blocking",
-      desc: "Critical upstream errors such as wrong project names, wrong files, or wrong scope stop the workflow before downstream writing.",
+      desc: "Critical upstream errors — wrong project names, wrong scope — stop the workflow before downstream writing.",
     },
     {
       label: "Memory Writeback",
-      desc: "Outputs enter Obsidian with frontmatter, double links, source paths, project scope, and review boundaries.",
+      desc: "Outputs enter Obsidian with frontmatter, double links, source paths, and review boundaries.",
     },
   ];
 
   return (
-    <section className="section section--tinted fade-in" id="openclaw">
-      <SectionHeader
-        id="OpenClaw"
-        number="04"
-        title="OpenClaw System"
-        summary=""
-      />
+    <section className="section fade-in" id="openclaw">
+      <div className="section-num" aria-hidden="true">04</div>
+      <SectionHeader number="04" id="OpenClaw" title="OpenClaw System" cyan />
 
       <div className="openclaw-grid">
-        <div className="openclaw-intro">
-          <p>
+        <div>
+          <p className="openclaw-quote">
             "I did not want AI to be another scattered chat log. I wanted a creative operating
             system with memory, roles, review, and handoff."
           </p>
-          <p>
+          <p className="openclaw-body">
             OpenClaw is my multi-agent operations layer. Eight specialized agents coordinate through
             Discord, write structured knowledge into Obsidian, and use Codex as a governance layer
-            for audits, refactors, and handoffs. This is where the site proves agentic AI ability:
-            delegation, role boundaries, memory, browser/API workflows, and real production tasks.
+            for audits, refactors, and handoffs.
           </p>
+          <div className="openclaw-kicker" style={{ marginTop: 36 }}>Automated Workflows</div>
+          <div className="workflow-stack">
+            {workflows.map((workflow) => (
+              <div className="workflow-row" key={workflow.label}>
+                <span>◆</span>
+                <div>
+                  <strong>{workflow.label}</strong>
+                  <p>{workflow.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div>
-          <div className="openclaw-kicker">8-Agent Architecture - click to explore</div>
+          <div className="openclaw-kicker">8-Agent Architecture — click to explore</div>
           <AgentDiagram activeAgent={selected} setActive={setSelected} />
           <div className="agent-detail">
             <div className="agent-detail__heading">
               <span style={{ background: activeAgent.color }} />
               <strong style={{ color: activeAgent.color }}>
-                {activeAgent.label} - {activeAgent.role}
+                {activeAgent.label} — {activeAgent.role}
               </strong>
             </div>
             <p>{activeAgent.description}</p>
@@ -918,74 +702,20 @@ function OpenClawSection() {
         </div>
       </div>
 
-      <button
-        className="openclaw-toggle"
-        onClick={() => setDetailsOpen(!detailsOpen)}
-      >
+      <button className="openclaw-toggle" onClick={() => setDetailsOpen(!detailsOpen)} type="button">
         {detailsOpen ? "Hide System Details" : "View System Details"}
       </button>
 
       {detailsOpen && (
         <div className="openclaw-details">
-          <div className="openclaw-grid">
-            <div>
-              <div className="openclaw-kicker">Automated Workflows</div>
-              <div className="workflow-stack">
-                {workflows.map((workflow) => (
-                  <div className="workflow-row" key={workflow.label}>
-                    <span>◆</span>
-                    <div>
-                      <strong>{workflow.label}</strong>
-                      <p>{workflow.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="governance-module">
-                <div className="openclaw-kicker">Agent Governance / HARNESS</div>
-                <h3>System reliability for multi-agent work.</h3>
-                <p>
-                  HARNESS is the governance layer that keeps multi-agent work from becoming unmanaged
-                  chat: rules load predictably, agents know their boundaries, bad upstream output is
-                  blocked, and useful work is written back into a durable project memory.
-                </p>
-                <div className="governance-grid">
-                  {governance.map((item) => (
-                    <article className="governance-card" key={item.label}>
-                      <strong>{item.label}</strong>
-                      <p>{item.desc}</p>
-                    </article>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pipeline-module">
-                <div className="openclaw-kicker">Module</div>
-                <h3>AI Filmmaking Pipeline</h3>
-                <p>
-                  A dedicated AI filmmaking workspace inside Obsidian, connecting prompt systems,
-                  model comparison, character/storyboard references, generation paths, and publishing
-                  workflows.
-                </p>
-                {[
-                  ["Platform Research", "Model and workflow comparison across tools such as Runway, Kling, Veo, Flux, Midjourney, and related video/image systems."],
-                  ["Prompt Library", "Structured prompt templates organized by shot type, style, model target, and repeatable production need."],
-                  ["Character & Storyboard", "Reusable character references, storyboard templates, and continuity notes for multi-shot generation."],
-                  ["Publishing Matrix", "A documented path from finished video to platform-specific releases, technical breakdowns, and retrospectives."],
-                ].map(([label, desc]) => (
-                  <div className="pipeline-row" key={label}>
-                    <span>◆</span>
-                    <div>
-                      <strong>{label}</strong>
-                      <p>{desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="openclaw-kicker">Agent Governance · HARNESS</div>
+          <div className="governance-grid">
+            {governance.map((item) => (
+              <article className="governance-card" key={item.label}>
+                <strong>{item.label}</strong>
+                <p>{item.desc}</p>
+              </article>
+            ))}
           </div>
         </div>
       )}
@@ -1000,8 +730,8 @@ function AgentDiagram({
   activeAgent: string;
   setActive: (id: string) => void;
 }) {
-  const width = 520;
-  const height = 420;
+  const width = 500;
+  const height = 400;
 
   return (
     <div className="agent-diagram">
@@ -1081,7 +811,7 @@ function AgentDiagram({
           const x = width * (agent.x / 100);
           const y = height * (agent.y / 100);
           const isActive = activeAgent === agent.id;
-          const radius = agent.id === "general" ? 36 : 28;
+          const radius = agent.id === "general" ? 34 : 26;
 
           return (
             <g
@@ -1091,12 +821,11 @@ function AgentDiagram({
               role="button"
               tabIndex={0}
             >
-              <circle cx={x} cy={y} r={radius + 8} fill={isActive ? agent.color : "transparent"} opacity="0.08" />
               <circle
                 className={isActive ? "agent-node__halo is-active" : "agent-node__halo"}
                 cx={x}
                 cy={y}
-                r={radius + 15}
+                r={radius + 12}
                 fill={`url(#node-glow-${agent.id})`}
               />
               <circle
@@ -1109,9 +838,6 @@ function AgentDiagram({
                 strokeWidth={isActive ? 1.5 : 1}
                 filter={isActive ? "url(#agentSoftGlow)" : undefined}
               />
-              {agent.id === "general" && (
-                <circle className="agent-node__orbit" cx={x} cy={y} r={radius - 8} fill="none" stroke={agent.color} strokeWidth="0.5" opacity="0.4" />
-              )}
               <text
                 x={x}
                 y={y - 5}
@@ -1123,7 +849,7 @@ function AgentDiagram({
               >
                 {agent.label}
               </text>
-              <text x={x} y={y + 10} textAnchor="middle" fill="var(--fg2)" fontSize="7" fontFamily="var(--mono)" opacity="0.7">
+              <text x={x} y={y + 9} textAnchor="middle" fill="var(--fg2)" fontSize="7" fontFamily="var(--mono)">
                 {agent.role}
               </text>
             </g>
@@ -1137,24 +863,20 @@ function AgentDiagram({
 function GithubSection() {
   return (
     <section className="section fade-in" id="github">
-      <SectionHeader
-        id="GitHub"
-        number="05"
-        title="Code, systems, and public proof."
-        summary="This section can be connected to real repositories later. For now it is structured so each repo can be updated like a portfolio item."
-      />
+      <div className="section-num" aria-hidden="true">05</div>
+      <SectionHeader number="05" id="GitHub" title="Code, systems, and public proof." cyan />
 
       <div className="repo-list">
         {repositories.map((repo) => (
-          <a href={repo.url} key={repo.name} rel="noreferrer" target="_blank">
+          <a className="repo-card" href={repo.url} key={repo.name} rel="noreferrer" target="_blank">
             <div>
-              <Braces size={18} />
+              <Code2 size={15} />
               <strong>ericzheng-lab / {repo.name}</strong>
             </div>
             <p>{repo.description}</p>
             <div className="repo-list__footer">
               <span>{repo.language}</span>
-              <span>{repo.tags.join(" / ")}</span>
+              <span>{repo.tags.join(" · ")}</span>
               <ArrowUpRight size={16} />
             </div>
           </a>
@@ -1166,26 +888,36 @@ function GithubSection() {
 
 function ContactSection() {
   return (
-    <section className="section contact fade-in" id="contact">
-      <div>
-        <span className="micro-label">Connected Sites</span>
-        <h2>AI portfolio now. Traditional portfolio later.</h2>
-        <p>
-          This site is being prepared for ai.drsfilms.com. The traditional portfolio can stay
-          live through Figma while we separately recover its missing assets and decide whether
-          to rebuild it.
-        </p>
+    <section className="section" id="contact">
+      <div className="section-num" aria-hidden="true">06</div>
+      <div className="contact fade-in">
+        <div>
+          <span className="micro-label">06 · Connect</span>
+          <h2>
+            AI film, creative tech,
+            <br />
+            agentic workflow collaborations.
+          </h2>
+          <p>
+            Open to projects that push the edges of AI production. Grounded in real film work, not
+            just experimentation.
+          </p>
+        </div>
+        <div className="contact__actions">
+          <a className="button button--primary" href="mailto:eric.zheng@drsfilms.com">
+            eric.zheng@drsfilms.com <ExternalLink size={15} />
+          </a>
+          <a className="button" href="https://www.drsfilms.com" rel="noreferrer" target="_blank">
+            DRS Films <ArrowUpRight size={15} />
+          </a>
+          <a className="button" href="https://github.com/ericzheng-lab" rel="noreferrer" target="_blank">
+            GitHub <Github size={15} />
+          </a>
+        </div>
       </div>
-      <div className="contact__actions">
-        <a className="button button--primary" href="https://www.drsfilms.com" rel="noreferrer" target="_blank">
-          DRS Films <ExternalLink size={15} />
-        </a>
-        <a className="button" href="https://github.com/ericzheng-lab" rel="noreferrer" target="_blank">
-          GitHub <Github size={15} />
-        </a>
-        <a className="button" href="mailto:eric.zheng@drsfilms.com">
-          eric.zheng@drsfilms.com <ArrowUpRight size={15} />
-        </a>
+      <div className="contact-foot">
+        <span>© 2026 Eric Zheng · DRS Films</span>
+        <span>ai.drsfilms.com</span>
       </div>
     </section>
   );
