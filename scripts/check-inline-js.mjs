@@ -10,6 +10,10 @@
  * in 70c61c9 after c33caa2 had repaired it) and stayed broken for ~3 months
  * because nothing in the pipeline parses inline JS.
  *
+ * That page has since been retired, so the path above no longer exists. The gate
+ * stays: the remaining pages under public/ carry inline scripts with the same
+ * exposure, and it was three months of silence -- not the page -- that this catches.
+ *
  * The extractor deliberately mirrors the HTML parser: a script block ends at the
  * first literal `</script>`, wherever it appears. A nested `<script>` opener is
  * therefore just text inside the block -- and a syntax error.
