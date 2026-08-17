@@ -3,9 +3,32 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main]
+  # Checks also run on PRs so a broken page goes red BEFORE it can be merged.
+  # The deploy job below is guarded to push-on-main, so a PR never deploys.
+  pull_request:
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # No install step: the checker uses only the Node standard library.
+      - name: Syntax-check inline <script> blocks
+        run: npm run check:html
+
   deploy:
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
