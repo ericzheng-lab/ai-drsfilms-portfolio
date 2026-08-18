@@ -84,7 +84,12 @@ Hop order:
    slug, not a homepage); selected work ids; no skip/omit/waive language
    for Profile or CL.
 2. **R-VI** — VI distill record has source URL + date + exact hex / font /
-   radius. Empty or “similar to” = REJECT. Missing provenance = REJECT.
+   radius **and usage notes** (how the primary is a wordmark/field on the
+   canvas). Empty or “similar to” = REJECT. Missing provenance = REJECT.
+   Hex/font without USAGE = token-only = REJECT. When profile HTML is
+   present, the primary hex must be applied as a real field/wordmark —
+   10px labels on a black/white résumé (Giant Spoon-like tokens + B/W
+   page) = REJECT. Do not invent extra colors the site does not have.
 3. **R1 CV** — file exists; claim-lock + slop lexicons; header/contact
    cannot use a generic homepage as the portfolio URL.
 4. **R1b CL** — file exists; same slop / claim-lock checks. Cannot be waived.
@@ -104,10 +109,17 @@ Hop order:
    hero is `REJECT` even if a thumb appears later (B-C6 blank first
    viewport; Giant Spoon #18). A type-only open with stills after 80
    words of body copy is `REJECT` (Wonder/Kalshi class; B-C6 / B-WKS4).
-   Fewer than 4 real work images is `REJECT` (B-WKS4). A leftover
+   Fewer than 4 real work images is `REJECT` (B-WKS4). A    leftover
    70vh+ `.hero` shell is `REJECT` even with an image inside (B-C5
    patch-on-old-shell). A company homepage skin without a role and
-   work-sample titles is `REJECT` (B-EL1). Images are not optional;
+   work-sample titles is `REJECT` (B-EL1). Token-only VI application
+   (primary only in tiny labels) is `REJECT`. A showreel described in a
+   paragraph (`A-SHOWREEL-TRAD · IN-CARD`) is `REJECT` — the reel must
+   be a *picture*. Brand credits as a legal grey wall are `REJECT`.
+   Visible internal asset ids (`A-SHOWREEL-TRAD`, `A-WORKFLOW-6STAGE`,
+   `A-WORKFLOW-58NODE`, `A-TOOL-PROMPTBUILDER`, `A-TOOLS-DEV4`,
+   `A-FILM-*`) on the public page are `REJECT`. Invocation must match
+   the JD archetype (see matrix below). Images are not optional;
    there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
@@ -116,10 +128,11 @@ Hop order:
    Profile exist and match **this** package *now* (qualifying live
    evidence, bound, fresh). Prior hop reports must be harness-generated,
    bound to this `package_dir` + current file hashes, and reproduce a
-   live hop re-run (id+PASS stubs are REJECT). Disk `ACCEPT` reports
+   live hop re-run (id+PASS stubs are REJECT).    Disk `ACCEPT` reports
    **cannot** waive content gates: R3 independently re-runs claim-lock,
    slop, skip-language, waiver, and R-VI provenance (source URL, date,
-   exact hex/font/radius, no "similar to") on current files. CV/CL must
+   exact hex/font/radius, usage notes, no "similar to", primary applied
+   as field/wordmark) on current files. CV/CL must
    cite that Profile URL. Missing any piece = REJECT.
 
 ## Supervisor contract — exact commands
@@ -252,7 +265,26 @@ Paths are relative to the package directory.
 | `fixtures/fail-folded-vimeo-profile` | R2 `REJECT` (traditional Vimeo only in a modal) |
 | `fixtures/fail-patched-shell-profile` | R2 `REJECT` (78vh hero shell kept; image stuffed in) |
 | `fixtures/fail-homepage-skin-profile` | R2 `REJECT` (company homepage skin, no role/work titles) |
+| `fixtures/fail-vi-token-only` | R-VI `REJECT` (Giant Spoon-like hex/font, no usage notes) |
+| `fixtures/fail-vi-tiny-labels` | R-VI / R2 `REJECT` (usage present; primary only in 10px labels on a B/W résumé) |
+| `fixtures/fail-text-showreel-card` | R2 `REJECT` (showreel described in a paragraph / iframe-only) |
+| `fixtures/fail-legal-credits-profile` | R2 `REJECT` (brand marks as a legal grey wall) |
+| `fixtures/fail-internal-asset-ids` | R2 `REJECT` (visible `A-SHOWREEL-TRAD` / `A-WORKFLOW-6STAGE`) |
+| `fixtures/fail-p-led-58node` | R2 `REJECT` (P-led page invoked `A-WORKFLOW-58NODE`) |
+| `fixtures/fail-p-led-indev-wall` | R2 `REJECT` (P-led in-dev tool wall) |
+| `fixtures/fail-o-led-58node` | R2 `REJECT` (O-led `A-WORKFLOW-58NODE` without JD process depth) |
+| `fixtures/fail-a-led-tools-first` | R2 `REJECT` (A-led tools before `A-FILM-*`; Wonder exam) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
+
+## Asset invocation matrix
+
+Do not copy HyperAgent files into this repo. Name the asset id and the rule.
+
+| Archetype | Invoke | Forbidden |
+|---|---|---|
+| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *picture*; brand marks, not a paragraph; `A-WORKFLOW-6STAGE` as a silent strip; `A-TOOL-PROMPTBUILDER` last, one card | `A-WORKFLOW-58NODE`; `A-TOOLS-DEV4` wall; text-card reel; legal-paragraph credits; visible `A-*` ids |
+| **O-led** | `A-WORKFLOW-6STAGE` first | `A-WORKFLOW-58NODE` unless the JD asks for process depth |
+| **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip with *In development* labels | tools before films |
 
 All fixture people, emails, companies, and sentences are synthetic.
 

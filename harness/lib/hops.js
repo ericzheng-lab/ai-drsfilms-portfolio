@@ -25,6 +25,17 @@ const {
   oldShellIsGone,
   isRoleProfileNotHomepage,
 } = require("./profile-images");
+const {
+  viHasUsage,
+  primaryHexFromVi,
+  primaryAppliedAsField,
+} = require("./vi-apply");
+const {
+  showreelIsPicture,
+  creditsNotLegalParagraph,
+  noInternalAssetIds,
+  invocationOk,
+} = require("./profile-cards");
 
 function check(id, severity, ok, detail) {
   return {
@@ -609,6 +620,37 @@ function hopRVI(pkg) {
         : "VI values are exact (no 'similar to')"
     )
   );
+
+  const tokensOk = hexOk && fontOk;
+  const usage = viHasUsage(rec);
+  checks.push(
+    check(
+      "vi-usage",
+      "P0",
+      tokensOk ? usage.ok : true,
+      tokensOk
+        ? usage.reason
+        : "usage notes N/A until hex/font tokens exist"
+    )
+  );
+
+  const localHtml =
+    pkg.paths && pkg.paths.profileHtml && pkg.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  if (localHtml) {
+    const field = primaryAppliedAsField(localHtml, primaryHexFromVi(rec));
+    checks.push(check("vi-primary-as-field", "P0", field.ok, field.reason));
+  } else {
+    checks.push(
+      check(
+        "vi-primary-as-field",
+        "P0",
+        true,
+        "no profile HTML to apply; usage notes still required"
+      )
+    );
+  }
   return checks;
 }
 
@@ -834,6 +876,62 @@ const profileNotHomepageSkinGate = profileGateFrom(
   "homepage-as-profile (B-EL1)"
 );
 
+const profileShowreelPictureGate = profileGateFrom(
+  showreelIsPicture,
+  "no Profile HTML to inspect for showreel picture",
+  "showreel is text-only (recruiter 6-second FAIL)"
+);
+
+const profileCreditsNotLegalGate = profileGateFrom(
+  creditsNotLegalParagraph,
+  "no Profile HTML to inspect for legal-paragraph credits",
+  "brand credits are a legal paragraph"
+);
+
+const profileNoInternalIdsGate = profileGateFrom(
+  noInternalAssetIds,
+  "no Profile HTML to inspect for internal asset ids",
+  "internal asset ids visible on the public page"
+);
+
+function profileViFieldGate(pkg, opts = {}) {
+  const rec =
+    pkg.vi && pkg.vi.ok && pkg.vi.value && typeof pkg.vi.value === "object"
+      ? pkg.vi.value
+      : {};
+  const primary = primaryHexFromVi(rec);
+  return profileGateFrom(
+    (html) => primaryAppliedAsField(html, primary),
+    "no Profile HTML to inspect for VI field/wordmark",
+    "primary hex not applied as a field/wordmark (token-only VI)"
+  )(pkg, opts);
+}
+
+function profileInvocationGate(pkg, opts = {}) {
+  const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
+  const parts = [];
+  let ok = true;
+  if (localHtml) {
+    const ev = invocationOk(localHtml, pkg);
+    parts.push(`local HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (liveHtml) {
+    const ev = invocationOk(liveHtml, pkg);
+    parts.push(`live HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (!localHtml && !liveHtml) {
+    return { ok: false, detail: "no Profile HTML to inspect for asset invocation" };
+  }
+  return {
+    ok,
+    detail: ok
+      ? parts.join("; ")
+      : `asset invocation vs JD archetype: ${parts.join("; ")}`,
+  };
+}
+
 function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
@@ -872,6 +970,22 @@ function hopR2(pkg, rules, opts = {}) {
   checks.push(
     check("r2-profile-not-homepage-skin", "P0", homeSkin.ok, homeSkin.detail)
   );
+  const viField = profileViFieldGate(pkg, opts);
+  checks.push(check("r2-profile-vi-field", "P0", viField.ok, viField.detail));
+  const reelPic = profileShowreelPictureGate(pkg, opts);
+  checks.push(
+    check("r2-profile-showreel-picture", "P0", reelPic.ok, reelPic.detail)
+  );
+  const credits = profileCreditsNotLegalGate(pkg, opts);
+  checks.push(
+    check("r2-profile-credits-not-legal", "P0", credits.ok, credits.detail)
+  );
+  const internalIds = profileNoInternalIdsGate(pkg, opts);
+  checks.push(
+    check("r2-profile-no-internal-ids", "P0", internalIds.ok, internalIds.detail)
+  );
+  const invoke = profileInvocationGate(pkg, opts);
+  checks.push(check("r2-profile-invocation", "P0", invoke.ok, invoke.detail));
   checks.push(
     check(
       "profile-not-homepage",
@@ -1004,6 +1118,22 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(
     check("r3-profile-not-homepage-skin", "P0", homeSkin.ok, homeSkin.detail)
   );
+  const viField = profileViFieldGate(pkg, opts);
+  checks.push(check("r3-profile-vi-field", "P0", viField.ok, viField.detail));
+  const reelPic = profileShowreelPictureGate(pkg, opts);
+  checks.push(
+    check("r3-profile-showreel-picture", "P0", reelPic.ok, reelPic.detail)
+  );
+  const credits = profileCreditsNotLegalGate(pkg, opts);
+  checks.push(
+    check("r3-profile-credits-not-legal", "P0", credits.ok, credits.detail)
+  );
+  const internalIds = profileNoInternalIdsGate(pkg, opts);
+  checks.push(
+    check("r3-profile-no-internal-ids", "P0", internalIds.ok, internalIds.detail)
+  );
+  const invoke = profileInvocationGate(pkg, opts);
+  checks.push(check("r3-profile-invocation", "P0", invoke.ok, invoke.detail));
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1130,6 +1260,8 @@ const REQUIRED_HOP_CHECKS = {
     "vi-font",
     "vi-radius",
     "vi-not-similar-to",
+    "vi-usage",
+    "vi-primary-as-field",
   ],
   R1: ["r1-cv-exists", ...CLAIM_LOCK_IDS, "slop-lexicon", "cv-header-not-homepage"],
   R1b: ["r1b-cl-exists", "r1b-cl-distinct", "no-cl-waiver", ...CLAIM_LOCK_IDS, "slop-lexicon"],
@@ -1145,6 +1277,11 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-vimeo-in-card",
     "r2-profile-not-old-shell",
     "r2-profile-not-homepage-skin",
+    "r2-profile-vi-field",
+    "r2-profile-showreel-picture",
+    "r2-profile-credits-not-legal",
+    "r2-profile-no-internal-ids",
+    "r2-profile-invocation",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1165,6 +1302,11 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-vimeo-in-card",
     "r3-profile-not-old-shell",
     "r3-profile-not-homepage-skin",
+    "r3-profile-vi-field",
+    "r3-profile-showreel-picture",
+    "r3-profile-credits-not-legal",
+    "r3-profile-no-internal-ids",
+    "r3-profile-invocation",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",
@@ -1176,6 +1318,8 @@ const REQUIRED_HOP_CHECKS = {
     "r3-vi-font",
     "r3-vi-radius",
     "r3-vi-not-similar-to",
+    "r3-vi-usage",
+    "r3-vi-primary-as-field",
   ],
 };
 

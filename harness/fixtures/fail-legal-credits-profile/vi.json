@@ -1,6 +1,6 @@
 {
   "source_url": "https://www.example.test/acme/brand",
-  "date": "2026-08-01",
+  "date": "2026-08-18",
   "hex": {
     "primary": "#1A2B3C",
     "background": "#F4F1EA"
@@ -10,12 +10,11 @@
     "fallback": "sans-serif"
   },
   "radius": {
-    "button": "4px",
-    "card": "8px"
+    "button": "4px"
   },
   "usage": {
     "canvas": "warm paper #F4F1EA",
-    "primary": "navy #1A2B3C as wordmark/field on the canvas — not 10px labels",
+    "primary": "navy #1A2B3C as wordmark/field on the canvas \u2014 not 10px labels",
     "palette": "primary + paper only"
   }
 }

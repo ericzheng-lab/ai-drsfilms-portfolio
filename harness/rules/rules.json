@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0",
+  "version": "1.8.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -159,6 +159,48 @@
       "failure": "patch-on-old-shell / leftover 70vh+ hero box",
       "hops": ["R2", "R3"],
       "note": "A .hero / header min-height >= 70vh is the #18 / Luma shell. REJECT even if an <img> was stuffed into that hero. B-C5: 不要打补丁，整页重蒸. No waiver."
+    },
+    {
+      "id": "vi-usage",
+      "severity": "P0",
+      "failure": "R-VI token-only / hex+font with no usage notes",
+      "hops": ["R-VI", "R3"],
+      "note": "A VI record that lists hex/font/radius but does not say how they are used (wordmark/field/canvas) is a token-only distill. Official Giant Spoon is Klein Blue as wordmark/field on a white canvas. Distill without USAGE is REJECT. No waiver."
+    },
+    {
+      "id": "vi-primary-as-field",
+      "severity": "P0",
+      "failure": "primary hex only in tiny labels / B/W résumé after a token distill",
+      "hops": ["R-VI", "R2", "R3"],
+      "note": "When profile HTML is present, the primary brand color must be a real field or wordmark, not 10px labels on a black/white page. Giant Spoon-like tokens + B/W résumé = REJECT. Footer/closing-only or hover washes do not count. No waiver."
+    },
+    {
+      "id": "r2-profile-showreel-picture",
+      "severity": "P0",
+      "failure": "text-only showreel card / A-SHOWREEL-TRAD described in a paragraph",
+      "hops": ["R2", "R3"],
+      "note": "If a showreel is claimed, it must be a picture on the card (an <img>), not a paragraph or iframe-only IN-CARD kicker. Recruiter 6-second FAIL. No waiver."
+    },
+    {
+      "id": "r2-profile-credits-not-legal",
+      "severity": "P0",
+      "failure": "legal-paragraph-as-credits / brand marks as a grey wall",
+      "hops": ["R2", "R3"],
+      "note": "Brand credits as a long hedging paragraph are REJECT. Marks are marks, not a legal wall. Recruiter 6-second FAIL. No waiver."
+    },
+    {
+      "id": "r2-profile-no-internal-ids",
+      "severity": "P0",
+      "failure": "internal asset ids visible on the public page",
+      "hops": ["R2", "R3"],
+      "note": "A-SHOWREEL-TRAD, A-WORKFLOW-6STAGE, A-WORKFLOW-58NODE, A-TOOL-PROMPTBUILDER, A-TOOLS-DEV4, A-FILM-* must not appear as visible public copy. They are harness ids, not recruiter chrome. No waiver."
+    },
+    {
+      "id": "r2-profile-invocation",
+      "severity": "P0",
+      "failure": "assets dumped instead of invoked by JD archetype",
+      "hops": ["R2", "R3"],
+      "note": "P-led (agency Senior Producer): reel as a picture; brand marks not a paragraph; 6-stage as a silent strip; Prompt Builder last, one card. No 58-node. No in-dev tool wall. O-led: 6-stage first; 58-node only if JD wants process depth. A-led: films first, then tools strip with In development labels (Wonder is the exam). Do not copy HyperAgent files; name the asset id and the rule. No waiver."
     },
     {
       "id": "r2-profile-not-homepage-skin",
