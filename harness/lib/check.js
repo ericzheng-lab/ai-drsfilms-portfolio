@@ -4,7 +4,14 @@ const fs = require("fs");
 const path = require("path");
 const { loadPackage } = require("./manifest");
 const { HOP_RUNNERS } = require("./hops");
-const { buildReport, writeReport, readReport, exitCodeFor } = require("./reports");
+const {
+  buildReport,
+  writeReport,
+  readReport,
+  exitCodeFor,
+  inputHashesFromPkg,
+  validatePrerequisiteReport,
+} = require("./reports");
 
 const HARNESS_ROOT = path.join(__dirname, "..");
 
@@ -74,22 +81,23 @@ async function optionalFetch(url, timeoutMs) {
   }
 }
 
-function prerequisiteChecks(hopId, contracts, memoryReports, reportsDir) {
+function prerequisiteChecks(hopId, contracts, memoryReports, reportsDir, pkg) {
   const meta = hopMeta(contracts, hopId);
   const required = (meta && meta.requires) || [];
   return required.map((reqId) => {
     const mem = memoryReports[reqId];
     const disk = mem ? null : readReport(reportsDir, reqId);
     const report = mem || disk;
-    const ok = Boolean(report && report.verdict === "ACCEPT");
     const where = mem ? "this run" : disk ? "disk" : "missing";
+    const validation = validatePrerequisiteReport(report, reqId, pkg);
+    const ok = Boolean(validation.ok);
     return {
       id: `prerequisite-${reqId}`,
       severity: "P0",
       status: ok ? "PASS" : "FAIL",
       detail: ok
-        ? `${reqId} ACCEPT (${where})`
-        : `${reqId} has no ACCEPT report (${where}${report ? `, verdict=${report.verdict}` : ""})`,
+        ? `${reqId} ACCEPT (${where}, bound)`
+        : `${reqId} has no valid ACCEPT report (${where}${report ? `, ${validation.reason}` : ""})`,
     };
   });
 }
@@ -113,9 +121,10 @@ async function runHops(opts) {
   const reportsDir = path.resolve(opts.reportsDir || path.join(pkg.packageDir, "reports"));
   const requested = opts.hops;
   const memoryReports = { ...(opts.memoryReports || {}) };
+  const inputHashes = inputHashesFromPkg(pkg);
 
-  let fetchResult = null;
-  if (opts.fetchProfile && pkg.manifest.profile_url) {
+  let fetchResult = opts.fetchResult || null;
+  if (fetchResult == null && opts.fetchProfile && pkg.manifest.profile_url) {
     fetchResult = await optionalFetch(pkg.manifest.profile_url, opts.fetchTimeoutMs || 5000);
   }
 
@@ -127,13 +136,14 @@ async function runHops(opts) {
     }
     const meta = hopMeta(contracts, hopId);
     const checks = runner(pkg, rules, { fetchResult });
-    checks.push(...prerequisiteChecks(hopId, contracts, memoryReports, reportsDir));
+    checks.push(...prerequisiteChecks(hopId, contracts, memoryReports, reportsDir, pkg));
     const report = buildReport({
       hop: hopId,
       name: meta ? meta.name : hopId,
       ruleset: version,
       packageDir: pkg.packageDir,
       checks,
+      inputHashes,
     });
     if (!opts.dryRun) writeReport(reportsDir, report);
     memoryReports[hopId] = report;
@@ -185,4 +195,5 @@ module.exports = {
   formatReport,
   exitCodeFor,
   optionalFetch,
+  prerequisiteChecks,
 };

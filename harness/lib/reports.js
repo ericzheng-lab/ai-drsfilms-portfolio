@@ -2,6 +2,10 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
+
+const GENERATOR = "career-hop-harness";
+const HASH_KEYS = ["manifest", "brief", "cv", "cl", "vi", "profile_html"];
 
 function reportFilename(hopId) {
   return `${hopId}.json`;
@@ -9,6 +13,92 @@ function reportFilename(hopId) {
 
 function reportPath(reportsDir, hopId) {
   return path.join(reportsDir, reportFilename(hopId));
+}
+
+function sha256Text(text) {
+  return crypto.createHash("sha256").update(String(text ?? ""), "utf8").digest("hex");
+}
+
+function fileHash(filePath) {
+  if (!filePath || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    return null;
+  }
+  return sha256Text(fs.readFileSync(filePath));
+}
+
+function canonicalPackageDir(dir) {
+  return path.resolve(dir || "");
+}
+
+function inputHashesFromPkg(pkg) {
+  return {
+    manifest: fileHash(pkg && pkg.manifestPath),
+    brief: fileHash(pkg && pkg.paths && pkg.paths.brief),
+    cv: fileHash(pkg && pkg.paths && pkg.paths.cv),
+    cl: fileHash(pkg && pkg.paths && pkg.paths.cl),
+    vi: fileHash(pkg && pkg.paths && pkg.paths.vi),
+    profile_html: fileHash(pkg && pkg.paths && pkg.paths.profileHtml),
+  };
+}
+
+function computeBinding({ hop, verdict, ruleset, package_dir, input_hashes }) {
+  const hashes = {};
+  for (const key of HASH_KEYS) {
+    hashes[key] = (input_hashes && input_hashes[key]) || null;
+  }
+  const canonical = JSON.stringify({
+    generator: GENERATOR,
+    hop,
+    verdict,
+    ruleset,
+    package_dir: canonicalPackageDir(package_dir),
+    input_hashes: hashes,
+  });
+  return sha256Text(canonical);
+}
+
+function hashesEqual(a, b) {
+  for (const key of HASH_KEYS) {
+    const left = (a && a[key]) || null;
+    const right = (b && b[key]) || null;
+    if (left !== right) return false;
+  }
+  return true;
+}
+
+function reportLooksHarnessGenerated(report) {
+  if (!report || typeof report !== "object" || Array.isArray(report)) return false;
+  if (report.generator !== GENERATOR) return false;
+  if (!report.hop || !report.verdict || !report.ruleset) return false;
+  if (!report.package_dir || typeof report.package_dir !== "string") return false;
+  if (!report.input_hashes || typeof report.input_hashes !== "object") return false;
+  if (!report.binding || typeof report.binding !== "string") return false;
+  if (!Array.isArray(report.checks)) return false;
+  return computeBinding(report) === report.binding;
+}
+
+function validatePrerequisiteReport(report, hopId, pkg) {
+  if (!report) {
+    return { ok: false, reason: "missing" };
+  }
+  if (!reportLooksHarnessGenerated(report)) {
+    return { ok: false, reason: "forged (not harness-generated or binding invalid)" };
+  }
+  if (report.hop !== hopId) {
+    return { ok: false, reason: `hop mismatch (${report.hop} != ${hopId})` };
+  }
+  if (report.verdict !== "ACCEPT") {
+    return { ok: false, reason: `verdict=${report.verdict}` };
+  }
+  const currentDir = canonicalPackageDir(pkg.packageDir);
+  if (canonicalPackageDir(report.package_dir) !== currentDir) {
+    return { ok: false, reason: "package_dir does not bind to this package" };
+  }
+  const currentHashes = inputHashesFromPkg(pkg);
+  if (!hashesEqual(report.input_hashes, currentHashes)) {
+    return { ok: false, reason: "stale or cross-package input hashes" };
+  }
+  return { ok: true, reason: "harness-generated, bound, fresh" };
 }
 
 function readReport(reportsDir, hopId) {
@@ -48,23 +138,34 @@ function exitCodeFor(verdict, exitCodes) {
   return map[verdict] ?? 1;
 }
 
-function buildReport({ hop, name, ruleset, packageDir, checks }) {
+function buildReport({ hop, name, ruleset, packageDir, checks, inputHashes }) {
   const verdict = decideVerdict(checks);
-  return {
+  const package_dir = canonicalPackageDir(packageDir);
+  const input_hashes = {};
+  for (const key of HASH_KEYS) {
+    input_hashes[key] = (inputHashes && inputHashes[key]) || null;
+  }
+  const report = {
+    generator: GENERATOR,
     hop,
     name,
     verdict,
     ruleset,
     generated_at: new Date().toISOString(),
-    package_dir: packageDir,
+    package_dir,
+    input_hashes,
     checks,
     failures: (checks || [])
       .filter((c) => c.status === "FAIL")
       .map((c) => `${c.id}: ${c.detail}`),
   };
+  report.binding = computeBinding(report);
+  return report;
 }
 
 module.exports = {
+  GENERATOR,
+  HASH_KEYS,
   reportFilename,
   reportPath,
   readReport,
@@ -73,4 +174,12 @@ module.exports = {
   decideVerdict,
   exitCodeFor,
   buildReport,
+  sha256Text,
+  fileHash,
+  inputHashesFromPkg,
+  computeBinding,
+  hashesEqual,
+  reportLooksHarnessGenerated,
+  validatePrerequisiteReport,
+  canonicalPackageDir,
 };

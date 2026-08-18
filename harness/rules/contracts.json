@@ -1,11 +1,12 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "algebra": {
     "P0_FAIL": "REJECT",
     "P1_FAIL_without_P0": "REPAIR",
     "all_green": "ACCEPT",
     "repair_is_not_accept": true,
-    "recover": "Re-run the same hop after fix. Never waive and proceed."
+    "recover": "Re-run the same hop after fix. Never waive and proceed.",
+    "reports": "Harness-generated only. Bound to this package_dir + input file hashes. Forged, grafted, or stale reports are REJECT."
   },
   "exit_codes": {
     "ACCEPT": 0,
@@ -42,20 +43,22 @@
       "id": "R2",
       "name": "Profile",
       "requires": ["R0", "R-VI", "R1", "R1b"],
-      "required_inputs": ["profile"]
+      "required_inputs": ["profile"],
+      "notes": "Real local profile HTML and/or live 2xx fetch. A recorded URL alone is a ghost and REJECT. --fetch-profile 4xx/5xx/timeout/error is FAIL."
     },
     {
       "id": "R3",
       "name": "Closeout",
       "requires": ["R0", "R-VI", "R1", "R1b", "R2"],
       "required_inputs": ["cv", "cl", "profile"],
-      "notes": "The hop HyperAgent skipped. Missing any of CV + CL + company Profile URL is REJECT."
+      "notes": "ACCEPT means CV + CL + a real company Profile exist and match this package now. Prior reports must be harness-generated, bound to this package_dir + input hashes, and fresh. The hop HyperAgent skipped."
     }
   ],
   "non_waivable": ["profile", "cover_letter", "cl", "r2", "r1b"],
   "profile_url": {
     "host": "ai.drsfilms.com",
     "form": "https://ai.drsfilms.com/{company}/",
-    "trailing_slash": "normalized-on"
+    "trailing_slash": "normalized-on",
+    "evidence": "real local HTML and/or live HTTP 2xx"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -7,7 +7,7 @@
       "severity": "P0",
       "failure": "skip-Profile / builder-declared waiver",
       "hops": ["R0", "R2", "R3"],
-      "note": "Nobody — harness, README, or Brief waivers[] — may waive Profile."
+      "note": "Nobody — harness, README, or Brief waivers[] / waived / exemptions — may waive Profile."
     },
     {
       "id": "no-cl-waiver",
@@ -33,7 +33,22 @@
         "no cover letter (needed|required|necessary)",
         "(does not|doesn't|doesnt) need a (cover letter|cl)\\b",
         "waive[rd]? (the )?(cover letter|cl)\\b",
-        "(cover letter|cl)[:\\s]+(n/?a|none|skipped|waived|optional|not needed)"
+        "(cover letter|cl)[:\\s]+(n/?a|none|skipped|waived|optional|not needed)",
+        "(leave out|drop|bypass|exclude|forgo|dispense with) (the )?(role[- ]specific )?(profile|cover letter|cl)\\b",
+        "(profile|cover letter) (is|are) (not )?(required|necessary|needed|optional)",
+        "no need (for )?(a |the )?(role[- ]specific )?(profile|cover letter)",
+        "(doesn't|does not|doesnt) (require|include) (a |the )?(role[- ]specific )?(profile|cover letter)",
+        "this role (does not|doesn't|doesnt) (need|require) (a )?(profile|cover letter)",
+        "(profile|cover letter) (can|may|could) be (skipped|omitted|waived|dropped)",
+        "without (a |the )?(role[- ]specific )?(profile|cover letter)\\b",
+        "profile (not required|unnecessary|optional)",
+        "cover letter (not required|unnecessary|optional)",
+        "跳过.{0,16}(简介|角色页|作品页|profile|封面|求职信)",
+        "省略.{0,16}(简介|角色页|作品页|profile|封面|求职信)",
+        "(不需要|无需|不用|不必).{0,16}(简介|角色页|作品页|profile|封面信|封面|求职信|cover letter)",
+        "(简介|角色页|profile|封面信|求职信).{0,8}(可跳过|可省略|不需要|无需|可选)",
+        "跳过(封面|求职信|简介)",
+        "无需(封面|求职信|简介)"
       ]
     },
     {
@@ -65,7 +80,7 @@
       "severity": "P0",
       "failure": "skip-Profile at closeout (HyperAgent)",
       "hops": ["R3"],
-      "note": "Apply package is always CV + cover letter + company Profile URL. Missing any piece = REJECT."
+      "note": "Apply package is always CV + cover letter + a real company Profile (local HTML and/or live 2xx). Recorded URL alone is not enough. Missing any piece = REJECT."
     },
     {
       "id": "portfolio-url-matches-profile",
@@ -77,7 +92,7 @@
       "id": "slop-lexicon",
       "severity": "P1",
       "failure": "anti-AI-slop treated as looks-fine",
-      "hops": ["R1", "R1b"],
+      "hops": ["R1", "R1b", "R2"],
       "lexicon": [
         "passionate about",
         "results-oriented",
@@ -100,42 +115,42 @@
       "id": "claim-lock-sundance-win",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b"],
+      "hops": ["R1", "R1b", "R2"],
       "lock": "Sundance + won/winner/获奖"
     },
     {
       "id": "claim-lock-berlinale-win",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b"],
+      "hops": ["R1", "R1b", "R2"],
       "lock": "Berlinale as a win"
     },
     {
       "id": "claim-lock-dungeon-fighter",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b"],
-      "lock": "Dungeon Fighter without &"
+      "hops": ["R1", "R1b", "R2"],
+      "lock": "Dungeon Fighter without & (hyphen / Dungeon-Fighter also locked; fullwidth ＆ allowed)"
     },
     {
       "id": "claim-lock-rmb-cny",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b"],
-      "lock": "RMB/CNY money"
+      "hops": ["R1", "R1b", "R2"],
+      "lock": "RMB/CNY/¥/人民币 money"
     },
     {
       "id": "claim-lock-p007",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b"],
+      "hops": ["R1", "R1b", "R2"],
       "lock": "P007 as an external product name"
     },
     {
       "id": "claim-lock-five-films-four-weeks",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b"],
+      "hops": ["R1", "R1b", "R2"],
       "lock": "five-films-in-four-weeks style claims"
     }
   ],

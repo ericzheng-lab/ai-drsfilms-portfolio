@@ -73,7 +73,10 @@ only. Do not invent biography, emails, metrics, or project facts.
 `--self-test` exits `0` when units + fixtures pass, else `1`.
 
 A later hop **cannot** be marked `ACCEPT` unless required earlier hops have
-`ACCEPT` reports on disk (or were `ACCEPT` in the same run).
+harness-generated `ACCEPT` reports bound to **this** package directory and
+the current input-file hashes (same run or disk). Handwritten
+`{"verdict":"ACCEPT"}`, cross-package copies, and stale reports after an
+input change are `REJECT`.
 
 Hop order:
 
@@ -85,11 +88,15 @@ Hop order:
 3. **R1 CV** — file exists; claim-lock + slop lexicons; header/contact
    cannot use a generic homepage as the portfolio URL.
 4. **R1b CL** — file exists; same slop / claim-lock checks. Cannot be waived.
-5. **R2 Profile** — HTML and/or recorded live URL. URL must be the company
-   route. HTML gets basic structure + noindex checks. `--fetch-profile` is
-   optional; timeouts do not crash the CLI.
-6. **R3 Closeout** — manifest points at CV + CL + the *same* Profile URL;
-   all three exist; CV/CL portfolio URLs must match that Profile URL.
+5. **R2 Profile** — a *real* local Profile HTML page and/or a live HTTP 2xx
+   fetch. A recorded URL alone is a ghost and `REJECT`. URL must be the
+   company route. HTML gets structure + noindex + claim-lock/slop checks.
+   `--fetch-profile` is optional; 4xx / 5xx / timeout / error is `FAIL`
+   (not PASS). The CLI still does not crash on network errors.
+6. **R3 Closeout** — `ACCEPT` means CV + cover letter + a *real* company
+   Profile exist and match **this** package *now* (live / bound / fresh).
+   Prior hop reports must be harness-generated and bound to this
+   `package_dir` + current file hashes. CV/CL must cite that Profile URL.
    Missing any piece = REJECT. This is the hop HyperAgent skipped.
 
 ## Supervisor contract — exact commands
@@ -131,15 +138,21 @@ node harness/cli.js --hop R2 --package "$PACKAGE" --fetch-profile
 node harness/cli.js --hop R3 --manifest "$PACKAGE/manifest.json" --json
 ```
 
+`--fetch-profile` treats HTTP 2xx as live evidence. 4xx, 5xx, timeout, and
+transport error are `FAIL` (P0), not a silent PASS.
+
 Reports are written to `$PACKAGE/reports/<HOP>.json` unless `--reports` is
-set.
+set. Those files are harness-generated and include a binding over
+`package_dir` + input hashes. Forged or stale reports cannot unlock R3.
 
 ### Supervisor hard stop
 
-If `$PACKAGE/reports/R3.json` is missing or `verdict` is not `ACCEPT`,
+If `$PACKAGE/reports/R3.json` is missing, not harness-generated, not bound
+to this package's current input hashes, or `verdict` is not `ACCEPT`,
 **refuse** to fill an ATS, refuse to submit, and refuse to treat the
-package as ready. Tell the operator which hop to recover. Do not invent a
-waiver.
+package as ready. R3 `ACCEPT` is live / bound / fresh: CV + CL + a real
+company Profile exist and match this package now. Tell the operator which
+hop to recover. Do not invent a waiver.
 
 This CLI will not apply, submit, or restyle `public/` for you.
 

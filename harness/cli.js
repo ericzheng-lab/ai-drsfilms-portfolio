@@ -21,7 +21,7 @@ Options:
   --package <dir>      Apply-package directory (contains manifest.json)
   --manifest <path>    Manifest file (package dir = its dirname)
   --reports <dir>      Where hop reports are written (default: <package>/reports)
-  --fetch-profile      Optional live GET of profile_url (timeout cannot crash CLI)
+  --fetch-profile      Live GET of profile_url. 2xx is evidence; 4xx/5xx/timeout/error is FAIL
   --json               Print reports as JSON
   --self-test          Run built-in units + the four fixtures; exit 0 on pass
   --help               This help
@@ -34,6 +34,7 @@ Exit codes:
 
 Nobody may waive Profile or cover letter. Recover = re-run the same hop after fix.
 This CLI does not apply to jobs, fill an ATS, or submit anything.
+Reports are harness-generated and bound to this package's input hashes. Forged or stale reports are REJECT.
 `.trim();
   console.log(text);
 }
@@ -92,6 +93,9 @@ async function main() {
       const result = await runSelfTest();
       console.log("self-test PASS");
       console.log(JSON.stringify(result.fixtures, null, 2));
+      if (result.named) {
+        console.log(JSON.stringify(result.named, null, 2));
+      }
       process.exit(0);
     } catch (err) {
       console.error(`self-test FAIL: ${err.message}`);

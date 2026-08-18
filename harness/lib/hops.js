@@ -68,6 +68,89 @@ function skipPatterns(rules) {
   return ruleById(rules, "brief-no-skip-language").patterns || [];
 }
 
+function companySlug(name) {
+  return String(name || "")
+    .normalize("NFKC")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function localProfileHtmlEvidence(pkg) {
+  const htmlPresent = Boolean(
+    pkg.paths.profileHtml && pkg.profileHtml.ok && String(pkg.profileHtml.value || "").trim()
+  );
+  if (!htmlPresent) {
+    return { ok: false, reason: "no local profile HTML" };
+  }
+  const html = pkg.profileHtml.value || "";
+  const looksHtml = /<!DOCTYPE\s+html/i.test(html) || /<html[\s>]/i.test(html);
+  const hasTitle = /<title[\s>]/i.test(html) || /<h1[\s>]/i.test(html);
+  if (!(looksHtml && hasTitle)) {
+    return {
+      ok: false,
+      reason: "local profile HTML missing basic structure (html/title or h1)",
+    };
+  }
+  return { ok: true, reason: "real local profile HTML" };
+}
+
+function liveFetchEvidence(fetchResult) {
+  if (!fetchResult) {
+    return { ok: false, performed: false, reason: "live fetch not performed" };
+  }
+  if (fetchResult.timedOut) {
+    return { ok: false, performed: true, reason: "live fetch timeout" };
+  }
+  if (fetchResult.error) {
+    return { ok: false, performed: true, reason: `live fetch error: ${fetchResult.error}` };
+  }
+  const status = fetchResult.status;
+  if (typeof status !== "number") {
+    return { ok: false, performed: true, reason: "live fetch returned no HTTP status" };
+  }
+  if (status >= 200 && status < 300) {
+    return { ok: true, performed: true, reason: `live fetch HTTP ${status}` };
+  }
+  return {
+    ok: false,
+    performed: true,
+    reason: `live fetch HTTP ${status} (need 2xx)`,
+  };
+}
+
+function realProfileExists(pkg, opts = {}) {
+  const local = localProfileHtmlEvidence(pkg);
+  const live = liveFetchEvidence(opts.fetchResult);
+  return {
+    ok: local.ok || live.ok,
+    local,
+    live,
+    detail: local.ok
+      ? local.reason
+      : live.ok
+        ? live.reason
+        : `no real company Profile (${local.reason}; ${live.reason})`,
+  };
+}
+
+function clDistinctFromCv(pkg) {
+  const cl = String(pkg.cl.value || "").trim();
+  const cv = String(pkg.cv.value || "").trim();
+  if (!cl) return { ok: false, reason: "CL is empty" };
+  if (cl === cv) return { ok: false, reason: "CL is a copy of the CV" };
+  return { ok: true, reason: "CL is distinct and nonempty" };
+}
+
+function citesNormalized(text, normalized) {
+  if (!normalized) return false;
+  return extractUrls(text || "")
+    .filter(isPortfolioMention)
+    .map((raw) => classifyProfileUrl(raw))
+    .some((c) => c.ok && c.normalized === normalized);
+}
+
 function waiverChecks(pkg, hops) {
   const hits = findForbiddenWaivers(pkg.manifest, pkg.briefAttrs);
   const out = [];
@@ -373,10 +456,9 @@ function hopR1(pkg, rules) {
       pkg.cv.ok ? "CV file present" : `CV missing: ${pkg.cv.error}`
     )
   );
-  const text = pkg.cv.value || "";
-  checks.push(...textGateChecks(text, "CV", rules));
+  checks.push(...textGateChecks(pkg.cv.value || "", "CV", rules));
 
-  const headerUrls = extractUrls(headerBlock(text)).filter(isPortfolioMention);
+  const headerUrls = extractUrls(headerBlock(pkg.cv.value || "")).filter(isPortfolioMention);
   const bad = headerUrls
     .map((u) => ({ raw: u, ...classifyProfileUrl(u) }))
     .filter((u) => !u.ok);
@@ -405,6 +487,10 @@ function hopR1b(pkg, rules) {
       pkg.cl.ok ? "CL file present" : `CL missing: ${pkg.cl.error}`
     )
   );
+  const distinct = clDistinctFromCv(pkg);
+  checks.push(
+    check("r1b-cl-distinct", "P0", distinct.ok, distinct.reason)
+  );
   checks.push(...waiverChecks(pkg, ["cl"]));
   checks.push(...textGateChecks(pkg.cl.value || "", "CL", rules));
   return checks;
@@ -414,19 +500,30 @@ function profileUrlFromPkg(pkg) {
   return classifyProfileUrl(pkg.manifest.profile_url);
 }
 
-function hopR2(pkg, _rules, opts = {}) {
+function slugMatchesCompany(pkg, classified) {
+  const expected = companySlug(pkg.manifest.company);
+  const ok = Boolean(classified.ok && classified.slug && expected && classified.slug === expected);
+  return {
+    ok,
+    expected,
+    detail: ok
+      ? `slug ${classified.slug} matches company`
+      : classified.ok
+        ? `profile slug ${classified.slug} != company slug ${expected || "(empty)"}`
+        : "no company Profile slug to compare",
+  };
+}
+
+function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
-  const htmlPresent = Boolean(pkg.paths.profileHtml && pkg.profileHtml.ok);
-  const urlRecorded = Boolean(pkg.manifest.profile_url);
+  const evidence = realProfileExists(pkg, opts);
   checks.push(
     check(
       "r2-profile-present",
       "P0",
-      htmlPresent || urlRecorded,
-      htmlPresent || urlRecorded
-        ? "Profile artifact present (HTML or recorded URL)"
-        : "Profile artifact missing (no HTML, no recorded live URL)"
+      evidence.ok,
+      evidence.detail
     )
   );
   checks.push(
@@ -439,8 +536,11 @@ function hopR2(pkg, _rules, opts = {}) {
         : classified.reason || "profile_url is not a company route"
     )
   );
+  const slug = slugMatchesCompany(pkg, classified);
+  checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile"]));
 
+  const htmlPresent = evidence.local.ok || Boolean(pkg.paths.profileHtml && pkg.profileHtml.ok);
   if (htmlPresent) {
     const html = pkg.profileHtml.value || "";
     const looksHtml = /<!DOCTYPE\s+html/i.test(html) || /<html[\s>]/i.test(html);
@@ -466,37 +566,31 @@ function hopR2(pkg, _rules, opts = {}) {
           : "Profile HTML missing robots noindex"
       )
     );
+    checks.push(...textGateChecks(html, "Profile HTML", rules));
   }
 
   if (opts.fetchResult) {
-    const fr = opts.fetchResult;
-    if (fr.timedOut || fr.error) {
-      checks.push({
-        id: "r2-live-fetch",
-        severity: "P1",
-        status: "PASS",
-        detail: `live fetch did not crash (${fr.timedOut ? "timeout" : fr.error}); recorded URL still judged mechanically`,
-      });
-    } else {
-      checks.push({
-        id: "r2-live-fetch",
-        severity: "P1",
-        status: "PASS",
-        detail: `live fetch HTTP ${fr.status}`,
-      });
-    }
+    const live = evidence.live;
+    checks.push(
+      check(
+        "r2-live-fetch",
+        "P0",
+        live.ok,
+        live.reason
+      )
+    );
   }
 
   return checks;
 }
 
-function hopR3(pkg, _rules) {
+function hopR3(pkg, rules, opts = {}) {
   const checks = [];
   const cvOk = Boolean(pkg.cv.ok && pkg.cv.value);
   const clOk = Boolean(pkg.cl.ok && pkg.cl.value);
   const classified = profileUrlFromPkg(pkg);
-  const htmlPresent = Boolean(pkg.paths.profileHtml && pkg.profileHtml.ok);
-  const profileOk = Boolean(classified.ok && (htmlPresent || pkg.manifest.profile_url));
+  const evidence = realProfileExists(pkg, opts);
+  const profileOk = Boolean(classified.ok && evidence.ok);
 
   checks.push(
     check(
@@ -514,14 +608,18 @@ function hopR3(pkg, _rules) {
       clOk ? "CL present" : `CL missing: ${pkg.cl.error}`
     )
   );
+  const distinct = clDistinctFromCv(pkg);
+  checks.push(check("r3-cl-distinct", "P0", distinct.ok, distinct.reason));
   checks.push(
     check(
       "r3-profile-present",
       "P0",
       profileOk,
       profileOk
-        ? `Profile ${classified.normalized}`
-        : classified.reason || "Profile URL missing from closeout"
+        ? `Profile ${classified.normalized} (${evidence.detail})`
+        : evidence.ok
+          ? classified.reason || "Profile URL is not a company route"
+          : evidence.detail
     )
   );
   checks.push(
@@ -530,10 +628,12 @@ function hopR3(pkg, _rules) {
       "P0",
       cvOk && clOk && profileOk,
       cvOk && clOk && profileOk
-        ? "manifest points at CV + CL + company Profile URL"
-        : "closeout missing CV, cover letter, or company Profile URL"
+        ? "CV + CL + a real company Profile exist now"
+        : "closeout missing CV, cover letter, or a real company Profile"
     )
   );
+  const slug = slugMatchesCompany(pkg, classified);
+  checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
 
   const mentions = extractUrls(`${pkg.cv.value || ""}\n${pkg.cl.value || ""}`)
@@ -543,6 +643,29 @@ function hopR3(pkg, _rules) {
   const homepageMentions = mentions.filter((m) => !m.ok);
   const mismatched = mentions.filter(
     (m) => m.ok && classified.ok && m.normalized !== classified.normalized
+  );
+  const cvCites = citesNormalized(pkg.cv.value || "", classified.normalized);
+  const clCites = citesNormalized(pkg.cl.value || "", classified.normalized);
+
+  checks.push(
+    check(
+      "cv-cites-profile-url",
+      "P0",
+      cvCites,
+      cvCites
+        ? `CV cites ${classified.normalized}`
+        : "CV must cite this package's company Profile URL"
+    )
+  );
+  checks.push(
+    check(
+      "cl-cites-profile-url",
+      "P0",
+      clCites,
+      clCites
+        ? `CL cites ${classified.normalized}`
+        : "CL must cite this package's company Profile URL"
+    )
   );
 
   checks.push(
@@ -559,10 +682,15 @@ function hopR3(pkg, _rules) {
               .map((m) => m.raw)
               .join(", ")}`
           : classified.ok
-            ? `CV/CL portfolio URLs match ${classified.normalized} (or none mentioned)`
+            ? `CV/CL portfolio URLs match ${classified.normalized}`
             : "no matching Profile URL to compare"
     )
   );
+
+  if (opts.fetchResult) {
+    const live = evidence.live;
+    checks.push(check("r3-live-fetch", "P0", live.ok, live.reason));
+  }
 
   return checks;
 }
@@ -584,4 +712,8 @@ module.exports = {
   hopR1b,
   hopR2,
   hopR3,
+  realProfileExists,
+  localProfileHtmlEvidence,
+  liveFetchEvidence,
+  companySlug,
 };

@@ -1,7 +1,18 @@
 "use strict";
 
-function findNearby(text, patternA, patternB, windowChars = 80) {
-  const src = String(text || "");
+function foldText(text) {
+  return String(text || "").normalize("NFKC");
+}
+
+function excerpt(slice) {
+  return String(slice || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180);
+}
+
+function findNearby(text, patternA, patternB, windowChars = 160) {
+  const src = foldText(text);
   const a = new RegExp(patternA, "gi");
   let m;
   while ((m = a.exec(src)) !== null) {
@@ -16,19 +27,28 @@ function findNearby(text, patternA, patternB, windowChars = 80) {
   return null;
 }
 
-function excerpt(slice) {
-  return slice.replace(/\s+/g, " ").trim().slice(0, 180);
+function dungeonFighterWithoutAmp(src) {
+  const re = /Dungeon([\s\S]{0,8})Fighter/gi;
+  let m;
+  while ((m = re.exec(src)) !== null) {
+    const mid = m[1];
+    if (/[&＆]/.test(mid)) continue;
+    if (mid === "" || /^[\s\-–—]+$/.test(mid)) {
+      return excerpt(m[0]);
+    }
+  }
+  return null;
 }
 
 function scanClaimLocks(text) {
-  const src = String(text || "");
+  const src = foldText(text);
   const hits = [];
 
   const sundance = findNearby(
     src,
     "sundance",
     "\\b(won|winner)\\b|获奖",
-    80
+    160
   );
   if (sundance) {
     hits.push({
@@ -41,7 +61,7 @@ function scanClaimLocks(text) {
     src,
     "berlinale",
     "\\b(won|winner)\\b|获奖|berlinale\\s+win\\b",
-    80
+    160
   );
   if (berlinale) {
     hits.push({
@@ -50,15 +70,15 @@ function scanClaimLocks(text) {
     });
   }
 
-  const dungeon = src.match(/Dungeon\s+Fighter/i);
+  const dungeon = dungeonFighterWithoutAmp(src);
   if (dungeon) {
     hits.push({
       id: "claim-lock-dungeon-fighter",
-      excerpt: excerpt(dungeon[0]),
+      excerpt: dungeon,
     });
   }
 
-  const money = src.match(/\b(RMB|CNY)\b/);
+  const money = src.match(/\b(RMB|CNY)\b|[¥￥]|人民币/);
   if (money) {
     hits.push({
       id: "claim-lock-rmb-cny",
@@ -76,10 +96,10 @@ function scanClaimLocks(text) {
 
   const fiveFilms =
     src.match(
-      /\b(?:five|5)\b[\s\S]{0,120}\b(?:films?|shorts?)\b[\s\S]{0,80}\b(?:in|within|under|across)\b[\s\S]{0,40}\b(?:four|4)\b[\s\S]{0,16}\bweeks?\b/i
+      /\b(?:five|5)\b[\s\S]{0,160}\b(?:films?|shorts?)\b[\s\S]{0,100}\b(?:in|within|under|across)\b[\s\S]{0,60}\b(?:four|4)\b[\s\S]{0,24}\bweeks?\b/i
     ) ||
     src.match(
-      /\b(?:four|4)\s+weeks?[\s\S]{0,80}\b(?:five|5)\b[\s\S]{0,40}\b(?:films?|shorts?)\b/i
+      /\b(?:four|4)\s+weeks?[\s\S]{0,100}\b(?:five|5)\b[\s\S]{0,60}\b(?:films?|shorts?)\b/i
     );
   if (fiveFilms) {
     hits.push({
@@ -96,10 +116,10 @@ function escapeRe(s) {
 }
 
 function scanSlop(text, lexicon) {
-  const src = String(text || "");
+  const src = foldText(text);
   const hits = [];
   for (const phrase of lexicon || []) {
-    const re = new RegExp(`\\b${escapeRe(phrase)}\\b`, "i");
+    const re = new RegExp(`\\b${escapeRe(foldText(phrase))}\\b`, "i");
     const m = src.match(re);
     if (m) {
       hits.push({ phrase, excerpt: excerpt(m[0]) });
@@ -109,7 +129,7 @@ function scanSlop(text, lexicon) {
 }
 
 function scanSkipLanguage(text, patterns) {
-  const src = String(text || "");
+  const src = foldText(text);
   const hits = [];
   for (const pat of patterns || []) {
     const re = new RegExp(pat, "i");
@@ -129,27 +149,69 @@ const WAIVER_TOKENS = new Set([
   "r1b",
 ]);
 
-function collectWaiverHits(value, path, out) {
+const WAIVER_KEY_RE = /^(waivers?|waived|exemptions?)$/;
+
+function normalizeKey(k) {
+  return foldText(k)
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+}
+
+function isWaiverKey(k) {
+  return WAIVER_KEY_RE.test(normalizeKey(k));
+}
+
+function extractArtifactToken(str) {
+  const n = foldText(str).toLowerCase().trim();
+  if (!n) return null;
+  if (WAIVER_TOKENS.has(n)) {
+    if (n === "r2" || n === "profile") return "profile";
+    return n === "r1b" || n === "cl" ? "cover_letter" : n.replace(/[-\s]/g, "_") === "cover_letter" || /cover/.test(n) ? "cover_letter" : n;
+  }
+  if (/(^|[^a-z0-9])profile([^a-z0-9]|$)|(^|[^a-z0-9])r2([^a-z0-9]|$)/.test(n)) {
+    return "profile";
+  }
+  if (/cover[_\s-]?letter|\bcoverletter\b|(^|[^a-z0-9])cl([^a-z0-9]|$)|(^|[^a-z0-9])r1b([^a-z0-9]|$)/.test(n)) {
+    return "cover_letter";
+  }
+  return null;
+}
+
+function lastKeySegment(path) {
+  if (!path) return "";
+  const cleaned = String(path).replace(/\[\d+\]/g, "");
+  const parts = cleaned.split(".").filter(Boolean);
+  return parts[parts.length - 1] || "";
+}
+
+function collectWaiverHits(value, path, out, inWaiverContext) {
   if (value == null) return;
-  if (Array.isArray(value)) {
-    if (/(^|\.)waivers$/.test(path) || path.endsWith("waivers")) {
-      for (const item of value) {
-        const token = String(item || "")
-          .trim()
-          .toLowerCase();
-        if (WAIVER_TOKENS.has(token)) {
-          out.push({ path, token });
-        }
-      }
-    } else {
-      value.forEach((item, i) => collectWaiverHits(item, `${path}[${i}]`, out));
+  const context = Boolean(inWaiverContext) || isWaiverKey(lastKeySegment(path));
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    if (context) {
+      const token = extractArtifactToken(String(value));
+      if (token) out.push({ path: path || "(root)", token });
     }
     return;
   }
+
+  if (Array.isArray(value)) {
+    value.forEach((item, i) => {
+      collectWaiverHits(item, `${path}[${i}]`, out, context);
+    });
+    return;
+  }
+
   if (typeof value === "object") {
     for (const [k, v] of Object.entries(value)) {
       const next = path ? `${path}.${k}` : k;
-      collectWaiverHits(v, next, out);
+      const keyIsWaiver = isWaiverKey(k);
+      const keyToken = context || keyIsWaiver ? extractArtifactToken(k) : null;
+      if ((context || keyIsWaiver) && keyToken) {
+        out.push({ path: next, token: keyToken });
+      }
+      collectWaiverHits(v, next, out, context || keyIsWaiver);
     }
   }
 }
@@ -157,16 +219,18 @@ function collectWaiverHits(value, path, out) {
 function findForbiddenWaivers(...objects) {
   const hits = [];
   for (const obj of objects) {
-    if (obj && typeof obj === "object") collectWaiverHits(obj, "", hits);
+    if (obj && typeof obj === "object") collectWaiverHits(obj, "", hits, false);
   }
   return hits;
 }
 
 module.exports = {
   findNearby,
+  foldText,
   scanClaimLocks,
   scanSlop,
   scanSkipLanguage,
   findForbiddenWaivers,
   WAIVER_TOKENS,
+  extractArtifactToken,
 };
