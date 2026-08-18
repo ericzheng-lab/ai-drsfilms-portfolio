@@ -483,6 +483,22 @@ The previous exam record (white / Klein Blue / black + “do not invent extra co
 
 ---
 
+## Loop 12 — 2026-08-18 (moving visual bar, fixtures first)
+
+Every **new** company Profile is built and judged against the most recently shipped `public/*/index.html` pages, not a frozen pair (not ElevenLabs/Luma forever, not Wonder/Kalshi forever). **Page HTML not restyled.**
+
+### 1) Harness first
+
+P0 `r2-profile-recent-bar` (R2 + R3 echo). Discover peers except the package company. Sort by `git log -1 --format=%ct -- path`; mtime fallback if git is unavailable (said on the check). Newest 3 = the bar; written on the check as `compared_to`. ACCEPT only if manifest `compared_to` records that same set. A stale fixed pair while a newer peer exists is REJECT. A text/résumé page (0 work images / empty first viewport) is REJECT when any of the newest 3 has a first-viewport still. Reuses existing still gates.
+
+Fixtures: `fail-stale-classic-bar`, `pass-recent-bar`. `--self-test` PASS (`test-recent-bar-fixtures`). Ruleset 1.12.0. Claim-locks unchanged.
+
+### 2) Current `/giant-spoon/` vs those fixtures
+
+Not restyled this loop. The law is the moving bar, not a page skin.
+
+---
+
 ## Revert — page restyle not shipped
 
 `index.html` restored to `main`. Homemade `stills/workflow-6stage.svg` removed — invented frame, not `A-WORKFLOW-6STAGE` (Drive PNG `1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5`, not in DRS INDEX). P-led exam must not hang an invented diagram. Deliverable is hops / fixtures / rules. `vi.json` exam record kept.

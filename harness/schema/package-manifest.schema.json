@@ -64,6 +64,14 @@
         "minLength": 1
       },
       "description": "Optional documented shortenings of this company legal name. Trusted only when they are a whole token or hyphen-boundary prefix of company, or a built-in legal-name map entry. Prefix collisions inside a longer token (Metaphor + meta) and arbitrary foreign slugs (Meta + aliases: cloudflare + /cloudflare/) are ignored."
+    },
+    "compared_to": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "The current visual bar: the newest 3 shipped public/{company}/index.html routes (excluding this package company), by last git commit timestamp (mtime if git is unavailable). r2-profile-recent-bar ACCEPT only when this array matches that set. A frozen pair (elevenlabs+luma, wonder+kalshi) is REJECT when newer pages exist."
     }
   }
 }

@@ -46,6 +46,7 @@ const {
   dev4NotHung,
   pLedNoPbGallery,
 } = require("./asset-clearance");
+const { profileRecentBarGate } = require("./profile-recent-bar");
 
 function check(id, severity, ok, detail) {
   return {
@@ -1114,6 +1115,11 @@ function hopR2(pkg, rules, opts = {}) {
   checks.push(
     check("r2-profile-p-led-pb-gallery", "P0", pbGal.ok, pbGal.detail)
   );
+  const recentBar = profileRecentBarGate(pkg, opts);
+  checks.push({
+    ...check("r2-profile-recent-bar", "P0", recentBar.ok, recentBar.detail),
+    compared_to: recentBar.compared_to,
+  });
   checks.push(
     check(
       "profile-not-homepage",
@@ -1284,6 +1290,11 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(
     check("r3-profile-p-led-pb-gallery", "P0", pbGal.ok, pbGal.detail)
   );
+  const recentBar = profileRecentBarGate(pkg, opts);
+  checks.push({
+    ...check("r3-profile-recent-bar", "P0", recentBar.ok, recentBar.detail),
+    compared_to: recentBar.compared_to,
+  });
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1440,6 +1451,7 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-58node-route",
     "r2-profile-dev4-private",
     "r2-profile-p-led-pb-gallery",
+    "r2-profile-recent-bar",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1472,6 +1484,7 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-58node-route",
     "r3-profile-dev4-private",
     "r3-profile-p-led-pb-gallery",
+    "r3-profile-recent-bar",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

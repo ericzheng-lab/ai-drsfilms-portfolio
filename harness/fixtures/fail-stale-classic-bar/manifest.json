@@ -8,8 +8,7 @@
   "profile_html": "profile.html",
   "vi": "vi.json",
   "compared_to": [
-    "bar-alpha",
-    "bar-beta",
-    "bar-gamma"
+    "elevenlabs",
+    "luma"
   ]
 }

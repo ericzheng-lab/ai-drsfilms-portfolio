@@ -136,9 +136,15 @@ Hop order:
    non-Wonder pages must reskin; never mix 6 vs 7/58 in captions.
    P-led: not the lead; method slot only if the JD has process/gates
    as must-or-should and the strip is a picture. O-led: required
-   (DOC-6/R8). A-led: supporting only. P-led pages may not hang a
+   (DOC-6/R8). A-led: supporting only.    P-led pages may not hang a
    Prompt Builder gallery. Invocation must match the JD archetype
-   (see matrix below). Images are not optional; there is no waiver.
+   (see matrix below). Every new Profile is judged against the
+   **newest 3** shipped `public/*/index.html` peers (last git commit
+   that touched the file; mtime if git is unavailable), not a frozen
+   ElevenLabs/Luma or Wonder/Kalshi pair. Manifest `compared_to` must
+   record that same set (`r2-profile-recent-bar` / R3 echo). A
+   text/résumé page (0 work images / empty first viewport) is `REJECT`
+   when any of those 3 has a first-viewport still. Images are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
@@ -262,6 +268,7 @@ See `schema/package-manifest.schema.json`. Required fields:
 | `profile_html` | Optional local HTML (not sufficient for R2/R3 ACCEPT) |
 | `company_aliases` | Trusted shortenings only (whole token or hyphen-boundary prefix of `company`, or built-in map). Prefix collisions inside a longer token (Metaphor + meta) and foreign slugs are ignored. |
 | `vi` | VI distill record (required for R-VI) |
+| `compared_to` | Newest 3 shipped `public/{company}/` routes this Profile was built against. `r2-profile-recent-bar` ACCEPT only when this matches the live bar. |
 | `waivers` | **Forbidden** for Profile / CL. Presence is P0 REJECT. Novel skip/omit/optional/defer keys are also REJECT. |
 
 Paths are relative to the package directory.
@@ -309,6 +316,8 @@ Paths are relative to the package directory.
 | `fixtures/fail-6stage-caption-mix` | R2 `REJECT` (6-stage caption mixed with 7/58) |
 | `fixtures/fail-o-led-missing-6stage` | R2 `REJECT` (O-led missing 6-stage picture) |
 | `fixtures/fail-p-led-pb-gallery` | R2 `REJECT` (P-led Prompt Builder gallery) |
+| `fixtures/fail-stale-classic-bar` | R2 `REJECT` (`compared_to` is elevenlabs+luma while a newer peer exists) |
+| `fixtures/pass-recent-bar` | `r2-profile-recent-bar` `ACCEPT` (`compared_to` matches the newest 3 in the fixture tree) |
 | `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip; 58-node *text* cite) |
 | `fixtures/pass-wonder-58node` | R2 `ACCEPT` (58-node *file* legal on `/wonder/`) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |

@@ -63,6 +63,7 @@ const {
   dev4NotHung,
   pLedNoPbGallery,
 } = require("./asset-clearance");
+const { recentBarOk, sameSlugSet } = require("./profile-recent-bar");
 const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
@@ -1401,6 +1402,60 @@ async function testAssetLibrarianRejected() {
   return "REJECT";
 }
 
+async function testRecentBarFixtures() {
+  const stale = await runHops({
+    packageDir: fixture("fail-stale-classic-bar"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(stale.last.verdict === "REJECT", "stale classic bar must REJECT R2");
+  assert(
+    hasFail(stale.last, "r2-profile-recent-bar"),
+    `stale classic bar must fail r2-profile-recent-bar, got ${failuresOf(stale.last)}`
+  );
+  const staleCheck = (stale.last.checks || []).find((c) => c.id === "r2-profile-recent-bar");
+  assert(
+    staleCheck && Array.isArray(staleCheck.compared_to) && staleCheck.compared_to.includes("bar-newer"),
+    `stale check must write compared_to including the newer peer, got ${JSON.stringify(staleCheck && staleCheck.compared_to)}`
+  );
+  assert(
+    /elevenlabs/.test(staleCheck.detail) && /luma/.test(staleCheck.detail),
+    `stale detail must name the frozen pair, got ${staleCheck.detail}`
+  );
+
+  const recent = await runHops({
+    packageDir: fixture("pass-recent-bar"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  const recentCheck = (recent.last.checks || []).find((c) => c.id === "r2-profile-recent-bar");
+  assert(
+    recentCheck && recentCheck.status === "PASS",
+    `pass-recent-bar must PASS r2-profile-recent-bar, got ${failuresOf(recent.last)}`
+  );
+  assert(
+    sameSlugSet(recentCheck.compared_to || [], ["bar-alpha", "bar-beta", "bar-gamma"]),
+    `pass-recent-bar compared_to must be the newest 3, got ${JSON.stringify(recentCheck.compared_to)}`
+  );
+
+  const r3 = await runHops({
+    packageDir: fixture("fail-stale-classic-bar"),
+    hops: ["R3"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    hasFail(r3.last, "r3-profile-recent-bar"),
+    `R3 must echo r3-profile-recent-bar, got ${failuresOf(r3.last)}`
+  );
+  return "REJECT";
+}
+
 async function testGs18HtmlStillRejected() {
   const gs18 = `<style>:root{--blue:#0033a0}.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}.hero .header-line{font-size:14px;color:var(--blue)}.stat span{font-size:11px;color:var(--blue)}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
   assert(
@@ -2129,6 +2184,22 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         ).ok === false,
         "P-led PB gallery"
       ),
+    "r2-profile-recent-bar": () => {
+      const stale = loadPackage({ packageDir: fixture("fail-stale-classic-bar") });
+      assert(recentBarOk(stale).ok === false, "stale elevenlabs+luma pair");
+      const recent = loadPackage({ packageDir: fixture("pass-recent-bar") });
+      assert(recentBarOk(recent).ok === true, "recorded newest 3");
+      const resume = loadPackage({ packageDir: fixture("pass-recent-bar") });
+      resume.profileHtml = {
+        ok: true,
+        value: "<html><body><h1>Acme</h1><p>Résumé text only. No stills.</p></body></html>",
+      };
+      resume.paths = { ...resume.paths, profileHtml: resume.paths.profileHtml || "profile.html" };
+      assert(
+        recentBarOk(resume).ok === false,
+        "résumé/text page vs bar first-viewport still"
+      );
+    },
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -2443,6 +2514,7 @@ async function runSelfTest() {
     "test-invocation-matrix-rejected": await testInvocationMatrixRejected(),
     "test-closed-debate-cards-rejected": await testClosedDebateCardsRejected(),
     "test-asset-librarian-rejected": await testAssetLibrarianRejected(),
+    "test-recent-bar-fixtures": await testRecentBarFixtures(),
     "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -2503,6 +2575,8 @@ async function runSelfTest() {
       "fail-6stage-caption-mix": "REJECT",
       "fail-o-led-missing-6stage": "REJECT",
       "fail-p-led-pb-gallery": "REJECT",
+      "fail-stale-classic-bar": "REJECT",
+      "pass-recent-bar": "ACCEPT",
       "pass-a-led-wonder": "ACCEPT",
       "pass-wonder-58node": "ACCEPT",
       "pass-minimal-three": pass.last.verdict,
