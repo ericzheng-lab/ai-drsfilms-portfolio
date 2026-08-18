@@ -154,8 +154,8 @@ Hop order:
    viewport / first work row must match Brief `page_slots.lead` (ids
    or named category: trad reel, brand spot). A page that is only film
    stills while Brief lead is ads/reel is `REJECT`
-   (`r2-profile-follows-brief-slots`). Do not restyle `/giant-spoon/`;
-   it is the exam of that miss, not the patch. A
+   (`r2-profile-follows-brief-slots`). `/giant-spoon/` must follow
+   Brief `page_slots` (ads/reel first). A
    text/résumé page (0 work images / empty first viewport) is `REJECT`
    when any of those 3 has a first-viewport still. Images are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
@@ -345,7 +345,7 @@ Do not copy HyperAgent files into this repo. Name the asset id and the rule.
 
 | Archetype | Invoke | Forbidden |
 |---|---|---|
-| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *21:9 poster + play* + brand stills; `A-WORKFLOW-6STAGE` in the method slot only if the JD has process/gates as must-or-should, as one reskin picture | text showreel; legal-paragraph credits; empty white cards; 58-node *file*; DEV4 suite; Prompt Builder gallery; 7-stage; in-dev wall before/taller than the reel; visible `A-*` ids; Drive original 6-stage; Klein Blue only as 10px labels |
+| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *21:9 poster + play* + brand hang (still, or Coach in-page Vimeo if INDEX has no still); `A-WORKFLOW-6STAGE` in the method slot only if the JD has process/gates as must-or-should, as one reskin picture; Prompt Builder at most one public screenshot | text showreel; legal-paragraph credits; empty white cards; 58-node *file*; DEV4 suite; Prompt Builder gallery / tools wall; 7-stage; in-dev wall before/taller than the reel; visible `A-*` ids; Drive original 6-stage; Klein Blue only as 10px labels |
 | **O-led** | `A-WORKFLOW-6STAGE` required (DOC-6/R8), one picture | `A-WORKFLOW-58NODE` file (unless `/wonder/` or generic public); 58-node without JD process depth |
 | **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip; 58-node *file* only on `/wonder/` until generic public:true; 6-stage supporting only | tools before films; 58-node file off `/wonder/`; DEV4 screenshots |
 

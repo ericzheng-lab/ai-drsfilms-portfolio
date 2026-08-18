@@ -7,5 +7,10 @@
   "profile_url": "https://ai.drsfilms.com/giant-spoon/",
   "profile_html": "profile.html",
   "vi": "../../public/giant-spoon/vi.json",
-  "company_aliases": ["Giant Spoon"]
+  "company_aliases": ["Giant Spoon"],
+  "compared_to": [
+    "amgen",
+    "autodesk-flow-studio",
+    "kalshi"
+  ]
 }

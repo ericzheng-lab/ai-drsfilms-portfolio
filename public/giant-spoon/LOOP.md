@@ -502,3 +502,20 @@ Not restyled this loop. The law is the moving bar, not a page skin.
 ## Revert — page restyle not shipped
 
 `index.html` restored to `main`. Homemade `stills/workflow-6stage.svg` removed — invented frame, not `A-WORKFLOW-6STAGE` (Drive PNG `1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5`, not in DRS INDEX). P-led exam must not hang an invented diagram. Deliverable is hops / fixtures / rules. `vi.json` exam record kept.
+
+---
+
+## Loop 13 — 2026-08-18 (live page follows Brief slots)
+
+Eric opened https://ai.drsfilms.com/giant-spoon/ and the live page was still four BHOAF stills. Treating `/giant-spoon/` as a frozen exam is the miss. The Profile is the deliverable.
+
+**Brief lock:** P-led. Lead = traditional advertising showreel + Coach brand spot (first viewport is ads). Second = Tencent Dungeon & Fighter. Supporting = BHOAF one card; AI as schedule/cost One Click Mute → Manga Cut → DoomBrush ≤25%; Prompt Builder one screenshot. Left off: 58-node, DEV4 tool wall, film as first viewport, tool wall.
+
+**selected_work_ids:** `coach-make-the-ground-shake`, `tencent-dungeon-and-fighter`, `brief-history-of-a-family`.
+
+**Hang without invented frames:** INDEX `brand/` and `commercial/` empty. Coach = in-page Vimeo `190660903`. Reel poster = existing repo showreel title card (Cloudflare card, not a homemade SVG, not a BHOAF still). Tencent = type card. BHOAF = `brief-history-of-a-family-still-01` only. `prompt-builder-ui-01` once.
+
+**compared_to** (newest 3 `public/*/index.html` by `git log -1 --format=%ct`, exclude `giant-spoon`, tie-break slug A–Z): `amgen`, `autodesk-flow-studio`, `kalshi`. Those three are type-first Thread B. Giant Spoon VI is still-first / radius 0 / Klein Blue field — do not copy their type hero.
+
+Ruleset **1.14.0**: one public Prompt Builder screenshot is not a gallery; Coach Vimeo / Tencent type card count as brand hangs when INDEX has no still.
+

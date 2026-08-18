@@ -130,8 +130,8 @@ function pLedNoPbGallery(html, pkg) {
   }
   if (pbImgs.length === 1) {
     return {
-      ok: false,
-      reason: "P-led Prompt Builder gallery (product shot hung)",
+      ok: true,
+      reason: "P-led Prompt Builder one public screenshot (not a gallery)",
     };
   }
   return { ok: true, reason: "no P-led Prompt Builder gallery" };

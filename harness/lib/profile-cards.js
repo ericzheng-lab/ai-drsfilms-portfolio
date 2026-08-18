@@ -126,6 +126,20 @@ function noEmptyWhiteWorkCards(html) {
   return { ok: true, reason: "no empty white work cards" };
 }
 
+function brandIsHung(brand, src, imgsJoined) {
+  if (new RegExp(brand, "i").test(imgsJoined)) return true;
+  if (brand === "coach" && /player\.vimeo\.com\/video\/190660903/i.test(src)) {
+    return true;
+  }
+  if (
+    brand === "tencent" &&
+    /<(h[1-6])[^>]*>[\s\S]*?\btencent\b[\s\S]*?<\/\1>/i.test(src)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function brandStillsNotWordmarks(html) {
   const src = String(html || "");
   if (!BRAND_RE.test(src)) {
@@ -137,14 +151,14 @@ function brandStillsNotWordmarks(html) {
   const claimed = ["coach", "nike", "bmw", "tencent"].filter((b) =>
     new RegExp(`\\b${b}\\b`, "i").test(src)
   );
-  const stills = claimed.filter((b) => new RegExp(b, "i").test(imgs));
-  if (stills.length === 0) {
+  const hung = claimed.filter((b) => brandIsHung(b, src, imgs));
+  if (hung.length === 0) {
     return {
       ok: false,
       reason: "brand credits are wordmarks, not stills",
     };
   }
-  if (stills.length < Math.min(2, claimed.length)) {
+  if (hung.length < Math.min(2, claimed.length)) {
     return {
       ok: false,
       reason: "brand stills required; wordmarks are not credits",

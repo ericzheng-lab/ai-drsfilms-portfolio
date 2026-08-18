@@ -6,13 +6,15 @@ https://ai.drsfilms.com/giant-spoon/
 
 ## Profile
 
-Production lead with 15+ years across live action, branded content, and post. I take integrated jobs from first brief through delivery: budget, vendors, and several campaigns at once. Traditional reel first. Generated work, when it is cheaper than a reshoot, is a priced line with a named gate.
+Production lead with 15+ years across live action, branded content, and post. I take integrated jobs from first brief through delivery: budget, vendors, and several campaigns at once. Traditional advertising reel and brand spots first. Generated work, when it is cheaper than a reshoot, is a priced line with a named gate.
 
 ## Selected work
 
-- Traditional showreel — live-action reel on the Giant Spoon Profile.
+- COACH · Make the Ground Shake — brand spot. On the Giant Spoon Profile as in-page play.
+- Tencent Dungeon & Fighter — after the first film, led the client-requested three-film expansion as production-company EP.
 - Brief History of A Family — Producer. Sundance Grand Jury Prize nominee. Berlinale Panorama. Nominee, not a win.
-- Final Frontier — Executive Producer / Lead Producer, Apr 2022–Dec 2024. Shanghai operating scope across executive production, operations, and APAC client and agency work. $8M+ aggregate branded portfolio across Final Frontier and earlier brand work, not a single job. Peak 6–8 concurrent campaigns. After the team won Tencent’s first Dungeon & Fighter film, led the client-requested three-film expansion as production-company EP.
+- Traditional advertising showreel — live-action reel on the Giant Spoon Profile.
+- Final Frontier — Executive Producer / Lead Producer, Apr 2022–Dec 2024. Shanghai operating scope across executive production, operations, and APAC client and agency work. $8M+ aggregate branded portfolio across Final Frontier and earlier brand work, not a single job. Peak 6–8 concurrent campaigns.
 
 ## Experience
 

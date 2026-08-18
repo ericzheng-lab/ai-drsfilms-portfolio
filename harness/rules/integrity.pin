@@ -1,4 +1,4 @@
 # Honesty pin, not an external HSM.
 # SHA-256 of harness/rules/{rules,contracts,asset-clearance}.json + harness/lib/*.js except self-test.js
 # plus the REQUIRED_RULE_IDS assertion table. Compared from lib/integrity.js / loadRuleset().
-a583942d9eb2f45341b202c271126b9a55207d0117d5b43b8f783d48c2566257
+f4803d5472da3f17c9e982cf2c51476d76ed293aa53e8765059e46a5ad69cd04

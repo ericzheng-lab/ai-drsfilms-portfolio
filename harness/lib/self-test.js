@@ -69,6 +69,7 @@ const {
   briefLeadMatchesArchetype,
   briefLeadAssetsClearable,
   profileFollowsBriefSlots,
+  categorize,
 } = require("./brief-slots");
 const {
   PIN_PATH,
@@ -1321,6 +1322,12 @@ async function testClosedDebateCardsRejected() {
     "typeset brand wordmarks must fail"
   );
   assert(
+    brandStillsNotWordmarks(
+      '<iframe src="https://player.vimeo.com/video/190660903" title="COACH"></iframe><h2>Tencent Dungeon &amp; Fighter</h2>'
+    ).ok === true,
+    "Coach in-page Vimeo plus Tencent type card must pass"
+  );
+  assert(
     sixStageOneGraphic(
       '<div class="strip"><div>01 Intake</div><div>02 Route</div></div><p>6-stage</p>',
       pLedPkg
@@ -1404,6 +1411,13 @@ async function testAssetLibrarianRejected() {
       acmePkg
     ).ok === false,
     "P-led PB gallery must fail"
+  );
+  assert(
+    pLedNoPbGallery(
+      '<img src="prompt-builder-ui-01.jpg" alt="Prompt Builder">',
+      acmePkg
+    ).ok === true,
+    "P-led one Prompt Builder screenshot is not a gallery"
   );
   return "REJECT";
 }
@@ -2316,11 +2330,34 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         "résumé/text page vs bar first-viewport still"
       );
     },
-    "brief-page-slots": () =>
+    "brief-page-slots": () => {
       assert(
         briefPageSlotsOk({ selected_work_ids: ["showreel-trad", "coach-spot"] }).ok === false,
         "missing page_slots"
-      ),
+      );
+      assert(
+        categorize("traditional advertising showreel") === "trad_reel",
+        "GS lead reel token"
+      );
+      assert(categorize("Coach brand spot") === "brand_spot", "GS lead coach token");
+      assert(
+        briefPageSlotsOk({
+          selected_work_ids: [
+            "coach-make-the-ground-shake",
+            "tencent-dungeon-and-fighter",
+            "brief-history-of-a-family",
+          ],
+          page_slots: {
+            archetype: "P-led",
+            lead: ["traditional advertising showreel", "Coach brand spot"],
+            second: ["Tencent Dungeon & Fighter"],
+            supporting: ["Brief History of A Family"],
+            omit: ["58-node"],
+          },
+        }).ok === true,
+        "GS ads-lead slots"
+      );
+    },
     "brief-lead-matches-archetype": () =>
       assert(
         briefLeadMatchesArchetype(
@@ -2360,7 +2397,7 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         }).ok === false,
         "lead without dual-gate still"
       ),
-    "r2-profile-follows-brief-slots": () =>
+    "r2-profile-follows-brief-slots": () => {
       assert(
         profileFollowsBriefSlots(
           '<h1>Senior Producer</h1><article class="work-card"><img src="a.jpg" alt="Brief History of a Family"><h3>Brief History of a Family</h3></article>',
@@ -2377,7 +2414,25 @@ function testLooseningAnyP0RuleBreaksSelftest() {
           }
         ).ok === false,
         "four-BHOAF page vs reel+coach lead"
-      ),
+      );
+      assert(
+        profileFollowsBriefSlots(
+          '<article class="work-card"><img class="reel-poster" alt="Traditional advertising showreel"><h1>Traditional advertising showreel</h1></article>',
+          {
+            briefAttrs: {
+              page_slots: {
+                archetype: "P-led",
+                lead: ["traditional advertising showreel", "Coach brand spot"],
+                second: ["Tencent Dungeon & Fighter"],
+                supporting: ["Brief History of A Family"],
+                omit: [],
+              },
+            },
+          }
+        ).ok === true,
+        "ads-first work row matches Brief lead"
+      );
+    },
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
