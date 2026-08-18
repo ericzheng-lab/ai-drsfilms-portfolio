@@ -281,6 +281,41 @@ function vimeoEmbedInCard(html) {
   return { ok: true, reason: "Vimeo embed on the work card" };
 }
 
+function oldShellIsGone(html) {
+  const spacers = heroMinHeightVh(html);
+  if (spacers.length) {
+    return {
+      ok: false,
+      reason: `old-shell hero min-height ${spacers[0].vh}vh (B-C5 patch-on-old-shell)`,
+    };
+  }
+  return { ok: true, reason: "no leftover 70vh+ hero shell" };
+}
+
+function isRoleProfileNotHomepage(html) {
+  const src = String(html || "");
+  const role = /\b(senior\s+)?producer\b|\bdirector\b|\bexecutive producer\b/i.test(
+    src
+  );
+  const hits = titleHits(src);
+  if (!role) {
+    return {
+      ok: false,
+      reason: "homepage-as-profile: no role on the page (B-EL1)",
+    };
+  }
+  if (hits.length < 2) {
+    return {
+      ok: false,
+      reason: "homepage-as-profile: fewer than two work-sample titles (B-EL1)",
+    };
+  }
+  return {
+    ok: true,
+    reason: `role profile with ${hits.length} work titles`,
+  };
+}
+
 function firstViewportHasStill(html) {
   const src = String(html || "");
   const spacers = heroMinHeightVh(src);
@@ -321,6 +356,8 @@ module.exports = {
   traditionalLeads,
   aiFilmOrderOk,
   vimeoEmbedInCard,
+  oldShellIsGone,
+  isRoleProfileNotHomepage,
   titleHits,
   heroMinHeightVh,
   MIN_STILL_COUNT,

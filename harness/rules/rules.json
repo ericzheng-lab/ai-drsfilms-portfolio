@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -152,6 +152,20 @@
       "failure": "traditional Vimeo folded into a modal / not on the card",
       "hops": ["R2", "R3"],
       "note": "If Brief History or showreel is claimed, player.vimeo.com must be iframed on the card, not only in .modal. B-WKS7. No waiver."
+    },
+    {
+      "id": "r2-profile-not-old-shell",
+      "severity": "P0",
+      "failure": "patch-on-old-shell / leftover 70vh+ hero box",
+      "hops": ["R2", "R3"],
+      "note": "A .hero / header min-height >= 70vh is the #18 / Luma shell. REJECT even if an <img> was stuffed into that hero. B-C5: 不要打补丁，整页重蒸. No waiver."
+    },
+    {
+      "id": "r2-profile-not-homepage-skin",
+      "severity": "P0",
+      "failure": "company homepage skin standing in for a role Profile",
+      "hops": ["R2", "R3"],
+      "note": "Page must name a production role and at least two work-sample titles. A marketing homepage with decorative stills is REJECT. B-EL1. No waiver."
     },
     {
       "id": "profile-not-homepage",

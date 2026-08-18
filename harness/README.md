@@ -104,8 +104,11 @@ Hop order:
    hero is `REJECT` even if a thumb appears later (B-C6 blank first
    viewport; Giant Spoon #18). A type-only open with stills after 80
    words of body copy is `REJECT` (Wonder/Kalshi class; B-C6 / B-WKS4).
-   Fewer than 4 real work images is `REJECT` (B-WKS4). Images are not
-   optional; there is no waiver.
+   Fewer than 4 real work images is `REJECT` (B-WKS4). A leftover
+   70vh+ `.hero` shell is `REJECT` even with an image inside (B-C5
+   patch-on-old-shell). A company homepage skin without a role and
+   work-sample titles is `REJECT` (B-EL1). Images are not optional;
+   there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
@@ -247,6 +250,8 @@ Paths are relative to the package directory.
 | `fixtures/fail-ai-lead-profile` | R2 `REJECT` (AI title in the lead slot) |
 | `fixtures/fail-ai-order-profile` | R2 `REJECT` (AI stack not OCM → Manga Cut → DoomBrush) |
 | `fixtures/fail-folded-vimeo-profile` | R2 `REJECT` (traditional Vimeo only in a modal) |
+| `fixtures/fail-patched-shell-profile` | R2 `REJECT` (78vh hero shell kept; image stuffed in) |
+| `fixtures/fail-homepage-skin-profile` | R2 `REJECT` (company homepage skin, no role/work titles) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 All fixture people, emails, companies, and sentences are synthetic.

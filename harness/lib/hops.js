@@ -22,6 +22,8 @@ const {
   traditionalLeads,
   aiFilmOrderOk,
   vimeoEmbedInCard,
+  oldShellIsGone,
+  isRoleProfileNotHomepage,
 } = require("./profile-images");
 
 function check(id, severity, ok, detail) {
@@ -820,6 +822,18 @@ const profileVimeoInCardGate = profileGateFrom(
   "Vimeo not embedded on the card (B-WKS7)"
 );
 
+const profileOldShellGate = profileGateFrom(
+  oldShellIsGone,
+  "no Profile HTML to inspect for old-shell patch (B-C5)",
+  "patch-on-old-shell (B-C5)"
+);
+
+const profileNotHomepageSkinGate = profileGateFrom(
+  isRoleProfileNotHomepage,
+  "no Profile HTML to inspect for homepage-as-profile (B-EL1)",
+  "homepage-as-profile (B-EL1)"
+);
+
 function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
@@ -852,6 +866,12 @@ function hopR2(pkg, rules, opts = {}) {
   checks.push(check("r2-profile-ai-film-order", "P0", order.ok, order.detail));
   const vimeo = profileVimeoInCardGate(pkg, opts);
   checks.push(check("r2-profile-vimeo-in-card", "P0", vimeo.ok, vimeo.detail));
+  const shell = profileOldShellGate(pkg, opts);
+  checks.push(check("r2-profile-not-old-shell", "P0", shell.ok, shell.detail));
+  const homeSkin = profileNotHomepageSkinGate(pkg, opts);
+  checks.push(
+    check("r2-profile-not-homepage-skin", "P0", homeSkin.ok, homeSkin.detail)
+  );
   checks.push(
     check(
       "profile-not-homepage",
@@ -978,6 +998,12 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(check("r3-profile-ai-film-order", "P0", order.ok, order.detail));
   const vimeo = profileVimeoInCardGate(pkg, opts);
   checks.push(check("r3-profile-vimeo-in-card", "P0", vimeo.ok, vimeo.detail));
+  const shell = profileOldShellGate(pkg, opts);
+  checks.push(check("r3-profile-not-old-shell", "P0", shell.ok, shell.detail));
+  const homeSkin = profileNotHomepageSkinGate(pkg, opts);
+  checks.push(
+    check("r3-profile-not-homepage-skin", "P0", homeSkin.ok, homeSkin.detail)
+  );
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1117,6 +1143,8 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-traditional-lead",
     "r2-profile-ai-film-order",
     "r2-profile-vimeo-in-card",
+    "r2-profile-not-old-shell",
+    "r2-profile-not-homepage-skin",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1135,6 +1163,8 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-traditional-lead",
     "r3-profile-ai-film-order",
     "r3-profile-vimeo-in-card",
+    "r3-profile-not-old-shell",
+    "r3-profile-not-homepage-skin",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

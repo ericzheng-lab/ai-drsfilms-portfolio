@@ -291,3 +291,63 @@ Rebuilt `/giant-spoon/` again (not a patch of #18, not a patch of the OCM-hero r
 | `doombrush-key-frame-01` | AI 03 canon cover |
 | `monet-cyberpunk-key-frame-01` / `my-new-haircut-key-frame-01` / `sys-mere-key-frame-01` | AI remainder |
 | `prompt-builder-ui-01` | Tools after work |
+
+---
+
+## Loop 5 — 2026-08-18
+
+**Closed B-ids:** B-C5 (不要打补丁), B-EL1 (不像官网 / homepage-as-profile), B-DEP1 (re-confirmed: live route still required; local HTML is not closeout).
+
+### 1) 调研
+
+B-C5: restew the official site; do not patch the old page. #18’s `.hero { min-height:78vh }` is that shell. Loop 2 only rejected the shell when it had **no** still. Stuffing an `<img>` into the same 78vh hero is the patch the book forbids.  
+B-EL1: if it does not look like a distilled role page — company homepage marketing with decorative photos — that is a distill failure, not a missing button. TTL-BP / alibaba-startup / a Giant Spoon.com clone with four lobby stills are this class.  
+B-DEP1: already encoded as R2/R3 live 2xx + slug marker. Named again so closeout cannot pretend local `index.html` is done.
+
+### 2) 自检
+
+Current `/giant-spoon/` vs the full B-layer:
+
+| ID | This page |
+|---|---|
+| B-C4 | First viewport is a still on black, not empty white. Official paper + blue chrome from `giantspoon.com` 2026-08-18. PASS |
+| B-C5 | New document, no `.hero { min-height:78vh }`. PASS |
+| B-C6 | Still in the first screen; 12 words in the masthead before the img. PASS |
+| B-WKS3 | OCM → Manga Cut → DoomBrush, remainder after. Canon covers. PASS |
+| B-WKS4 | 9 catalog stills. PASS |
+| B-WKS5 | Showreel + Brief History + COACH/Nike/BMW on the page. PASS |
+| B-WKS6 | Brief History still leads. PASS |
+| B-WKS7 | Vimeo `1174467043` and `1172739705` in-card. PASS |
+| B-DEP1 | Route `/giant-spoon/` remains; harness still requires live 2xx. (Live until merge+Pages.) |
+| B-EL1 | Role + work titles + distilled VI, not a GS homepage clone. PASS |
+| B-P3 | Still + no spacer; self-checked against the book before handoff. PASS |
+
+Harness after Loop 4 would still ACCEPT (a) #18 with an `<img>` dropped into the 78vh hero, and (b) “We are Giant Spoon” plus four decorative stills.
+
+### 3) 辩论
+
+Those two are the failures Eric named for the harness: **patch-on-old-shell** and **homepage-as-profile**. If they stay legal, Loops 1–4 were image accounting, not the case book. Encode them. No further named book hole after this pair; remaining risk is live deploy (B-DEP1) after merge.
+
+### 4) 加固 harness
+
+- P0 `r2-profile-not-old-shell`: any `.hero` / `header` `min-height >= 70vh` is REJECT, even with an `<img>` inside.
+- P0 `r2-profile-not-homepage-skin`: must name a production role and ≥2 work-sample titles.
+- Fixtures `fail-patched-shell-profile` (viewport PASS, shell FAIL) and `fail-homepage-skin-profile` (4 stills, no role/titles).
+
+### Page change
+
+No further Giant Spoon HTML change. Loop 4 rebuild already clears the B-layer table above.
+
+---
+
+## B-ids closed by loop
+
+| Loop | B-ids closed |
+|---|---|
+| 1 | B-C6 (text-only / no stills), B-P3, B-WKS4 (zero-still class) |
+| 2 | B-C6 (78vh blank first viewport), B-C4 (empty white void), B-P3 |
+| 3 | B-C6 (type-only open), B-WKS4 (two films), B-P3 |
+| 4 | B-WKS3, B-WKS5, B-WKS6, B-WKS7 |
+| 5 | B-C5, B-EL1, B-DEP1 (re-confirmed) |
+
+Canon cited every loop: `_CAREER/job-hunt-copilot/career-eric-zheng.md` Profile-lane cases, `assets.json` work-sample SoT, memory 6 VI + structure, `career-application-loop.method.md` P-led Giant Spoon closeout. Plus the full `public/*/index.html` survey.

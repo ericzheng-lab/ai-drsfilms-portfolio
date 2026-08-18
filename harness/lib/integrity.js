@@ -21,6 +21,8 @@ const REQUIRED_RULE_IDS = [
   "r2-profile-traditional-lead",
   "r2-profile-ai-film-order",
   "r2-profile-vimeo-in-card",
+  "r2-profile-not-old-shell",
+  "r2-profile-not-homepage-skin",
   "r3-three-live-pieces",
   "portfolio-url-matches-profile",
   "slop-lexicon",

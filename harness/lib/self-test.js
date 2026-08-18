@@ -39,6 +39,8 @@ const {
   traditionalLeads,
   aiFilmOrderOk,
   vimeoEmbedInCard,
+  oldShellIsGone,
+  isRoleProfileNotHomepage,
 } = require("./profile-images");
 const {
   PIN_PATH,
@@ -875,6 +877,39 @@ async function testLateStillsProfileRejected() {
   return "REJECT";
 }
 
+async function testPatchedShellAndHomepageSkinRejected() {
+  const patched = await runHops({
+    packageDir: fixture("fail-patched-shell-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(patched.last.verdict === "REJECT", "patched #18 shell must REJECT R2");
+  assert(
+    hasFail(patched.last, "r2-profile-not-old-shell"),
+    `patched shell must fail r2-profile-not-old-shell, got ${failuresOf(patched.last)}`
+  );
+  assert(
+    !hasFail(patched.last, "r2-profile-first-viewport-still"),
+    "img stuffed into the 78vh hero still passes the empty-hero gate; fail must be B-C5"
+  );
+
+  const home = await runHops({
+    packageDir: fixture("fail-homepage-skin-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(home.last.verdict === "REJECT", "homepage skin must REJECT R2");
+  assert(
+    hasFail(home.last, "r2-profile-not-homepage-skin"),
+    `homepage skin must fail r2-profile-not-homepage-skin, got ${failuresOf(home.last)}`
+  );
+  return "REJECT";
+}
+
 async function testNamedCareerWorkSampleRejected() {
   const cases = [
     ["fail-ai-only-profile", "r2-profile-traditional-credits", "AI-only stack"],
@@ -1561,6 +1596,20 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         ).ok === false,
         "modal-only Vimeo"
       ),
+    "r2-profile-not-old-shell": () =>
+      assert(
+        oldShellIsGone(
+          '<style>.hero{min-height:78vh}</style><header class="hero"><img src="x.jpg"></header>'
+        ).ok === false,
+        "patched 78vh hero"
+      ),
+    "r2-profile-not-homepage-skin": () =>
+      assert(
+        isRoleProfileNotHomepage(
+          "<h1>We are Acme</h1><p>Independent creative company.</p>"
+        ).ok === false,
+        "homepage skin"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -1865,6 +1914,8 @@ async function runSelfTest() {
     "test-late-stills-profile-rejected": await testLateStillsProfileRejected(),
     "test-thin-stack-profile-rejected": await testThinStackProfileRejected(),
     "test-named-career-work-sample-rejected": await testNamedCareerWorkSampleRejected(),
+    "test-patched-shell-and-homepage-skin-rejected":
+      await testPatchedShellAndHomepageSkinRejected(),
     "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -1897,6 +1948,8 @@ async function runSelfTest() {
       "fail-ai-lead-profile": "REJECT",
       "fail-ai-order-profile": "REJECT",
       "fail-folded-vimeo-profile": "REJECT",
+      "fail-patched-shell-profile": "REJECT",
+      "fail-homepage-skin-profile": "REJECT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,
