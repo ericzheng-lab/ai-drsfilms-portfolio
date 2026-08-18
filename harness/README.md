@@ -86,10 +86,15 @@ Hop order:
 2. **R-VI** — VI distill record has source URL + date + exact hex / font /
    radius **and usage notes** (how the primary is a wordmark/field on the
    canvas). Empty or “similar to” = REJECT. Missing provenance = REJECT.
-   Hex/font without USAGE = token-only = REJECT. When profile HTML is
-   present, the primary hex must be applied as a real field/wordmark —
-   10px labels on a black/white résumé (Giant Spoon-like tokens + B/W
-   page) = REJECT. Do not invent extra colors the site does not have.
+   Hex/font without USAGE = token-only = REJECT. A **chrome-only**
+   Giant Spoon distill is REJECT even if hex/font match (official
+   giantspoon.com audit, 2026-08-18). Home hero type-only white is
+   chrome, not the brand; the record must include work/case pages
+   (full-bleed autoplay video cards, per-project duotone scrims, real
+   gradients, Yeti #D26403, HBO oxblood/black, 6 videos + 29 images,
+   zero illustration). When profile HTML is present, the primary hex
+   must be applied as a real field/wordmark — a black/white/navy
+   résumé page is R-VI FAIL even when tokens match.
 3. **R1 CV** — file exists; claim-lock + slop lexicons; header/contact
    cannot use a generic homepage as the portfolio URL.
 4. **R1b CL** — file exists; same slop / claim-lock checks. Cannot be waived.
@@ -279,7 +284,11 @@ Paths are relative to the package directory.
 | `fixtures/fail-patched-shell-profile` | R2 `REJECT` (78vh hero shell kept; image stuffed in) |
 | `fixtures/fail-homepage-skin-profile` | R2 `REJECT` (company homepage skin, no role/work titles) |
 | `fixtures/fail-vi-token-only` | R-VI `REJECT` (Giant Spoon-like hex/font, no usage notes) |
+| `fixtures/fail-vi-chrome-only` | R-VI `REJECT` (hex/font/usage match chrome; work/case content missing) |
+| `fixtures/fail-vi-home-hero-brand` | R-VI `REJECT` (type-only white home hero treated as the brand) |
+| `fixtures/fail-vi-bw-navy-resume` | R-VI `REJECT` (complete distill + black/white/navy résumé HTML) |
 | `fixtures/fail-vi-tiny-labels` | R-VI / R2 `REJECT` (usage present; primary only in 10px labels on a B/W résumé) |
+| `fixtures/pass-vi-gs-content-distill` | R-VI `ACCEPT` (chrome + work/case content from the 2026-08-18 audit) |
 | `fixtures/fail-text-showreel-card` | R2 `REJECT` (showreel described in a paragraph / iframe-only) |
 | `fixtures/fail-legal-credits-profile` | R2 `REJECT` (brand marks as a legal grey wall) |
 | `fixtures/fail-internal-asset-ids` | R2 `REJECT` (visible `A-SHOWREEL-TRAD` / `A-WORKFLOW-6STAGE`) |

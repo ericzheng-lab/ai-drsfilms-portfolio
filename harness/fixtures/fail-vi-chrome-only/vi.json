@@ -1,0 +1,28 @@
+{
+  "source_url": "https://giantspoon.com/",
+  "date": "2026-08-18",
+  "hex": {
+    "canvas": "#FFFFFF",
+    "primary": "#0033A0",
+    "nav": "#000000"
+  },
+  "font": {
+    "family": "Sora",
+    "fallback": "sans-serif",
+    "weights": [300, 500, 600, 700],
+    "transform": "uppercase",
+    "letter_spacing": "-0.1px"
+  },
+  "radius": {
+    "button": "0px"
+  },
+  "usage": {
+    "canvas": "white #FFFFFF",
+    "primary": "Klein Blue #0033A0 as wordmark/field on the white canvas — not 10px labels",
+    "nav": "black #000000",
+    "type": "Sora 300/500/600/700 all-caps letter-spacing -0.1px",
+    "radius": "0 — no filled chips; CTAs are uppercase text arrows",
+    "flood": "services/contact #0033A0, logo garden #000000",
+    "palette": "primary + black + white only; do not invent extra colors"
+  }
+}

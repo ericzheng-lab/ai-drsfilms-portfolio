@@ -29,6 +29,7 @@ const {
   viHasUsage,
   primaryHexFromVi,
   primaryAppliedAsField,
+  viNotChromeOnly,
 } = require("./vi-apply");
 const {
   showreelIsPicture,
@@ -640,6 +641,18 @@ function hopRVI(pkg) {
       tokensOk
         ? usage.reason
         : "usage notes N/A until hex/font tokens exist"
+    )
+  );
+
+  const chrome = viNotChromeOnly(rec);
+  checks.push(
+    check(
+      "vi-not-chrome-only",
+      "P0",
+      tokensOk ? chrome.ok : true,
+      tokensOk
+        ? chrome.reason
+        : "chrome-only gate N/A until hex/font tokens exist"
     )
   );
 
@@ -1398,6 +1411,7 @@ const REQUIRED_HOP_CHECKS = {
     "vi-radius",
     "vi-not-similar-to",
     "vi-usage",
+    "vi-not-chrome-only",
     "vi-primary-as-field",
   ],
   R1: ["r1-cv-exists", ...CLAIM_LOCK_IDS, "slop-lexicon", "cv-header-not-homepage"],
@@ -1470,6 +1484,7 @@ const REQUIRED_HOP_CHECKS = {
     "r3-vi-radius",
     "r3-vi-not-similar-to",
     "r3-vi-usage",
+    "r3-vi-not-chrome-only",
     "r3-vi-primary-as-field",
   ],
 };

@@ -1,5 +1,5 @@
 {
-  "version": "1.10.0",
+  "version": "1.11.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -168,11 +168,18 @@
       "note": "A VI record that lists hex/font/radius but does not say how they are used (wordmark/field/canvas) is a token-only distill. Official Giant Spoon is Klein Blue as wordmark/field on a white canvas. Distill without USAGE is REJECT. No waiver."
     },
     {
+      "id": "vi-not-chrome-only",
+      "severity": "P0",
+      "failure": "chrome-only Giant Spoon distill / home hero treated as the brand",
+      "hops": ["R-VI", "R3"],
+      "note": "Official Giant Spoon audit (giantspoon.com, 2026-08-18): chrome-only distill is REJECT even if hex/font match. Home hero type-only white is chrome, not the brand. Distill must include work/case pages: full-bleed autoplay video work cards + per-project duotone scrims; gradients #337789→#2D434B, #BA2210→#2D4654, #01388B→#4E2652, #775714→#665B3A; Yeti #D26403; HBO oxblood/black; home 6 videos + 29 images; zero illustration. Flood fields (services/contact #0033A0, logo garden #000000) are chrome, not a substitute for content. Off Giant Spoon this check is N/A. No waiver."
+    },
+    {
       "id": "vi-primary-as-field",
       "severity": "P0",
-      "failure": "primary hex only in tiny labels / B/W résumé after a token distill",
+      "failure": "primary hex only in tiny labels / B/W/navy résumé after a token distill",
       "hops": ["R-VI", "R2", "R3"],
-      "note": "When profile HTML is present, the primary brand color must be a real field or wordmark, not 10px labels on a black/white page. Giant Spoon-like tokens + B/W résumé = REJECT. Footer/closing-only or hover washes do not count. No waiver."
+      "note": "When profile HTML is present, the primary brand color must be a real field or wordmark, not 10px labels on a black/white page. A black/white/navy résumé page is R-VI FAIL even when hex/font match. Footer/closing-only or hover washes do not count. No waiver."
     },
     {
       "id": "r2-profile-showreel-picture",

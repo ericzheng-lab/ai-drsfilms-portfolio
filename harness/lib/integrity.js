@@ -24,6 +24,7 @@ const REQUIRED_RULE_IDS = [
   "r2-profile-not-old-shell",
   "r2-profile-not-homepage-skin",
   "vi-usage",
+  "vi-not-chrome-only",
   "vi-primary-as-field",
   "r2-profile-showreel-picture",
   "r2-profile-credits-not-legal",

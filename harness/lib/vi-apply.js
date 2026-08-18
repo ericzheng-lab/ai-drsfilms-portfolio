@@ -285,12 +285,84 @@ function primaryAppliedAsField(html, primaryHex) {
   };
 }
 
+const GS_CONTENT_HEX = [
+  "#337789",
+  "#2d434b",
+  "#ba2210",
+  "#2d4654",
+  "#01388b",
+  "#4e2652",
+  "#775714",
+  "#665b3a",
+  "#d26403",
+];
+
+function recordBlob(rec) {
+  return `${usageText(rec)}\n${JSON.stringify(rec || {})}`.toLowerCase();
+}
+
+function isGiantSpoonDistill(rec) {
+  const src = String((rec && (rec.source_url || rec.sourceUrl)) || "");
+  if (/giantspoon\.com/i.test(src)) return true;
+  const primary = primaryHexFromVi(rec);
+  const font = String(
+    (rec && rec.font && (rec.font.family || rec.font.name || rec.font.font_family)) ||
+      rec.font ||
+      ""
+  );
+  return primary === "#0033a0" && /sora/i.test(String(font));
+}
+
+function viNotChromeOnly(rec) {
+  if (!isGiantSpoonDistill(rec)) {
+    return { ok: true, reason: "chrome-only gate N/A off Giant Spoon distill" };
+  }
+  const blob = recordBlob(rec);
+  const missing = [];
+  if (!/(autoplay|full-bleed)/.test(blob) || !/video/.test(blob)) {
+    missing.push("full-bleed autoplay video work cards");
+  }
+  if (!/(duotone|scrim)/.test(blob)) missing.push("per-project duotone scrims");
+  const hexHits = GS_CONTENT_HEX.filter((h) => blob.includes(h));
+  if (hexHits.length < 6) missing.push("work/case duotone gradients");
+  if (!/yeti/.test(blob) || !blob.includes("#d26403")) missing.push("Yeti #D26403");
+  if (!/hbo/.test(blob) || !/oxblood/.test(blob)) missing.push("HBO oxblood/black");
+  if (!/(work\/case|case page|work page|work and case)/.test(blob)) {
+    missing.push("work/case pages (home hero is chrome, not the brand)");
+  }
+  if (!/6 videos/.test(blob) || !/29 images/.test(blob)) {
+    missing.push("home 6 videos + 29 images");
+  }
+  if (!/(zero illustration|no illustration)/.test(blob)) {
+    missing.push("zero illustration");
+  }
+  if (
+    /type-only white/.test(blob) &&
+    /hero/.test(blob) &&
+    !/(chrome, not the brand|not the brand)/.test(blob)
+  ) {
+    missing.push("home hero treated as the brand");
+  }
+  if (missing.length) {
+    return {
+      ok: false,
+      reason: `chrome-only Giant Spoon distill (hex/font match is not enough): missing ${missing.join("; ")}`,
+    };
+  }
+  return {
+    ok: true,
+    reason: "Giant Spoon distill includes chrome + work/case content",
+  };
+}
+
 module.exports = {
   viHasUsage,
   usageNode,
   usageText,
   primaryHexFromVi,
   primaryAppliedAsField,
+  viNotChromeOnly,
+  isGiantSpoonDistill,
   normalizeHex,
   hexFamily,
   hexValues,

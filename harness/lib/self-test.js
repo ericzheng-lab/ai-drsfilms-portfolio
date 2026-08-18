@@ -46,6 +46,7 @@ const {
   viHasUsage,
   primaryAppliedAsField,
   primaryHexFromVi,
+  viNotChromeOnly,
 } = require("./vi-apply");
 const {
   showreelIsPicture,
@@ -1048,6 +1049,71 @@ async function testViTokenOnlyRejected() {
   return "REJECT";
 }
 
+async function testViChromeOnlyRejected() {
+  const cases = [
+    ["fail-vi-chrome-only", "vi-not-chrome-only", "chrome-only GS distill"],
+    ["fail-vi-home-hero-brand", "vi-not-chrome-only", "home hero treated as the brand"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const rvi = await runHops({
+      packageDir: fixture(name),
+      hops: ["R-VI"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+    });
+    assert(rvi.last.verdict === "REJECT", `${label} must REJECT R-VI`);
+    assert(
+      hasFail(rvi.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(rvi.last)}`
+    );
+    assert(
+      !hasFail(rvi.last, "vi-usage"),
+      `${label} has chrome usage; fail must not be missing usage`
+    );
+    assert(
+      !hasFail(rvi.last, "vi-hex") && !hasFail(rvi.last, "vi-font"),
+      `${label} hex/font match; chrome-only is still REJECT`
+    );
+  }
+
+  const resume = await runHops({
+    packageDir: fixture("fail-vi-bw-navy-resume"),
+    hops: ["R-VI"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(resume.last.verdict === "REJECT", "B/W/navy résumé must REJECT R-VI");
+  assert(
+    hasFail(resume.last, "vi-primary-as-field"),
+    `B/W/navy résumé must fail vi-primary-as-field, got ${failuresOf(resume.last)}`
+  );
+  assert(
+    !hasFail(resume.last, "vi-not-chrome-only"),
+    "full content distill + résumé HTML fails application, not the record"
+  );
+
+  const pass = await runHops({
+    packageDir: fixture("pass-vi-gs-content-distill"),
+    hops: ["R0", "R-VI"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(
+    pass.last.verdict === "ACCEPT",
+    `complete GS work/case distill must ACCEPT R-VI, got ${failuresOf(pass.last)}`
+  );
+
+  const chromeRec = JSON.parse(
+    fs.readFileSync(path.join(fixture("fail-vi-chrome-only"), "vi.json"), "utf8")
+  );
+  assert(viNotChromeOnly(chromeRec).ok === false, "chrome-only record unit");
+  const examRec = JSON.parse(
+    fs.readFileSync(path.join(fixture("pass-vi-gs-content-distill"), "vi.json"), "utf8")
+  );
+  assert(viNotChromeOnly(examRec).ok === true, "content distill unit");
+  return "REJECT";
+}
+
 async function testViTinyLabelsRejected() {
   const rvi = await runHops({
     packageDir: fixture("fail-vi-tiny-labels"),
@@ -1965,6 +2031,19 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         }).ok === false,
         "token-only VI"
       ),
+    "vi-not-chrome-only": () =>
+      assert(
+        viNotChromeOnly({
+          source_url: "https://giantspoon.com/",
+          hex: { primary: "#0033A0", black: "#000000", white: "#FFFFFF" },
+          font: { family: "Sora" },
+          usage: {
+            canvas: "white",
+            primary: "Klein Blue as wordmark/field on the canvas",
+          },
+        }).ok === false,
+        "chrome-only GS distill"
+      ),
     "vi-primary-as-field": () =>
       assert(
         primaryAppliedAsField(
@@ -2358,6 +2437,7 @@ async function runSelfTest() {
       await testPatchedShellAndHomepageSkinRejected(),
     "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
     "test-vi-token-only-rejected": await testViTokenOnlyRejected(),
+    "test-vi-chrome-only-rejected": await testViChromeOnlyRejected(),
     "test-vi-tiny-labels-rejected": await testViTinyLabelsRejected(),
     "test-text-card-and-credits-rejected": await testTextCardAndCreditsRejected(),
     "test-invocation-matrix-rejected": await testInvocationMatrixRejected(),
@@ -2398,7 +2478,11 @@ async function runSelfTest() {
       "fail-patched-shell-profile": "REJECT",
       "fail-homepage-skin-profile": "REJECT",
       "fail-vi-token-only": "REJECT",
+      "fail-vi-chrome-only": "REJECT",
+      "fail-vi-home-hero-brand": "REJECT",
+      "fail-vi-bw-navy-resume": "REJECT",
       "fail-vi-tiny-labels": "REJECT",
+      "pass-vi-gs-content-distill": "ACCEPT",
       "fail-text-showreel-card": "REJECT",
       "fail-legal-credits-profile": "REJECT",
       "fail-internal-asset-ids": "REJECT",
