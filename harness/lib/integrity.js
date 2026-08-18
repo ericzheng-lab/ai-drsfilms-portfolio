@@ -14,6 +14,7 @@ const REQUIRED_RULE_IDS = [
   "brief-no-skip-language",
   "profile-not-homepage",
   "r2-profile-work-images",
+  "r2-profile-first-viewport-still",
   "r3-three-live-pieces",
   "portfolio-url-matches-profile",
   "slop-lexicon",

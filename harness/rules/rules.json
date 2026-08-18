@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -94,6 +94,16 @@
         "R3"
       ],
       "note": "Company Profile HTML must contain real work images: <img> with a real src. Empty, placeholder, spacer, 1x1, decorative, or missing stills are REJECT. Text-only pages fail. Local HTML without stills fails. Images are not optional. No waiver."
+    },
+    {
+      "id": "r2-profile-first-viewport-still",
+      "severity": "P0",
+      "failure": "blank first viewport / min-height hero spacer with no still",
+      "hops": [
+        "R2",
+        "R3"
+      ],
+      "note": "A .hero / header with min-height >= 70vh and no <img> is REJECT (the Giant Spoon #18 78vh fail). A later thumb does not save an empty first viewport. No waiver."
     },
     {
       "id": "profile-not-homepage",

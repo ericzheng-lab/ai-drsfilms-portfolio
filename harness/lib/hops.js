@@ -13,7 +13,7 @@ const {
   findForbiddenWaivers,
 } = require("./text-scan");
 const { workIdsFrom } = require("./manifest");
-const { htmlHasWorkImages } = require("./profile-images");
+const { htmlHasWorkImages, firstViewportHasStill } = require("./profile-images");
 
 function check(id, severity, ok, detail) {
   return {
@@ -706,6 +706,38 @@ function profileWorkImageGate(pkg, opts = {}) {
   };
 }
 
+function profileFirstViewportGate(pkg, opts = {}) {
+  const localHtml =
+    pkg.paths.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  const parts = [];
+  let ok = true;
+  if (localHtml) {
+    const ev = firstViewportHasStill(localHtml);
+    parts.push(`local HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (liveHtml) {
+    const ev = firstViewportHasStill(liveHtml);
+    parts.push(`live HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (!localHtml && !liveHtml) {
+    return { ok: false, detail: "no Profile HTML to inspect for first-viewport still" };
+  }
+  return {
+    ok,
+    detail: ok
+      ? parts.join("; ")
+      : `blank / spacer first viewport: ${parts.join("; ")}`,
+  };
+}
+
 function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
@@ -720,6 +752,10 @@ function hopR2(pkg, rules, opts = {}) {
   );
   const stills = profileWorkImageGate(pkg, opts);
   checks.push(check("r2-profile-work-images", "P0", stills.ok, stills.detail));
+  const viewport = profileFirstViewportGate(pkg, opts);
+  checks.push(
+    check("r2-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
+  );
   checks.push(
     check(
       "profile-not-homepage",
@@ -828,6 +864,10 @@ function hopR3(pkg, rules, opts = {}) {
   );
   const stills = profileWorkImageGate(pkg, opts);
   checks.push(check("r3-profile-work-images", "P0", stills.ok, stills.detail));
+  const viewport = profileFirstViewportGate(pkg, opts);
+  checks.push(
+    check("r3-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
+  );
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -960,6 +1000,7 @@ const REQUIRED_HOP_CHECKS = {
   R2: [
     "r2-profile-present",
     "r2-profile-work-images",
+    "r2-profile-first-viewport-still",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -971,6 +1012,7 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-present",
     "r3-three-live-pieces",
     "r3-profile-work-images",
+    "r3-profile-first-viewport-still",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

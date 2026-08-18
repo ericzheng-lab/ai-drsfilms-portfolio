@@ -30,7 +30,7 @@ const {
   companySlug,
   bodyHasProfileMarker,
 } = require("./hops");
-const { htmlHasWorkImages } = require("./profile-images");
+const { htmlHasWorkImages, firstViewportHasStill } = require("./profile-images");
 const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
@@ -808,6 +808,38 @@ async function testGhostProfileUrlWithoutLivePageRejected() {
   return "REJECT";
 }
 
+async function testEmptyHeroProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-empty-hero-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "78vh empty hero must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-first-viewport-still"),
+    `empty hero must fail r2-profile-first-viewport-still, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-work-images"),
+    "empty-hero fixture still has a later work image; fail must be the spacer, not zero stills"
+  );
+
+  const gs18 = `<style>.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
+  assert(
+    firstViewportHasStill(gs18).ok === false,
+    "Giant Spoon #18 spacer pattern must fail first-viewport still"
+  );
+  const rebuiltLead = `<nav class="site-nav"></nav><a class="lead-still"><img src="stills/one-click-mute-key-frame-01.jpg" alt="One Click Mute film still"></a>`;
+  assert(
+    firstViewportHasStill(rebuiltLead).ok === true,
+    "lead still without hero spacer must pass"
+  );
+  return "REJECT";
+}
+
 async function testTextOnlyProfileRejected() {
   const fetchResult = qualifyingFetchResult();
   const r2 = await runHops({
@@ -1402,6 +1434,13 @@ function testLooseningAnyP0RuleBreaksSelftest() {
           false,
         "text-only Profile HTML"
       ),
+    "r2-profile-first-viewport-still": () =>
+      assert(
+        firstViewportHasStill(
+          '<style>.hero{min-height:78vh}</style><header class="hero"><h1>x</h1></header><img src="later.jpg">'
+        ).ok === false,
+        "78vh hero without still"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -1702,6 +1741,7 @@ async function runSelfTest() {
     "test-stale-report-invalidated-on-input-change": await testStaleReportInvalidatedOnInputChange(),
     "test-ghost-profile-url-without-live-page-rejected":
       await testGhostProfileUrlWithoutLivePageRejected(),
+    "test-empty-hero-profile-rejected": await testEmptyHeroProfileRejected(),
     "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -1727,6 +1767,7 @@ async function runSelfTest() {
       "fail-generic-homepage": home.last.verdict,
       "fail-missing-cl": missCl.last.verdict,
       "fail-text-only-profile": "REJECT",
+      "fail-empty-hero-profile": "REJECT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

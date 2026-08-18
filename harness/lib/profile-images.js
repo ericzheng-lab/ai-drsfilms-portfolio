@@ -86,18 +86,64 @@ function htmlHasWorkImages(html) {
   };
 }
 
-function heroHasEmptySpacer(html) {
+function styleBlocks(html) {
+  return [...String(html || "").matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)]
+    .map((m) => m[1])
+    .join("\n");
+}
+
+function heroMinHeightVh(html) {
+  const css = styleBlocks(html);
+  const out = [];
+  const ruleRe = /([^{}]+)\{([^{}]+)\}/g;
+  let m;
+  while ((m = ruleRe.exec(css))) {
+    const sel = m[1];
+    const body = m[2];
+    if (!/(^|[\s,#.])hero\b/.test(sel) && !/\bheader\b/.test(sel)) continue;
+    const vh = body.match(/min-height\s*:\s*(\d+(?:\.\d+)?)vh/i);
+    if (vh) {
+      const n = Number(vh[1]);
+      if (n >= 70) out.push({ selector: sel.trim(), vh: n });
+    }
+  }
+  return out;
+}
+
+function firstHeroMarkup(html) {
   const src = String(html || "");
-  const vh = src.match(/min-height\s*:\s*(\d+(?:\.\d+)?)vh/gi) || [];
-  const large = vh
-    .map((rule) => {
-      const n = Number((rule.match(/(\d+(?:\.\d+)?)vh/i) || [])[1]);
-      return n;
-    })
-    .filter((n) => n >= 70);
+  const tagged = src.match(
+    /<(header|section|div)([^>]*\bclass=["'][^"']*\bhero\b[^"']*["'][^>]*)>([\s\S]*?)<\/\1>/i
+  );
+  if (tagged) return tagged[0];
+  return "";
+}
+
+function firstViewportHasStill(html) {
+  const src = String(html || "");
+  const spacers = heroMinHeightVh(src);
+  const hero = firstHeroMarkup(src);
+  const heroHasImg = /<img\b/i.test(hero);
+  if (spacers.length && (!hero || !heroHasImg)) {
+    return {
+      ok: false,
+      reason: `first viewport is a ${spacers[0].vh}vh hero spacer with no still`,
+    };
+  }
+  if (hero && !heroHasImg && /min-height\s*:\s*\d/.test(src)) {
+    const anyLarge = /min-height\s*:\s*(\d+(?:\.\d+)?)vh/i.exec(styleBlocks(src));
+    if (anyLarge && Number(anyLarge[1]) >= 70) {
+      return {
+        ok: false,
+        reason: `hero has no still and page uses ${anyLarge[1]}vh min-height spacer`,
+      };
+    }
+  }
   return {
-    ok: large.length > 0,
-    values: large,
+    ok: true,
+    reason: heroHasImg
+      ? "hero contains a work still"
+      : "no empty min-height hero spacer",
   };
 }
 
@@ -105,5 +151,6 @@ module.exports = {
   workImagesInHtml,
   htmlHasWorkImages,
   isRealWorkSrc,
-  heroHasEmptySpacer,
+  firstViewportHasStill,
+  heroMinHeightVh,
 };

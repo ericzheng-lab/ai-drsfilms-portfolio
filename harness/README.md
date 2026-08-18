@@ -99,7 +99,10 @@ Hop order:
    HTML, when present, still gets structure + noindex + claim-lock/slop
    checks, and **must contain real work stills** (`<img>` with a real src).
    Text-only pages, empty/placeholder/decorative marks, and local HTML
-   without stills are `REJECT`. Images are not optional; there is no waiver.
+   without stills are `REJECT` (`_CAREER` B-C6 / B-P3 / B-WKS4). A
+   `.hero` / `header` with `min-height >= 70vh` and no still in that
+   hero is `REJECT` even if a thumb appears later (B-C6 blank first
+   viewport; Giant Spoon #18). Images are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
@@ -234,6 +237,7 @@ Paths are relative to the package directory.
 | `fixtures/fail-generic-homepage` | R2 or R3 `REJECT` (`ai.drsfilms.com/` root) |
 | `fixtures/fail-missing-cl` | `REJECT` (no cover letter file) |
 | `fixtures/fail-text-only-profile` | R2 `REJECT` (Profile HTML has no real work stills) |
+| `fixtures/fail-empty-hero-profile` | R2 `REJECT` (78vh / min-height hero spacer, no still in first viewport) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 All fixture people, emails, companies, and sentences are synthetic.
