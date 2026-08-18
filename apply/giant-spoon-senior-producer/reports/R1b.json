@@ -1,0 +1,99 @@
+{
+  "generator": "career-hop-harness",
+  "hop": "R1b",
+  "name": "CL",
+  "verdict": "ACCEPT",
+  "ruleset": "1.11.0",
+  "generated_at": "2026-08-18T21:44:34.683Z",
+  "package_dir": "/workspace/apply/giant-spoon-senior-producer",
+  "input_hashes": {
+    "manifest": "a7339031437cd42ff7d32dce1ebe99266775850c18e330777f47ebd5184a0b69",
+    "brief": "304f2831eadf9a29c455ae59fb9690753a1b8b9aa8e9af737e207f7d36bf4dbd",
+    "cv": "6d5145bab43d42dec490c6eba0b9526f24735b9a3d20bc4ee6dd6b85d7777d83",
+    "cl": "f7beae8c4504260968d8cb71869083ebe9266887644355988866b168a9a561b0",
+    "vi": "4a05d2694e5160e1deec82c447f67327a4dae355ecf7fe4319541bbe9c0db4c8",
+    "profile_html": "42df12cb62f7c435466fcff57611e6ba80ca287e6dfaab0192ac0c49afd5fee3"
+  },
+  "checks": [
+    {
+      "id": "r1b-cl-exists",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL file present"
+    },
+    {
+      "id": "r1b-cl-distinct",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL is distinct and nonempty"
+    },
+    {
+      "id": "no-cl-waiver",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "no CL waiver"
+    },
+    {
+      "id": "claim-lock-sundance-win",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL clear of claim-lock-sundance-win"
+    },
+    {
+      "id": "claim-lock-berlinale-win",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL clear of claim-lock-berlinale-win"
+    },
+    {
+      "id": "claim-lock-dungeon-fighter",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL clear of claim-lock-dungeon-fighter"
+    },
+    {
+      "id": "claim-lock-rmb-cny",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL clear of claim-lock-rmb-cny"
+    },
+    {
+      "id": "claim-lock-p007",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL clear of claim-lock-p007"
+    },
+    {
+      "id": "claim-lock-five-films-four-weeks",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CL clear of claim-lock-five-films-four-weeks"
+    },
+    {
+      "id": "slop-lexicon",
+      "severity": "P1",
+      "status": "PASS",
+      "detail": "CL clear of slop lexicon"
+    },
+    {
+      "id": "prerequisite-R0",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "R0 ACCEPT (disk, bound)"
+    },
+    {
+      "id": "prerequisite-R-VI",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "R-VI ACCEPT (disk, bound)"
+    },
+    {
+      "id": "prerequisite-R1",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "R1 ACCEPT (disk, bound)"
+    }
+  ],
+  "failures": [],
+  "binding": "f9fe68e19dd6dd76ffae9b424805d29d58576ccd349ff9046dc019e1cd037c4e"
+}
