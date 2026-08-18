@@ -20,9 +20,10 @@ Reason: quality-gate CLI only. Does not touch `public/` routes or production dep
 - [x] D1: `node harness/cli.js --self-test` exits 0
 - [x] D2: four fixtures behave (skip-profile REJECT / generic-homepage REJECT / missing-cl REJECT / pass-minimal-three ACCEPT)
 - [x] D3: `public/` and site source untouched vs origin/main
-- [ ] D4: Draft PR open; not merged
+- [x] D4: Draft PR #17 open; not merged (https://github.com/ericzheng-lab/ai-drsfilms-portfolio/pull/17)
 
 ## Loop log
 - Loop 0: read origin/main, existing Actions `deploy.yml`, career-ops PR #5 as scrap.
 - Loop 1: add `harness/` CLI, versioned rules, schema, fixtures, isolated Actions workflow.
 - Verify: `--self-test` green; fixture hops match named outcomes; `git diff origin/main -- public src` empty.
+- Draft PR: https://github.com/ericzheng-lab/ai-drsfilms-portfolio/pull/17 (not merged).
