@@ -12,6 +12,7 @@ const {
   exitCodeFor,
   inputHashesFromPkg,
   validatePrerequisiteReport,
+  verifyDiskReportAgainstLive,
 } = require("./reports");
 
 const HARNESS_ROOT = path.join(__dirname, "..");
@@ -148,6 +149,8 @@ async function runHops(opts) {
     }
     const meta = hopMeta(contracts, hopId);
     const hopOpts = { fetchResult };
+    const diskBefore =
+      opts.verify && hopId === "R3" ? readReport(reportsDir, hopId) : null;
     const checks = runner(pkg, rules, hopOpts);
     checks.push(
       ...prerequisiteChecks(
@@ -160,6 +163,10 @@ async function runHops(opts) {
         hopOpts
       )
     );
+    if (opts.verify && hopId === "R3") {
+      // Live re-run + decideVerdict(live checks). Disk verdict is not trusted.
+      checks.push(...verifyDiskReportAgainstLive(diskBefore, checks, hopId));
+    }
     const report = buildReport({
       hop: hopId,
       name: meta ? meta.name : hopId,

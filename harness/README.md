@@ -134,6 +134,11 @@ node harness/cli.js --hop R2 --package "$PACKAGE"
 # R3 Closeout — required before any ATS fill
 node harness/cli.js --hop R3 --package "$PACKAGE"
 
+# Supervisor verify — MUST run before ATS fill (re-runs R3 live)
+node harness/cli.js --verify --hop R3 --package "$PACKAGE"
+# equivalent:
+node harness/cli.js --hop R3 --verify --package "$PACKAGE"
+
 # Whole chain (stops on first non-ACCEPT)
 node harness/cli.js --hop chain --package "$PACKAGE"
 
@@ -160,6 +165,17 @@ set. Those files are harness-generated and include a binding over
 `package_dir` + input hashes. Forged or stale reports cannot unlock R3.
 
 ### Supervisor hard stop
+
+Supervisors **MUST** call `--verify` (or a fresh `--hop R3`) before any
+ATS fill. Never treat a disk `reports/R3.json` `verdict` field as
+sufficient — a handwritten `{"verdict":"ACCEPT"}` can fool a reader that
+only opens the file.
+
+`--verify --hop R3` re-runs R3 live, re-derives `decideVerdict` from those
+live checks, and exits `0` only if live R3 is `ACCEPT`. If
+`$PACKAGE/reports/R3.json` is missing, handwritten / not
+harness-generated, or its `verdict` disagrees with the live derive,
+`--verify` is `REJECT` (nonzero).
 
 If `$PACKAGE/reports/R3.json` is missing, not harness-generated, not bound
 to this package's current input hashes, or `verdict` is not `ACCEPT`,

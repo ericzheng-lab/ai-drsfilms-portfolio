@@ -15,6 +15,8 @@ Usage:
   node harness/cli.js --self-test
   node harness/cli.js --hop <R0|R-VI|R1|R1b|R2|R3|chain> --package <dir>
   node harness/cli.js --hop R3 --manifest <path>
+  node harness/cli.js --verify --hop R3 --package <dir>
+  node harness/cli.js --hop R3 --verify --package <dir>
 
 Options:
   --hop <id>           One hop, comma list, or chain
@@ -22,6 +24,7 @@ Options:
   --manifest <path>    Manifest file (package dir = its dirname)
   --reports <dir>      Where hop reports are written (default: <package>/reports)
   --fetch-profile      Live GET of profile_url. ACCEPT needs HTTP 2xx AND dedicated-profile path identity (/{slug}/) in the body. Company-word mention alone is not enough. SPA 200 empty shell / 4xx / 5xx / timeout / error is FAIL. Local profile.html is not enough.
+  --verify             Supervisor mode for R3: re-run R3 live and re-derive decideVerdict. Do not trust disk reports/R3.json. Missing, handwritten, or disk-vs-live disagreement is REJECT. Exit 0 only if live R3 ACCEPT.
   --json               Print reports as JSON
   --self-test          Run built-in units + the four fixtures; exit 0 on pass
   --help               This help
@@ -34,7 +37,7 @@ Exit codes:
 
 Nobody may waive Profile or cover letter. Recover = re-run the same hop after fix.
 This CLI does not apply to jobs, fill an ATS, or submit anything.
-Reports are harness-generated and bound to this package's input hashes. Prerequisite ACCEPT is decideVerdict(checks); the self-certified verdict field is not trusted. Forged, empty-check, id+PASS stub, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML and re-verifies VI provenance.
+Reports are harness-generated and bound to this package's input hashes. Prerequisite ACCEPT is decideVerdict(checks); the self-certified verdict field is not trusted. Forged, empty-check, id+PASS stub, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML and re-verifies VI provenance. Supervisors must --verify (or a fresh --hop R3) before ATS fill; a disk R3.json verdict is never sufficient.
 `.trim();
   console.log(text);
 }
@@ -47,6 +50,7 @@ function parseArgs(argv) {
     reportsDir: null,
     fetchProfile: false,
     json: false,
+    verify: false,
     selfTest: false,
     help: false,
   };
@@ -55,6 +59,7 @@ function parseArgs(argv) {
     if (a === "--help" || a === "-h") out.help = true;
     else if (a === "--self-test") out.selfTest = true;
     else if (a === "--json") out.json = true;
+    else if (a === "--verify") out.verify = true;
     else if (a === "--fetch-profile") out.fetchProfile = true;
     else if (a === "--hop") out.hop = argv[++i];
     else if (a === "--package") out.packageDir = argv[++i];
@@ -103,8 +108,12 @@ async function main() {
     }
   }
 
+  if (args.verify && !args.hop) {
+    args.hop = "R3";
+  }
+
   if (!args.hop) {
-    console.error("--hop is required unless --self-test");
+    console.error("--hop is required unless --self-test or --verify");
     printHelp();
     process.exit(64);
   }
@@ -123,12 +132,19 @@ async function main() {
     process.exit(64);
   }
 
+  if (args.verify && (hops.length !== 1 || hops[0] !== "R3")) {
+    console.error("--verify only supports --hop R3 (or --verify with hop defaulting to R3)");
+    printHelp();
+    process.exit(64);
+  }
+
   const result = await runHops({
     packageDir: args.packageDir,
     manifestPath: args.manifestPath,
     reportsDir: args.reportsDir,
     hops,
     fetchProfile: args.fetchProfile,
+    verify: args.verify,
     ruleset,
   });
 

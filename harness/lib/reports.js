@@ -176,6 +176,47 @@ function validatePrerequisiteReport(report, hopId, pkg, liveChecks) {
   return { ok: true, reason: "harness-generated, bound, fresh, real hop checks" };
 }
 
+function diskReportIsUsable(disk) {
+  return Boolean(disk) && disk.verdict !== "INVALID" && !disk.error;
+}
+
+// Supervisor --verify: do not trust a disk verdict field. Compare against
+// decideVerdict(liveChecks) from a live hop re-run.
+function verifyDiskReportAgainstLive(disk, liveChecks, hopId) {
+  const liveDerived = decideVerdict(liveChecks);
+  const present = diskReportIsUsable(disk);
+  const harnessOk = present && reportLooksHarnessGenerated(disk);
+  const diskVerdict = present ? disk.verdict : null;
+  const agree = present && diskVerdict === liveDerived;
+  const file = `reports/${hopId}.json`;
+  return [
+    {
+      id: "verify-r3-disk-present",
+      severity: "P0",
+      status: present ? "PASS" : "FAIL",
+      detail: present
+        ? `${file} present`
+        : `${file} missing — supervisor cannot trust a disk verdict`,
+    },
+    {
+      id: "verify-r3-harness-generated",
+      severity: "P0",
+      status: harnessOk ? "PASS" : "FAIL",
+      detail: harnessOk
+        ? `${file} is harness-generated`
+        : `${file} is handwritten or forged — disk verdict is not trusted`,
+    },
+    {
+      id: "verify-r3-verdict-matches-live",
+      severity: "P0",
+      status: agree ? "PASS" : "FAIL",
+      detail: agree
+        ? `disk verdict ${diskVerdict} matches live decideVerdict`
+        : `disk verdict ${diskVerdict == null ? "missing" : diskVerdict} disagrees with live derive ${liveDerived}`,
+    },
+  ];
+}
+
 function readReport(reportsDir, hopId) {
   const file = reportPath(reportsDir, hopId);
   if (!fs.existsSync(file)) return null;
@@ -256,6 +297,7 @@ module.exports = {
   hashesEqual,
   reportLooksHarnessGenerated,
   validatePrerequisiteReport,
+  verifyDiskReportAgainstLive,
   canonicalPackageDir,
   checksMatchRealHopRun,
   checksHaveReproducibleEvidence,

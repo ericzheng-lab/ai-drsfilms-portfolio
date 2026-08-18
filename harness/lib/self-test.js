@@ -580,6 +580,129 @@ async function testR3RescansClaimlockSlopOnCvCl() {
   return "REJECT";
 }
 
+function liveChecksOf(report) {
+  return (report.checks || []).filter((c) => !String(c.id).startsWith("verify-r3-"));
+}
+
+async function testVerifyModeRederivesR3() {
+  const fetchResult = qualifyingFetchResult();
+
+  const handwrittenDir = copyFixtureToTmp("pass-minimal-three");
+  const handwrittenReports = path.join(handwrittenDir, "reports");
+  const handwrittenChain = await runHops({
+    packageDir: handwrittenDir,
+    hops: ["R0", "R-VI", "R1", "R1b", "R2", "R3"],
+    reportsDir: handwrittenReports,
+    fetchResult,
+  });
+  assert(handwrittenChain.last.verdict === "ACCEPT", "setup chain must ACCEPT before handwritten overwrite");
+  fs.writeFileSync(
+    path.join(handwrittenReports, "R3.json"),
+    `${JSON.stringify({ verdict: "ACCEPT" }, null, 2)}\n`,
+    "utf8"
+  );
+  const handwritten = await runHops({
+    packageDir: handwrittenDir,
+    hops: ["R3"],
+    reportsDir: handwrittenReports,
+    stopOnFail: false,
+    fetchResult,
+    verify: true,
+  });
+  assert(
+    handwritten.last.verdict === "REJECT",
+    "handwritten reports/R3.json verdict ACCEPT must fail --verify"
+  );
+  assert(
+    hasFail(handwritten.last, "verify-r3-harness-generated"),
+    `handwritten R3 must fail harness-generated check, got ${failuresOf(handwritten.last)}`
+  );
+  assert(
+    decideVerdict(liveChecksOf(handwritten.last)) === "ACCEPT",
+    "live R3 must ACCEPT so --verify fail is from the handwritten disk file"
+  );
+
+  const missDir = copyFixtureToTmp("pass-minimal-three");
+  const missReports = path.join(missDir, "reports");
+  await runHops({
+    packageDir: missDir,
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: missReports,
+    fetchResult,
+  });
+  const missing = await runHops({
+    packageDir: missDir,
+    hops: ["R3"],
+    reportsDir: missReports,
+    stopOnFail: false,
+    fetchResult,
+    verify: true,
+  });
+  assert(missing.last.verdict === "REJECT", "missing reports/R3.json must fail --verify");
+  assert(
+    hasFail(missing.last, "verify-r3-disk-present"),
+    `missing R3 must fail disk-present, got ${failuresOf(missing.last)}`
+  );
+
+  const disagreeDir = copyFixtureToTmp("pass-minimal-three");
+  const disagreeReports = path.join(disagreeDir, "reports");
+  const disagreeChain = await runHops({
+    packageDir: disagreeDir,
+    hops: ["R0", "R-VI", "R1", "R1b", "R2", "R3"],
+    reportsDir: disagreeReports,
+    fetchResult,
+  });
+  assert(disagreeChain.last.verdict === "ACCEPT", "disagree setup chain must ACCEPT");
+  fs.appendFileSync(path.join(disagreeDir, "cv.md"), "\nSundance winner.\n", "utf8");
+  const disagree = await runHops({
+    packageDir: disagreeDir,
+    hops: ["R3"],
+    reportsDir: disagreeReports,
+    stopOnFail: false,
+    fetchResult,
+    verify: true,
+  });
+  assert(
+    disagree.last.verdict === "REJECT",
+    "disk ACCEPT that disagrees with live derive must fail --verify"
+  );
+  assert(
+    hasFail(disagree.last, "verify-r3-verdict-matches-live"),
+    `disk-vs-live disagreement must fail, got ${failuresOf(disagree.last)}`
+  );
+  assert(
+    decideVerdict(liveChecksOf(disagree.last)) !== "ACCEPT",
+    "live derive after CV poison must not ACCEPT"
+  );
+
+  const realDir = copyFixtureToTmp("pass-minimal-three");
+  const realReports = path.join(realDir, "reports");
+  const real = await runHops({
+    packageDir: realDir,
+    hops: ["R0", "R-VI", "R1", "R1b", "R2", "R3"],
+    reportsDir: realReports,
+    fetchResult,
+  });
+  assert(real.last.verdict === "ACCEPT", "real ACCEPT package setup must ACCEPT");
+  const verified = await runHops({
+    packageDir: realDir,
+    hops: ["R3"],
+    reportsDir: realReports,
+    fetchResult,
+    verify: true,
+  });
+  assert(verified.last.verdict === "ACCEPT", "real ACCEPT package must pass --verify");
+  assert(
+    decideVerdict(liveChecksOf(verified.last)) === "ACCEPT",
+    "--verify must re-derive ACCEPT from live checks"
+  );
+  assert(
+    !failuresOf(verified.last).some((id) => id.startsWith("verify-r3-")),
+    `real ACCEPT --verify checks must PASS, got ${failuresOf(verified.last)}`
+  );
+  return "PASS";
+}
+
 async function testReportBindsToPackageAndInputs() {
   const donor = copyFixtureToTmp("pass-minimal-three");
   const graft = copyFixtureToTmp("cross-package-graft");
@@ -1515,6 +1638,7 @@ async function runSelfTest() {
       await testLiveMarkerMustBeDedicatedRoute(),
     "test-r3-reruns-vi-provenance": await testR3RerunsViProvenance(),
     "test-r3-rescans-claimlock-slop-on-cv-cl": await testR3RescansClaimlockSlopOnCvCl(),
+    "test-verify-mode-rederives-r3": await testVerifyModeRederivesR3(),
     "test-report-binds-to-package-and-inputs": await testReportBindsToPackageAndInputs(),
     "test-stale-report-invalidated-on-input-change": await testStaleReportInvalidatedOnInputChange(),
     "test-ghost-profile-url-without-live-page-rejected":
