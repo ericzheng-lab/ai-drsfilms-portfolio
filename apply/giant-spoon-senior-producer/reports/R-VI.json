@@ -4,15 +4,15 @@
   "name": "VI distill",
   "verdict": "ACCEPT",
   "ruleset": "1.11.0",
-  "generated_at": "2026-08-18T21:44:34.607Z",
+  "generated_at": "2026-08-18T21:47:50.727Z",
   "package_dir": "/workspace/apply/giant-spoon-senior-producer",
   "input_hashes": {
-    "manifest": "a7339031437cd42ff7d32dce1ebe99266775850c18e330777f47ebd5184a0b69",
+    "manifest": "eb3ab8a64371c2a8d3c6020a6c626a19e78346ba9df94f01f988f55e310e2c89",
     "brief": "304f2831eadf9a29c455ae59fb9690753a1b8b9aa8e9af737e207f7d36bf4dbd",
     "cv": "6d5145bab43d42dec490c6eba0b9526f24735b9a3d20bc4ee6dd6b85d7777d83",
     "cl": "f7beae8c4504260968d8cb71869083ebe9266887644355988866b168a9a561b0",
     "vi": "4a05d2694e5160e1deec82c447f67327a4dae355ecf7fe4319541bbe9c0db4c8",
-    "profile_html": "42df12cb62f7c435466fcff57611e6ba80ca287e6dfaab0192ac0c49afd5fee3"
+    "profile_html": "bc3982f1740e2c6ccff5140807c95def9e7439b2b230613284abf6239c7b6817"
   },
   "checks": [
     {
@@ -83,5 +83,5 @@
     }
   ],
   "failures": [],
-  "binding": "3e74891dcc028090212de06a944c15849220dc5a527aeb073872495568d0a82e"
+  "binding": "da752defaa88b3f3447cbfabd583731228fd319f623223d91a617d33a257a08a"
 }
