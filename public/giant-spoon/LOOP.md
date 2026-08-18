@@ -431,4 +431,32 @@ Only after those hops REJECT the text cards:
 - One `stills/workflow-6stage.svg` (Klein Blue / black / white) + locked footnote.
 - Prompt Builder last, one card. No 58-node. No in-dev wall. Klein Blue remains a wordmark/field.
 
-Ruleset 1.9.0. Claim-locks unchanged.
+Ruleset 1.10.0. Claim-locks unchanged.
+
+---
+
+## Loop 10 — 2026-08-18 (asset librarian, fixtures first)
+
+Third debate closed. Compiled as harness law, not a page restyle.
+
+**ANY company page:**
+
+- Outward image requires `assets.json` `external_ready:true` AND drs-source INDEX `public:true`. Text may cite a READY-but-private asset; the file cannot hang.
+- `A-WORKFLOW-58NODE` file only legal on `/wonder/` until a generic public version is READY + DRS `public:true`.
+- `A-TOOLS-DEV4` screenshots (`ai-film-studio-ui-01`, `coda-ui-01`, `martini-ui-01`, `ttl-breakdown-ui-01`) are `public:false`. Hanging them is REJECT. In-development does not waive INDEX. `prompt-builder-ui-01` is the only public:true product shot today.
+- `A-WORKFLOW-6STAGE` is READY on Drive (`1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5`, sha `0cb95ffb…`) but not in DRS INDEX. Non-Wonder pages must reskin. Never mix 6 vs 7/58 in captions. P-led: not the lead; method slot only if JD has process/gates as must-or-should and the strip is a picture. O-led: required (DOC-6/R8). A-led: supporting only.
+- Visible internal ids = REJECT.
+
+**P-led exam (this page):** lead `A-SHOWREEL-TRAD` as a picture. No 58-node file. No DEV4 suite. No Prompt Builder gallery. Brand stills omitted — no cleared brand frames in `stills/` (do not invent).
+
+### 1) Harness first
+
+Catalog: `harness/rules/asset-clearance.json`. New checks: `r2-profile-asset-clearance`, `r2-profile-58node-route`, `r2-profile-dev4-private`, `r2-profile-p-led-pb-gallery`. Fixtures: `fail-private-asset-hung`, `fail-dev4-indev-label`, `fail-58node-off-wonder`, `fail-6stage-drive-original`, `fail-6stage-caption-mix`, `fail-o-led-missing-6stage`, `fail-p-led-pb-gallery`, `pass-wonder-58node`. `--self-test` PASS (`test-asset-librarian-rejected`).
+
+### 2) Current `/giant-spoon/` vs those fixtures (before exam)
+
+`fail-p-led-pb-gallery` **REJECTED** the previous tools section (`prompt-builder-ui-01` hung). No DEV4. No 58-node file. 6-stage was already a reskin + footnote.
+
+### 3) Exam page (secondary)
+
+Removed the Prompt Builder gallery / tools section. Reel stays 21:9 + play. Reskinned `workflow-6stage.svg` stays in the method slot. No invented brand photos.
