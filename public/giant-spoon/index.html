@@ -15,7 +15,6 @@
   --white:#ffffff;
   --ink:#000000;
   --muted:#222222;
-  --line:#000000;
   --paper:#ffffff;
   --soft:#f4f5f8;
   --radius-button:0px;
@@ -29,6 +28,7 @@ body{font:300 16px/1.45 var(--font);color:var(--ink);background:var(--paper);-we
 a{color:inherit;text-decoration:none}
 a:hover,a:focus{color:var(--blue)}
 img{display:block;max-width:100%}
+iframe{display:block;border:0;width:100%;aspect-ratio:16/9;background:var(--black)}
 button{appearance:none;border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:0}
 .wrap{width:min(1240px,calc(100% - 40px));margin:0 auto}
 .mono,.eyebrow,.index,.tag,.stat span,.work-kicker,.play,.nav a,.site-nav,.source,.button{text-transform:uppercase;letter-spacing:.08em}
@@ -39,9 +39,8 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
 .lead-still{position:relative;display:block;background:var(--black);color:var(--white)}
 .lead-still img{width:100%;height:min(78vh,calc(100vw * 9 / 16));object-fit:cover}
 .lead-ui{position:absolute;inset:auto 0 0 0;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:18px 22px;background:linear-gradient(transparent,rgba(0,0,0,.72))}
-.lead-ui h1{font-weight:700;font-size:clamp(28px,4vw,48px);letter-spacing:-.03em;line-height:.95;max-width:18ch;text-transform:uppercase}
+.lead-ui h1{font-weight:700;font-size:clamp(28px,4vw,48px);letter-spacing:-.03em;line-height:.95;max-width:22ch;text-transform:uppercase}
 .lead-ui p{max-width:36rem;font-size:14px;font-weight:300}
-.play{display:inline-block;border:1px solid #fff;padding:8px 10px;font-size:10px;font-weight:600}
 .identity{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--black)}
 .stat{padding:16px 18px;border-right:1px solid var(--black);background:var(--white)}
 .stat:last-child{border-right:0}
@@ -54,19 +53,20 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
 .section-head{display:grid;grid-template-columns:200px 1fr;gap:24px;margin-bottom:22px}
 .index{font-size:11px;font-weight:600;color:var(--blue);padding-top:6px}
 .section-head h2{font-size:clamp(28px,3.6vw,46px);font-weight:700;letter-spacing:-.035em;line-height:.98;text-transform:uppercase}
-.section-head p{margin-top:10px;max-width:40rem;color:var(--muted)}
-.film-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.work-card{display:block;text-align:left;background:var(--white);border:1px solid var(--black);overflow:hidden;position:relative;cursor:pointer}
+.section-head p{margin-top:10px;max-width:42rem;color:var(--muted)}
+.trad-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+.work-card{text-align:left;background:var(--white);border:1px solid var(--black);overflow:hidden;position:relative}
 .work-card:hover{border-color:var(--blue)}
 .poster{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--black)}
 .work-copy{padding:16px}
 .work-kicker{display:block;font-size:10px;font-weight:600;color:var(--blue);margin-bottom:6px}
 .work-copy h3{font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.05;text-transform:uppercase;margin-bottom:6px}
 .work-copy p{font-size:13px;color:var(--muted)}
+.credits{margin-top:14px;padding:14px 16px;border:1px solid var(--black);background:var(--soft);font-size:13px}
+.film-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.work-card.video-trigger{cursor:pointer}
+.work-card .play,.lead-still .play{display:inline-block;border:1px solid #fff;padding:8px 10px;font-size:10px;font-weight:600}
 .work-card .play{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.94);color:var(--black)}
-.feature{display:grid;grid-template-columns:1.3fr .7fr;gap:14px;margin-top:14px}
-.feature .work-card .poster{aspect-ratio:16/9}
-.note{margin-top:14px;padding:14px 16px;border:1px solid var(--black);background:var(--soft);font-size:13px}
 .model{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--black)}
 .step{padding:18px;min-height:148px;border-right:1px solid var(--black);border-bottom:1px solid var(--black)}
 .step:nth-child(3n){border-right:0}
@@ -99,7 +99,7 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
 .modal-title{font-weight:600;margin-bottom:10px;text-transform:uppercase}
 .modal-close{position:absolute;top:10px;right:10px;width:32px;height:32px;font-size:22px;border:1px solid var(--black)}
 @media(max-width:900px){
-  .identity,.film-grid,.feature,.model,.leadership,.tool,.section-head,.closing-inner,.footer{grid-template-columns:1fr;display:block}
+  .identity,.film-grid,.trad-grid,.model,.leadership,.tool,.section-head,.closing-inner,.footer{grid-template-columns:1fr;display:block}
   .stat,.leadership > div + div{border-right:0;border-top:1px solid var(--black)}
   .step{border-right:0}
   .step:nth-child(n+4){border-bottom:1px solid var(--black)}
@@ -122,14 +122,13 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
   </div>
 </nav>
 
-<a class="lead-still video-trigger" href="https://www.youtube.com/watch?v=6C--JC5iFmQ" data-provider="youtube" data-id="6C--JC5iFmQ" data-title="One Click Mute" aria-label="Play One Click Mute">
-  <img src="stills/one-click-mute-key-frame-01.jpg" alt="One Click Mute film still"/>
+<a class="lead-still" href="#work" aria-label="Brief History of A Family still — jump to selected work">
+  <img src="stills/brief-history-of-a-family-still-01.jpg" alt="Brief History of A Family film still"/>
   <div class="lead-ui">
     <div>
-      <h1>Finished films first.</h1>
-      <p>Senior Producer for integrated campaigns — concept through delivery. The stills are the work, not a résumé spacer.</p>
+      <h1>Brief History of A Family</h1>
+      <p>Live-action feature first. Showreel and brand credits on the page. AI after the board, in schedule and cost language.</p>
     </div>
-    <span class="play">Play</span>
   </div>
 </a>
 
@@ -142,11 +141,10 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
 
 <div class="wrap">
   <nav class="jump" aria-label="Page sections">
-    <a href="#work">Selected work</a>
-    <a href="#feature">Feature proof</a>
-    <a href="#model">Delivery model</a>
-    <a href="#team">How I run it</a>
-    <a href="#tools">Built system</a>
+    <a href="#work">Work samples</a>
+    <a href="#method">Method</a>
+    <a href="#fit">Fit</a>
+    <a href="#contact">Contact</a>
   </nav>
 </div>
 
@@ -154,108 +152,105 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
   <section class="section" id="work">
     <div class="wrap">
       <div class="section-head">
-        <div class="index">01 / Selected work</div>
+        <div class="index">01 / Work samples</div>
         <div>
-          <h2>Films first. The board follows.</h2>
-          <p>Finished pieces a Giant Spoon Senior Producer can put on the table: commercial-format AI films, fashion and narrative shorts, then the feature stills. Production-company work — not invented agency-client credits.</p>
+          <h2>Showreel first. Then the feature. Then the AI stack.</h2>
+          <p>Giant Spoon Senior Producer is a P-led integrated seat: campaign, budget, vendors, traditional reel. Finished live-action is on this page. AI films are a later strip — One Click Mute, then Manga Cut, then DoomBrush — not the open.</p>
+        </div>
+      </div>
+      <div class="trad-grid">
+        <article class="work-card">
+          <iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
+          <div class="work-copy">
+            <span class="work-kicker">A-SHOWREEL-TRAD · In-card</span>
+            <h3>Traditional showreel</h3>
+            <p>Live-action reel on this card. Not folded into a modal. The board can press play without leaving the work row.</p>
+          </div>
+        </article>
+        <article class="work-card">
+          <img class="poster" src="stills/brief-history-of-a-family-still-02.jpg" alt="Brief History of A Family promotional still"/>
+          <iframe src="https://player.vimeo.com/video/1172739705" title="Brief History of A Family" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
+          <div class="work-copy">
+            <span class="work-kicker">Feature · Producer · Vimeo in-card</span>
+            <h3>Brief History of A Family</h3>
+            <p>Sundance Grand Jury Prize nominee · Berlinale Panorama. Nominee, not a win. Panorama selection, not a Berlinale prize.</p>
+          </div>
+        </article>
+      </div>
+      <p class="credits">Traditional brand credits on this page, from the production-company side — not Giant Spoon clients: COACH, Nike, BMW. Tencent · Dungeon &amp; Fighter three-film package was production-company EP after the first film, not an in-house agency producer on Giant Spoon briefs. $8M+ is an aggregate across Final Frontier and earlier brand work, not a single job. Final Frontier’s later Los Angeles studio expansion is not my work.</p>
+
+      <div class="section-head" style="margin-top:36px">
+        <div class="index">AI after the board</div>
+        <div>
+          <h2>One Click Mute. Manga Cut. DoomBrush.</h2>
+          <p>Fixed order. Canonical covers. The rest sits behind. This strip is the minority of the work page — translated into schedule and cost, not a 3D open.</p>
         </div>
       </div>
       <div class="film-grid">
+        <article class="work-card video-trigger" role="button" tabindex="0" data-provider="youtube" data-id="6C--JC5iFmQ" data-title="One Click Mute">
+          <img class="poster" src="stills/one-click-mute-key-frame-01.jpg" alt="One Click Mute film still"/>
+          <span class="play">Play</span>
+          <div class="work-copy">
+            <span class="work-kicker">AI 01 · Canon cover</span>
+            <h3>One Click Mute</h3>
+            <p>First AI title. Cover is the catalog key frame — not the DoomBrush still.</p>
+          </div>
+        </article>
         <article class="work-card video-trigger" role="button" tabindex="0" data-provider="youtube" data-id="7AGx2OsC6Yw" data-title="HOME × SMARTHOME — Manga Cut">
           <img class="poster" src="stills/home-smarthome-manga-cut-01.jpg" alt="HOME × SMARTHOME Manga Cut film still"/>
           <span class="play">Play</span>
           <div class="work-copy">
-            <span class="work-kicker">02 · Direction proof · 2:05</span>
+            <span class="work-kicker">AI 02 · Manga Cut</span>
             <h3>HOME × SMARTHOME</h3>
-            <p>Manga Cut: visual direction, style translation, generation, edit and post.</p>
-          </div>
-        </article>
-        <article class="work-card video-trigger" role="button" tabindex="0" data-provider="youtube" data-id="WL2dvDxIiHw" data-title="SYS/MERE — Fashion Film">
-          <img class="poster" src="stills/sys-mere-key-frame-01.jpg" alt="SYS/MERE fashion film still"/>
-          <span class="play">Play</span>
-          <div class="work-copy">
-            <span class="work-kicker">03 · Brand-system control · 0:48</span>
-            <h3>SYS/MERE</h3>
-            <p>Fashion film with a locked look and a short, reviewable cut.</p>
+            <p>Manga Cut second. Style translation, generation, edit and post.</p>
           </div>
         </article>
         <article class="work-card video-trigger" role="button" tabindex="0" data-provider="youtube" data-id="YG5Si7HXRB0" data-title="DoomBrush">
           <img class="poster" src="stills/doombrush-key-frame-01.jpg" alt="DoomBrush film still"/>
           <span class="play">Play</span>
           <div class="work-copy">
-            <span class="work-kicker">04 · Narrative continuity · 1:35</span>
+            <span class="work-kicker">AI 03 · Canon cover</span>
             <h3>DoomBrush</h3>
-            <p>Directed and produced for continuity across generated shots.</p>
+            <p>Third. Directed and produced for continuity across generated shots.</p>
           </div>
         </article>
         <article class="work-card video-trigger" role="button" tabindex="0" data-provider="youtube" data-id="CWPLMs9-CgU" data-title="Monet CyberPunk">
           <img class="poster" src="stills/monet-cyberpunk-key-frame-01.jpg" alt="Monet CyberPunk film still"/>
           <span class="play">Play</span>
           <div class="work-copy">
-            <span class="work-kicker">05 · Environmental range · 0:19</span>
+            <span class="work-kicker">AI remainder</span>
             <h3>Monet CyberPunk</h3>
-            <p>Short visual poem — environment and grade held in one cut.</p>
+            <p>After the three. Short visual poem.</p>
           </div>
         </article>
         <article class="work-card">
           <img class="poster" src="stills/my-new-haircut-key-frame-01.jpg" alt="My New Haircut film still"/>
           <div class="work-copy">
-            <span class="work-kicker">06 · Finished short</span>
+            <span class="work-kicker">AI remainder</span>
             <h3>My New Haircut</h3>
-            <p>Released short. Still from the master — no invented frame.</p>
+            <p>Released short. Catalog still — no invented frame.</p>
           </div>
         </article>
-        <article class="work-card video-trigger" role="button" tabindex="0" data-provider="vimeo" data-id="1172739705" data-title="Brief History of A Family">
-          <img class="poster" src="stills/brief-history-of-a-family-still-01.jpg" alt="Brief History of A Family film still"/>
+        <article class="work-card video-trigger" role="button" tabindex="0" data-provider="youtube" data-id="WL2dvDxIiHw" data-title="SYS/MERE — Fashion Film">
+          <img class="poster" src="stills/sys-mere-key-frame-01.jpg" alt="SYS/MERE fashion film still"/>
           <span class="play">Play</span>
           <div class="work-copy">
-            <span class="work-kicker">07 · Feature · Producer</span>
-            <h3>Brief History of A Family</h3>
-            <p>Sundance Grand Jury Prize nominee · Berlinale Panorama.</p>
+            <span class="work-kicker">AI remainder</span>
+            <h3>SYS/MERE</h3>
+            <p>Fashion film with a locked look. After the canon three.</p>
           </div>
         </article>
       </div>
     </div>
   </section>
 
-  <section class="section" id="feature">
+  <section class="section" id="method">
     <div class="wrap">
       <div class="section-head">
-        <div class="index">02 / Feature + package</div>
-        <div>
-          <h2>Festival feature. Three-film game package.</h2>
-          <p>Proof of range for an integrated production seat — festival delivery and a client-requested expansion — without claiming in-house Giant Spoon jobs that did not happen.</p>
-        </div>
-      </div>
-      <div class="feature">
-        <article class="work-card video-trigger" role="button" tabindex="0" data-provider="vimeo" data-id="1172739705" data-title="Brief History of A Family">
-          <img class="poster" src="stills/brief-history-of-a-family-still-02.jpg" alt="Brief History of A Family promotional still"/>
-          <span class="play">Play</span>
-          <div class="work-copy">
-            <span class="work-kicker">Feature · Producer</span>
-            <h3>Brief History of A Family</h3>
-            <p>Festival and territorial delivery. Nominee, not a win. Panorama selection, not a Berlinale prize.</p>
-          </div>
-        </article>
-        <article class="work-card">
-          <div class="work-copy">
-            <span class="work-kicker">Three-film package · Executive Producer</span>
-            <h3>Tencent · Dungeon &amp; Fighter</h3>
-            <p>After the first film, Tencent asked for two more. I produced the resulting three-film package through client approvals and production handoff — production-company EP, not an in-house agency producer on Giant Spoon briefs.</p>
-          </div>
-        </article>
-      </div>
-      <p class="note">Earlier live-action brand work includes COACH, Nike and BMW from the production-company side. Those jobs are not Giant Spoon campaigns. $8M+ is an aggregate across Final Frontier and earlier brand work, not a single job. Final Frontier’s later Los Angeles studio expansion is not my work.</p>
-    </div>
-  </section>
-
-  <section class="section" id="model">
-    <div class="wrap">
-      <div class="section-head">
-        <div class="index">03 / Delivery model</div>
+        <div class="index">02 / Method</div>
         <div>
           <h2>From first brief to last file.</h2>
-          <p>A production route Giant Spoon can put in front of Creative and the client: what we are making, who owns the next decision, and what it costs.</p>
+          <p>A-WORKFLOW-6STAGE after the work, not before it. AI shows up here as time and money: what a generated pass costs against a shoot day, and who owns the gate.</p>
         </div>
       </div>
       <div class="model">
@@ -264,15 +259,15 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
         <article class="step"><b>03 · Review gates</b><strong>Hold the line</strong><p>Concept, treatment, offline, finish, and legal/talent checks have named owners and dates.</p></article>
         <article class="step"><b>04 · Produce</b><strong>Run concurrent work</strong><p>Crew, vendors, and client notes stay on one board while other jobs keep moving.</p></article>
         <article class="step"><b>05 · Deliver</b><strong>Close the job</strong><p>Specs, versions, archive, and cost reconciliation — then a clean handoff to media and account.</p></article>
-        <article class="step"><b>06 · Next brief</b><strong>Keep the roster</strong><p>Vendor notes and what the last job taught us go back into the next estimate.</p></article>
+        <article class="step"><b>06 · Next brief</b><strong>Keep the roster</strong><p>Vendor notes and what the last job taught us go back into the next estimate, including when an AI pass is cheaper than a reshoot and when it is not.</p></article>
       </div>
     </div>
   </section>
 
-  <section class="section" id="team">
+  <section class="section" id="fit">
     <div class="wrap">
       <div class="section-head">
-        <div class="index">04 / How I run it</div>
+        <div class="index">03 / Fit</div>
         <div>
           <h2>Budgets, vendors, concurrent jobs.</h2>
           <p>The Senior Producer seat asks for someone who can bid a job, hold a vendor, and keep several productions honest at the same time. NYC hybrid — Greater New York, Tuesday through Thursday on site.</p>
@@ -306,10 +301,10 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
   <section class="section" id="tools">
     <div class="wrap">
       <div class="section-head">
-        <div class="index">05 / Built system</div>
+        <div class="index">04 / Built system</div>
         <div>
           <h2>Prompt Builder is a tool I shipped.</h2>
-          <p>A live prompt workbench for film and stills — not a stand-in for this Giant Spoon role page. It keeps model-specific prompts reviewable before anything goes to a client.</p>
+          <p>A live prompt workbench — not a stand-in for this role page, and not the lead. Evidence I can price and schedule a generated pass with a human gate.</p>
         </div>
       </div>
       <div class="tool">
@@ -318,7 +313,6 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
           <span class="eyebrow">Live product</span>
           <h3>Prompt Builder</h3>
           <p>Turns creative intent into controllable, model-specific prompts with a human gate before output ships. Hosted on Cloudflare Pages and Workers.</p>
-          <p>The Giant Spoon brief asks for current production methods, including AI-enabled tools. This is evidence I build the gate, not only talk about it.</p>
           <a href="https://ai.drsfilms.com/prompt-builder/" target="_blank" rel="noopener noreferrer">Open Prompt Builder ↗</a>
         </div>
       </div>
@@ -326,7 +320,7 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
   </section>
 </main>
 
-<section class="closing">
+<section class="closing" id="contact">
   <div class="wrap closing-inner">
     <div>
       <h2>Yue (Eric) Zheng</h2>

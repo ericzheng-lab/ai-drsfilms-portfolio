@@ -243,6 +243,10 @@ Paths are relative to the package directory.
 | `fixtures/fail-empty-hero-profile` | R2 `REJECT` (78vh / min-height hero spacer, no still in first viewport) |
 | `fixtures/fail-late-stills-profile` | R2 `REJECT` (type-only open; stills below 80 words) |
 | `fixtures/fail-thin-stack-profile` | R2 `REJECT` (fewer than 4 real work stills) |
+| `fixtures/fail-ai-only-profile` | R2 `REJECT` (no traditional film/showreel credits) |
+| `fixtures/fail-ai-lead-profile` | R2 `REJECT` (AI title in the lead slot) |
+| `fixtures/fail-ai-order-profile` | R2 `REJECT` (AI stack not OCM → Manga Cut → DoomBrush) |
+| `fixtures/fail-folded-vimeo-profile` | R2 `REJECT` (traditional Vimeo only in a modal) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 All fixture people, emails, companies, and sentences are synthetic.

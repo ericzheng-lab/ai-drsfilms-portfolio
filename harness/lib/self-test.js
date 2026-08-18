@@ -35,6 +35,10 @@ const {
   firstViewportHasStill,
   firstStillIsEarly,
   htmlHasEnoughStills,
+  hasTraditionalCredits,
+  traditionalLeads,
+  aiFilmOrderOk,
+  vimeoEmbedInCard,
 } = require("./profile-images");
 const {
   PIN_PATH,
@@ -871,6 +875,30 @@ async function testLateStillsProfileRejected() {
   return "REJECT";
 }
 
+async function testNamedCareerWorkSampleRejected() {
+  const cases = [
+    ["fail-ai-only-profile", "r2-profile-traditional-credits", "AI-only stack"],
+    ["fail-ai-lead-profile", "r2-profile-traditional-lead", "AI lead"],
+    ["fail-ai-order-profile", "r2-profile-ai-film-order", "swapped AI order"],
+    ["fail-folded-vimeo-profile", "r2-profile-vimeo-in-card", "folded Vimeo"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+  return "REJECT";
+}
+
 async function testThinStackProfileRejected() {
   const fetchResult = qualifyingFetchResult();
   const r2 = await runHops({
@@ -1507,6 +1535,32 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         ).ok === false,
         "two stills do not carry a page"
       ),
+    "r2-profile-traditional-credits": () =>
+      assert(
+        hasTraditionalCredits(
+          "<p>One Click Mute. Manga Cut. DoomBrush.</p>"
+        ).ok === false,
+        "AI-only stack"
+      ),
+    "r2-profile-traditional-lead": () =>
+      assert(
+        traditionalLeads(
+          "<p>One Click Mute. Brief History of a Family. showreel.</p>"
+        ).ok === false,
+        "AI title before traditional"
+      ),
+    "r2-profile-ai-film-order": () =>
+      assert(
+        aiFilmOrderOk("<p>DoomBrush. One Click Mute. Manga Cut.</p>").ok === false,
+        "swapped AI stack"
+      ),
+    "r2-profile-vimeo-in-card": () =>
+      assert(
+        vimeoEmbedInCard(
+          '<p>Brief History</p><div class="modal"><iframe src="https://player.vimeo.com/video/1"></iframe></div>'
+        ).ok === false,
+        "modal-only Vimeo"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -1810,6 +1864,7 @@ async function runSelfTest() {
     "test-empty-hero-profile-rejected": await testEmptyHeroProfileRejected(),
     "test-late-stills-profile-rejected": await testLateStillsProfileRejected(),
     "test-thin-stack-profile-rejected": await testThinStackProfileRejected(),
+    "test-named-career-work-sample-rejected": await testNamedCareerWorkSampleRejected(),
     "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -1838,6 +1893,10 @@ async function runSelfTest() {
       "fail-empty-hero-profile": "REJECT",
       "fail-late-stills-profile": "REJECT",
       "fail-thin-stack-profile": "REJECT",
+      "fail-ai-only-profile": "REJECT",
+      "fail-ai-lead-profile": "REJECT",
+      "fail-ai-order-profile": "REJECT",
+      "fail-folded-vimeo-profile": "REJECT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

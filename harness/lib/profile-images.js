@@ -178,6 +178,109 @@ function htmlHasEnoughStills(html, min = MIN_STILL_COUNT) {
   };
 }
 
+const WORK_TITLES = [
+  { id: "ocm", re: /one\s*click\s*mute/i },
+  { id: "manga", re: /manga\s*cut|home\s*[×x]\s*smarthome/i },
+  { id: "doombrush", re: /doombrush/i },
+  { id: "brief", re: /brief\s*history/i },
+  { id: "showreel", re: /showreel|traditional\s+reel/i },
+  { id: "sysmere", re: /sys\s*\/\s*mere|sysmere/i },
+  { id: "monet", re: /monet/i },
+  { id: "haircut", re: /new\s+haircut/i },
+];
+
+const TRADITIONAL_IDS = new Set(["brief", "showreel"]);
+const AI_ORDER = ["ocm", "manga", "doombrush"];
+
+function titleHits(html) {
+  const src = String(html || "");
+  return WORK_TITLES.map((t) => {
+    const m = t.re.exec(src);
+    return { id: t.id, index: m ? m.index : -1 };
+  }).filter((h) => h.index >= 0);
+}
+
+function hasTraditionalCredits(html) {
+  const trad = titleHits(html).filter((h) => TRADITIONAL_IDS.has(h.id));
+  if (!trad.length) {
+    return {
+      ok: false,
+      reason: "no traditional film/showreel credits on the page (B-WKS5)",
+    };
+  }
+  return {
+    ok: true,
+    reason: `traditional credits visible: ${trad.map((t) => t.id).join(", ")}`,
+  };
+}
+
+function traditionalLeads(html) {
+  const hits = titleHits(html).sort((a, b) => a.index - b.index);
+  const trad = hits.filter((h) => TRADITIONAL_IDS.has(h.id));
+  if (!trad.length) {
+    return {
+      ok: false,
+      reason: "no traditional lead; shooting seats cannot open on 3D/AI (B-WKS6)",
+    };
+  }
+  if (hits[0] && AI_ORDER.includes(hits[0].id)) {
+    return {
+      ok: false,
+      reason: `AI title ${hits[0].id} appears before traditional credits (B-WKS6)`,
+    };
+  }
+  return {
+    ok: true,
+    reason: `traditional lead ${hits[0] ? hits[0].id : trad[0].id}`,
+  };
+}
+
+function aiFilmOrderOk(html) {
+  const src = String(html || "");
+  const present = [];
+  for (const id of AI_ORDER) {
+    const t = WORK_TITLES.find((x) => x.id === id);
+    const m = t.re.exec(src);
+    if (m) present.push({ id, index: m.index });
+  }
+  if (present.length < 2) {
+    return { ok: true, reason: "fewer than two named AI stack titles; order N/A" };
+  }
+  for (let i = 1; i < present.length; i++) {
+    if (present[i].index < present[i - 1].index) {
+      return {
+        ok: false,
+        reason: `AI stack order ${present.map((p) => p.id).join(" → ")} violates One Click Mute → Manga Cut → DoomBrush (B-WKS3)`,
+      };
+    }
+  }
+  return {
+    ok: true,
+    reason: `AI stack order ${present.map((p) => p.id).join(" → ")}`,
+  };
+}
+
+function vimeoEmbedInCard(html) {
+  const src = String(html || "");
+  if (!/brief\s*history|showreel|traditional\s+reel/i.test(src)) {
+    return { ok: true, reason: "no traditional Vimeo piece claimed" };
+  }
+  const withoutModal = src.replace(
+    /<(div|section|aside)[^>]*class=["'][^"']*\bmodal\b[^"']*["'][^>]*>[\s\S]*?<\/\1>/gi,
+    " "
+  );
+  const inCard = /<iframe\b[^>]*src=["'][^"']*player\.vimeo\.com[^"']*["'][^>]*>/i.test(
+    withoutModal
+  );
+  if (!inCard) {
+    return {
+      ok: false,
+      reason: "traditional Vimeo is not embedded on the card (B-WKS7); modal-only is folded",
+    };
+  }
+  return { ok: true, reason: "Vimeo embed on the work card" };
+}
+
 function firstViewportHasStill(html) {
   const src = String(html || "");
   const spacers = heroMinHeightVh(src);
@@ -214,6 +317,11 @@ module.exports = {
   firstStillIsEarly,
   htmlHasEnoughStills,
   visibleTextBeforeFirstImage,
+  hasTraditionalCredits,
+  traditionalLeads,
+  aiFilmOrderOk,
+  vimeoEmbedInCard,
+  titleHits,
   heroMinHeightVh,
   MIN_STILL_COUNT,
   MAX_WORDS_BEFORE_STILL,

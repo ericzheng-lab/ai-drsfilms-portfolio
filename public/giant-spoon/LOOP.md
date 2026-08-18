@@ -233,3 +233,61 @@ If I only encode 78vh, Wonder/Kalshi remain the legal high-water mark — Eric a
 ### Page change
 
 No Giant Spoon HTML change this loop. Density and still-early already hold. Loop 4 rebuilds the lead to traditional / A-SHOWREEL-TRAD.
+
+---
+
+## Loop 4 — 2026-08-18
+
+**Closed B-ids:** B-WKS3 (AI order), B-WKS5 (traditional credits on the page), B-WKS6 (live-action lead), B-WKS7 (Vimeo in-card), plus method memory 6 / P-led (showreel lead, AI after, AI in schedule/cost language).
+
+### 1) 调研
+
+`career-application-loop.method.md`: Giant Spoon Senior Producer is traditional integrated production (P-led). Showreel lead. AI share ≤25%, translated into schedule/cost.  
+`assets.json`: `A-SHOWREEL-TRAD` (Vimeo `1174467043`), Brief History stills, canon OCM / Manga Cut / DoomBrush covers — do not swap.  
+B-WKS3/5/6/7 are the work-sample cases. Shipped pages that hide traditional credits or fold Vimeo (this branch’s previous rebuild: OCM hero, Vimeo only in a modal) fail the book even when density is high. Kalshi has a showreel iframe but after a type hero. Wonder puts OCM in the grid after a text open.
+
+### 2) 自检
+
+Previous Giant Spoon rebuild vs 算对的标准:
+
+- **B-WKS6 FAIL** — first viewport was One Click Mute (AI).
+- **B-WKS5 weak** — Brief History existed later; brand credits were a footnote after an AI grid.
+- **B-WKS7 FAIL** — Vimeo only in `#modal`, not on the card.
+- **B-WKS3** — grid order was Manga → SYS/MERE → DoomBrush, OCM on the hero. Not the book order as a stack.
+- **P-led / AI ≤25% FAIL** — AI opened the page.
+
+Harness after Loop 3 would still ACCEPT that page (9 stills, still-early, no 78vh).
+
+### 3) 辩论
+
+A density gate cannot see “wrong film in the lead.” If I do not encode traditional-visible, traditional-leads, AI order, and in-card Vimeo, a three-3D open with a modal reel stays legal. That is the book.
+
+**Next hole (Loop 5):** stuffing an `<img>` into the #18 `.hero { min-height:78vh }` shell (B-C5 patch) still PASSES first-viewport-still. A Giant Spoon homepage clone with four decorative stills and no role / no work titles (B-EL1 homepage-as-profile) can also sneak past if we only count `<img>` tags.
+
+### 4) 加固 harness
+
+- P0 `r2-profile-traditional-credits` (B-WKS5)
+- P0 `r2-profile-traditional-lead` (B-WKS6)
+- P0 `r2-profile-ai-film-order` (B-WKS3)
+- P0 `r2-profile-vimeo-in-card` (B-WKS7)
+- Fixtures: `fail-ai-only-profile`, `fail-ai-lead-profile`, `fail-ai-order-profile`, `fail-folded-vimeo-profile`
+
+### Page change
+
+Rebuilt `/giant-spoon/` again (not a patch of #18, not a patch of the OCM-hero rebuild).
+
+**First viewport:** 52px black masthead, then full-width **Brief History of A Family** still (`brief-history-of-a-family-still-01.jpg`) filling `min(78vh, 16:9)`. The image occupies the first screen.
+
+**Then:** credentials → work samples (traditional showreel iframe `1174467043` + Brief History iframe `1172739705` on the same cards) → brand credits on the page (COACH / Nike / BMW as earlier production-company work) → AI strip in book order with canon covers → method (6-stage) → fit → contact.
+
+### Assets used (unchanged catalog, new order)
+
+| id | slot |
+|---|---|
+| `brief-history-of-a-family-still-01` | Hero / first viewport (B-WKS6) |
+| `brief-history-of-a-family-still-02` | Feature card with in-card Vimeo |
+| `one-click-mute-key-frame-01` | AI 01 canon cover |
+| `home-smarthome-manga-cut-01` | AI 02 canon cover |
+| `doombrush-key-frame-01` | AI 03 canon cover |
+| `monet-cyberpunk-key-frame-01` / `my-new-haircut-key-frame-01` / `sys-mere-key-frame-01` | AI remainder |
+| `prompt-builder-ui-01` | Tools after work |

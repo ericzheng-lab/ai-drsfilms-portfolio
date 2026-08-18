@@ -18,6 +18,10 @@ const {
   firstViewportHasStill,
   firstStillIsEarly,
   htmlHasEnoughStills,
+  hasTraditionalCredits,
+  traditionalLeads,
+  aiFilmOrderOk,
+  vimeoEmbedInCard,
 } = require("./profile-images");
 
 function check(id, severity, ok, detail) {
@@ -792,6 +796,30 @@ const profileStillCountGate = profileGateFrom(
   "too few work stills (B-WKS4)"
 );
 
+const profileTraditionalCreditsGate = profileGateFrom(
+  hasTraditionalCredits,
+  "no Profile HTML to inspect for traditional credits (B-WKS5)",
+  "traditional film/showreel credits missing (B-WKS5)"
+);
+
+const profileTraditionalLeadGate = profileGateFrom(
+  traditionalLeads,
+  "no Profile HTML to inspect for traditional lead (B-WKS6)",
+  "AI/3D occupies the lead (B-WKS6)"
+);
+
+const profileAiOrderGate = profileGateFrom(
+  aiFilmOrderOk,
+  "no Profile HTML to inspect for AI film order (B-WKS3)",
+  "AI stack order is wrong (B-WKS3)"
+);
+
+const profileVimeoInCardGate = profileGateFrom(
+  vimeoEmbedInCard,
+  "no Profile HTML to inspect for in-card Vimeo (B-WKS7)",
+  "Vimeo not embedded on the card (B-WKS7)"
+);
+
 function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
@@ -814,6 +842,16 @@ function hopR2(pkg, rules, opts = {}) {
   checks.push(check("r2-profile-still-early", "P0", early.ok, early.detail));
   const count = profileStillCountGate(pkg, opts);
   checks.push(check("r2-profile-still-count", "P0", count.ok, count.detail));
+  const trad = profileTraditionalCreditsGate(pkg, opts);
+  checks.push(
+    check("r2-profile-traditional-credits", "P0", trad.ok, trad.detail)
+  );
+  const lead = profileTraditionalLeadGate(pkg, opts);
+  checks.push(check("r2-profile-traditional-lead", "P0", lead.ok, lead.detail));
+  const order = profileAiOrderGate(pkg, opts);
+  checks.push(check("r2-profile-ai-film-order", "P0", order.ok, order.detail));
+  const vimeo = profileVimeoInCardGate(pkg, opts);
+  checks.push(check("r2-profile-vimeo-in-card", "P0", vimeo.ok, vimeo.detail));
   checks.push(
     check(
       "profile-not-homepage",
@@ -930,6 +968,16 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(check("r3-profile-still-early", "P0", early.ok, early.detail));
   const count = profileStillCountGate(pkg, opts);
   checks.push(check("r3-profile-still-count", "P0", count.ok, count.detail));
+  const trad = profileTraditionalCreditsGate(pkg, opts);
+  checks.push(
+    check("r3-profile-traditional-credits", "P0", trad.ok, trad.detail)
+  );
+  const lead = profileTraditionalLeadGate(pkg, opts);
+  checks.push(check("r3-profile-traditional-lead", "P0", lead.ok, lead.detail));
+  const order = profileAiOrderGate(pkg, opts);
+  checks.push(check("r3-profile-ai-film-order", "P0", order.ok, order.detail));
+  const vimeo = profileVimeoInCardGate(pkg, opts);
+  checks.push(check("r3-profile-vimeo-in-card", "P0", vimeo.ok, vimeo.detail));
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1065,6 +1113,10 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-first-viewport-still",
     "r2-profile-still-early",
     "r2-profile-still-count",
+    "r2-profile-traditional-credits",
+    "r2-profile-traditional-lead",
+    "r2-profile-ai-film-order",
+    "r2-profile-vimeo-in-card",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1079,6 +1131,10 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-first-viewport-still",
     "r3-profile-still-early",
     "r3-profile-still-count",
+    "r3-profile-traditional-credits",
+    "r3-profile-traditional-lead",
+    "r3-profile-ai-film-order",
+    "r3-profile-vimeo-in-card",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0",
+  "version": "1.6.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -124,6 +124,34 @@
         "R3"
       ],
       "note": "At least 4 real work images. B-WKS4: 作品多、话少、没照片。两个片子撑不起一页. BPI 3-thumb and #18 1-thumb classes REJECT. No waiver."
+    },
+    {
+      "id": "r2-profile-traditional-credits",
+      "severity": "P0",
+      "failure": "AI-only work stack / traditional credits missing",
+      "hops": ["R2", "R3"],
+      "note": "Brief History or traditional showreel must be named on the page. B-WKS5: 传统 film/brand credits 必须页内可见，不能只剩 AI 片. No waiver."
+    },
+    {
+      "id": "r2-profile-traditional-lead",
+      "severity": "P0",
+      "failure": "AI/3D in the lead slot on a shooting/production seat",
+      "hops": ["R2", "R3"],
+      "note": "First recognized work title must be traditional (Brief History / showreel), not One Click Mute / Manga Cut / DoomBrush. B-WKS6. No waiver."
+    },
+    {
+      "id": "r2-profile-ai-film-order",
+      "severity": "P0",
+      "failure": "AI stack out of canon order / swapped covers",
+      "hops": ["R2", "R3"],
+      "note": "When two or more of the named AI films appear, order is One Click Mute → Manga Cut → DoomBrush, rest after. B-WKS3. No waiver."
+    },
+    {
+      "id": "r2-profile-vimeo-in-card",
+      "severity": "P0",
+      "failure": "traditional Vimeo folded into a modal / not on the card",
+      "hops": ["R2", "R3"],
+      "note": "If Brief History or showreel is claimed, player.vimeo.com must be iframed on the card, not only in .modal. B-WKS7. No waiver."
     },
     {
       "id": "profile-not-homepage",
