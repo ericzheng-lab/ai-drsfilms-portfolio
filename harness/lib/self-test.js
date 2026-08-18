@@ -791,9 +791,9 @@ async function testCompanyAliasesNotBuilderSelfCertified() {
   });
   const ok = await runHops({
     packageDir: legal,
-    hops: ["R2"],
-    reportsDir: tmpReports(),
-    stopOnFail: false,
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: path.join(legal, "reports"),
+    stopOnFail: true,
     fetchResult: qualifyingFetchResult("Meta Platforms, Inc.", "meta"),
   });
   assert(
