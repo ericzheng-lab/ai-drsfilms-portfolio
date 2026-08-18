@@ -63,7 +63,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Documented short slugs or legal-name aliases. profile slug may match slugify(company) or any alias (e.g. Meta Platforms, Inc. + /meta/)."
+      "description": "Optional documented shortenings of this company legal name. Trusted only when they are a token/prefix of company or a built-in legal-name map entry. Arbitrary foreign slugs (Meta + aliases: cloudflare + /cloudflare/) are ignored."
     }
   }
 }

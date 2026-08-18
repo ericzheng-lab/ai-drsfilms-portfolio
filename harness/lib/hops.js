@@ -103,6 +103,25 @@ const BUILTIN_COMPANY_ALIASES = {
   "alphabet incorporated": ["google", "alphabet"],
 };
 
+const LEGAL_NAME_STOPWORDS = new Set([
+  "inc",
+  "incorporated",
+  "llc",
+  "ltd",
+  "limited",
+  "corp",
+  "corporation",
+  "co",
+  "company",
+  "the",
+  "of",
+  "and",
+  "plc",
+  "gmbh",
+  "ag",
+  "sa",
+]);
+
 function normalizeCompanyKey(name) {
   return String(name || "")
     .normalize("NFKC")
@@ -112,23 +131,55 @@ function normalizeCompanyKey(name) {
     .trim();
 }
 
+function companyNameTokens(name) {
+  return normalizeCompanyKey(name)
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t && !LEGAL_NAME_STOPWORDS.has(t));
+}
+
+function isShorteningOfCompany(company, alias) {
+  const aliasSlug = companySlug(alias);
+  if (!aliasSlug || aliasSlug.length < 2) return false;
+  const tokens = companyNameTokens(company);
+  if (tokens.length === 0) return false;
+  if (tokens.includes(aliasSlug)) return true;
+  const joinedHyphen = tokens.join("-");
+  const joined = tokens.join("");
+  const aliasCompact = aliasSlug.replace(/-/g, "");
+  if (aliasSlug === joinedHyphen || aliasCompact === joined) return true;
+  const first = tokens[0];
+  if (aliasSlug.length >= 3 && first.startsWith(aliasSlug)) return true;
+  if (aliasSlug.length >= 3 && joinedHyphen.startsWith(aliasSlug)) return true;
+  if (aliasSlug.length >= 3 && joined.startsWith(aliasCompact)) return true;
+  return false;
+}
+
+function isTrustedCompanyAlias(company, alias) {
+  const s = companySlug(alias);
+  if (!s) return false;
+  const builtin = BUILTIN_COMPANY_ALIASES[normalizeCompanyKey(company)] || [];
+  if (builtin.some((b) => companySlug(b) === s)) return true;
+  return isShorteningOfCompany(company, alias);
+}
+
 function companyAliasSet(pkg) {
   const aliases = new Set();
   const company = String((pkg && pkg.manifest && pkg.manifest.company) || "").trim();
   const slug = companySlug(company);
   if (slug) aliases.add(slug);
-  const fromManifest =
-    (pkg && pkg.manifest && pkg.manifest.company_aliases) || [];
-  if (Array.isArray(fromManifest)) {
-    for (const raw of fromManifest) {
-      const s = companySlug(raw);
-      if (s) aliases.add(s);
-    }
-  }
   const builtin = BUILTIN_COMPANY_ALIASES[normalizeCompanyKey(company)] || [];
   for (const raw of builtin) {
     const s = companySlug(raw);
     if (s) aliases.add(s);
+  }
+  const fromManifest =
+    (pkg && pkg.manifest && pkg.manifest.company_aliases) || [];
+  if (Array.isArray(fromManifest)) {
+    for (const raw of fromManifest) {
+      if (!isTrustedCompanyAlias(company, raw)) continue;
+      const s = companySlug(raw);
+      if (s) aliases.add(s);
+    }
   }
   return aliases;
 }
@@ -143,13 +194,33 @@ function profileContentMarkers(pkg) {
   return [...new Set(markers.filter(Boolean))];
 }
 
+function escapeRe(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const TINY_GENERIC_MARKER = 4;
+
 function bodyHasProfileMarker(body, pkg) {
-  const src = String(body || "").toLowerCase();
+  const src = String(body || "");
   if (!src.trim()) return { ok: false, marker: null };
-  for (const marker of profileContentMarkers(pkg)) {
-    if (marker && src.includes(String(marker).toLowerCase())) {
-      return { ok: true, marker };
+  const lower = src.toLowerCase();
+  const classified = pkg ? classifyProfileUrl((pkg.manifest || {}).profile_url) : null;
+  if (classified && classified.ok && classified.slug) {
+    const slug = classified.slug;
+    const hostPath = `ai.drsfilms.com/${slug}`;
+    const pathRe = new RegExp(
+      `(?:^|[^a-z0-9-])/${escapeRe(slug)}(?:/|[^a-z0-9-]|$)`,
+      "i"
+    );
+    if (lower.includes(hostPath) || pathRe.test(src)) {
+      return { ok: true, marker: `/${slug}/` };
     }
+  }
+  for (const marker of profileContentMarkers(pkg)) {
+    const token = String(marker || "").trim();
+    if (!token || token.length <= TINY_GENERIC_MARKER) continue;
+    const re = new RegExp(`\\b${escapeRe(token)}\\b`, "i");
+    if (re.test(src)) return { ok: true, marker: token };
   }
   return { ok: false, marker: null };
 }
@@ -804,6 +875,14 @@ function hopR3(pkg, rules, opts = {}) {
     )
   );
 
+  // Disk ACCEPT cannot waive VI provenance. Re-run R-VI on current vi.json.
+  checks.push(
+    ...hopRVI(pkg).map((c) => ({
+      ...c,
+      id: c.id.startsWith("r3-") ? c.id : `r3-${c.id}`,
+    }))
+  );
+
   return checks;
 }
 
@@ -855,6 +934,13 @@ const REQUIRED_HOP_CHECKS = {
     "cv-cites-profile-url",
     "cl-cites-profile-url",
     "portfolio-url-matches-profile",
+    "r3-vi-exists",
+    "r3-vi-source-url",
+    "r3-vi-date",
+    "r3-vi-hex",
+    "r3-vi-font",
+    "r3-vi-radius",
+    "r3-vi-not-similar-to",
   ],
 };
 
@@ -880,7 +966,10 @@ module.exports = {
   liveFetchEvidence,
   companySlug,
   companyAliasSet,
+  isTrustedCompanyAlias,
+  isShorteningOfCompany,
   profileContentMarkers,
+  bodyHasProfileMarker,
   REQUIRED_HOP_CHECKS,
   CLAIM_LOCK_IDS,
   BUILTIN_COMPANY_ALIASES,

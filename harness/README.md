@@ -92,20 +92,23 @@ Hop order:
    company-name or slug marker in the response body. Local `profile.html`
    or a well-formed `profile_url` is **not** enough. Cloudflare/SPA `200`
    empty shells are `FAIL`. URL must be the company route (slug may match
-   `slugify(company)` or `company_aliases` / a small built-in legal-name
-   map). HTML, when present, still gets structure + noindex +
-   claim-lock/slop checks. `--fetch-profile` is how the CLI obtains live
-   evidence; 4xx / 5xx / timeout / error is `FAIL` (not PASS). Self-test
-   may inject a qualifying `fetchResult` so fixtures do not need the
-   public internet.
+   `slugify(company)` or a *trusted* alias: built-in legal-name map, or
+   a shortening/token of the company name). Manifest `company_aliases`
+   cannot point at another company's slug. Live marker prefers route/slug
+   path identity; tiny tokens like `Meta` must not match `metadata`.
+   HTML, when present, still gets structure + noindex + claim-lock/slop
+   checks. `--fetch-profile` is how the CLI obtains live evidence; 4xx /
+   5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
+   qualifying `fetchResult` so fixtures do not need the public internet.
 6. **R3 Closeout** — `ACCEPT` means CV + cover letter + a *real* company
    Profile exist and match **this** package *now* (qualifying live
    evidence, bound, fresh). Prior hop reports must be harness-generated,
-   bound to this `package_dir` + current file hashes, and contain the
-   non-empty checks of a real hop run. Disk `ACCEPT` reports **cannot**
-   waive content gates: R3 independently re-runs claim-lock, slop,
-   skip-language, and waiver scans on current CV + CL + Brief + Profile
-   HTML. CV/CL must cite that Profile URL. Missing any piece = REJECT.
+   bound to this `package_dir` + current file hashes, and reproduce a
+   live hop re-run (id+PASS stubs are REJECT). Disk `ACCEPT` reports
+   **cannot** waive content gates: R3 independently re-runs claim-lock,
+   slop, skip-language, waiver, and R-VI provenance (source URL, date,
+   exact hex/font/radius, no "similar to") on current files. CV/CL must
+   cite that Profile URL. Missing any piece = REJECT.
 
 ## Supervisor contract — exact commands
 
@@ -198,7 +201,7 @@ See `schema/package-manifest.schema.json`. Required fields:
 | `cl` | Path to cover letter |
 | `profile_url` | Company Profile URL |
 | `profile_html` | Optional local HTML (not sufficient for R2/R3 ACCEPT) |
-| `company_aliases` | Documented short slugs / legal-name aliases (e.g. `meta` for `Meta Platforms, Inc.`) |
+| `company_aliases` | Trusted shortenings only (token/prefix of `company`, or built-in map). Foreign slugs are ignored. |
 | `vi` | VI distill record (required for R-VI) |
 | `waivers` | **Forbidden** for Profile / CL. Presence is P0 REJECT. Novel skip/omit/optional/defer keys are also REJECT. |
 
@@ -238,7 +241,9 @@ here.
 - `rules/contracts.json` — hop order, algebra, exit codes, non-waivable
   artifacts.
 - `rules/integrity.pin` — git-tracked SHA-256 of rules + `harness/lib/*.js`
-  (except `self-test.js`). Honesty pin, not an external HSM.
+  (except `self-test.js`) plus the required-rule assertion table. Compared
+  from `lib/integrity.js` / `loadRuleset()`, not only from excluded
+  `self-test.js`. Honesty pin, not an external HSM.
 
 New rules only from named real failures. Do not dump speculative L0 lists.
 

@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { loadPackage } = require("./manifest");
 const { HOP_RUNNERS } = require("./hops");
+const { assertIntegrityPin } = require("./integrity");
 const {
   buildReport,
   writeReport,
@@ -20,6 +21,7 @@ function loadJson(rel) {
 }
 
 function loadRuleset() {
+  assertIntegrityPin();
   const rules = loadJson("rules/rules.json");
   const contracts = loadJson("rules/contracts.json");
   return { rules, contracts, version: contracts.version };
@@ -89,7 +91,7 @@ async function optionalFetch(url, timeoutMs) {
   }
 }
 
-function prerequisiteChecks(hopId, contracts, memoryReports, reportsDir, pkg) {
+function prerequisiteChecks(hopId, contracts, memoryReports, reportsDir, pkg, rules, hopOpts) {
   const meta = hopMeta(contracts, hopId);
   const required = (meta && meta.requires) || [];
   return required.map((reqId) => {
@@ -97,7 +99,9 @@ function prerequisiteChecks(hopId, contracts, memoryReports, reportsDir, pkg) {
     const disk = mem ? null : readReport(reportsDir, reqId);
     const report = mem || disk;
     const where = mem ? "this run" : disk ? "disk" : "missing";
-    const validation = validatePrerequisiteReport(report, reqId, pkg);
+    const runner = HOP_RUNNERS[reqId];
+    const liveChecks = runner ? runner(pkg, rules, hopOpts || {}) : [];
+    const validation = validatePrerequisiteReport(report, reqId, pkg, liveChecks);
     const ok = Boolean(validation.ok);
     return {
       id: `prerequisite-${reqId}`,
@@ -143,8 +147,19 @@ async function runHops(opts) {
       throw new Error(`unknown hop ${hopId}`);
     }
     const meta = hopMeta(contracts, hopId);
-    const checks = runner(pkg, rules, { fetchResult });
-    checks.push(...prerequisiteChecks(hopId, contracts, memoryReports, reportsDir, pkg));
+    const hopOpts = { fetchResult };
+    const checks = runner(pkg, rules, hopOpts);
+    checks.push(
+      ...prerequisiteChecks(
+        hopId,
+        contracts,
+        memoryReports,
+        reportsDir,
+        pkg,
+        rules,
+        hopOpts
+      )
+    );
     const report = buildReport({
       hop: hopId,
       name: meta ? meta.name : hopId,

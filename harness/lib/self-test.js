@@ -20,25 +20,14 @@ const {
   writeReport,
   inputHashesFromPkg,
 } = require("./reports");
-const { REQUIRED_HOP_CHECKS, companySlug } = require("./hops");
-
-const REQUIRED_RULE_IDS = [
-  "no-profile-waiver",
-  "no-cl-waiver",
-  "brief-no-skip-language",
-  "profile-not-homepage",
-  "r3-three-live-pieces",
-  "portfolio-url-matches-profile",
-  "slop-lexicon",
-  "claim-lock-sundance-win",
-  "claim-lock-berlinale-win",
-  "claim-lock-dungeon-fighter",
-  "claim-lock-rmb-cny",
-  "claim-lock-p007",
-  "claim-lock-five-films-four-weeks",
-];
-
-const PIN_PATH = path.join(__dirname, "..", "rules", "integrity.pin");
+const { REQUIRED_HOP_CHECKS, companySlug, bodyHasProfileMarker } = require("./hops");
+const {
+  PIN_PATH,
+  REQUIRED_RULE_IDS,
+  pinInputPaths,
+  rulesetPin,
+  expectedIntegrityPin,
+} = require("./integrity");
 
 function assert(cond, message) {
   if (!cond) {
@@ -82,40 +71,7 @@ function qualifyingFetchResult(company = "Acme", slug = "acme") {
 }
 
 function rulesetPinInputs() {
-  const root = path.join(__dirname, "..");
-  const parts = [
-    path.join(root, "rules", "rules.json"),
-    path.join(root, "rules", "contracts.json"),
-  ];
-  const libDir = path.join(root, "lib");
-  const libFiles = fs
-    .readdirSync(libDir)
-    .filter((f) => f.endsWith(".js") && f !== "self-test.js")
-    .sort();
-  for (const f of libFiles) parts.push(path.join(libDir, f));
-  return { root, parts, libFiles };
-}
-
-function rulesetPin() {
-  const { root, parts } = rulesetPinInputs();
-  const h = crypto.createHash("sha256");
-  for (const p of parts) {
-    h.update(path.relative(root, p).split(path.sep).join("/"));
-    h.update("\0");
-    h.update(fs.readFileSync(p));
-    h.update("\0");
-  }
-  return h.digest("hex");
-}
-
-function expectedIntegrityPin() {
-  const raw = fs.readFileSync(PIN_PATH, "utf8");
-  const line = raw
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith("#"))
-    .pop();
-  return line || "";
+  return pinInputPaths();
 }
 
 function fakeHopChecks(hopId) {
@@ -212,6 +168,65 @@ async function testForgedReportWithRecomputedBindingRejected() {
   return "REJECT";
 }
 
+async function testForgedReportWithFullshapedChecksRejected() {
+  const dir = copyFixtureToTmp("pass-minimal-three");
+  const reportsDir = writeBoundReports(dir, ["R0", "R-VI", "R1", "R1b", "R2"], fakeHopChecks);
+  const result = await runHops({
+    packageDir: dir,
+    hops: ["R3"],
+    reportsDir,
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    result.last.verdict === "REJECT",
+    "full-shaped id+PASS forged reports must REJECT R3"
+  );
+  assert(
+    (result.last.checks || []).some(
+      (c) =>
+        c.id.startsWith("prerequisite-") &&
+        c.status === "FAIL" &&
+        /id\+PASS|stub|reproducible|evidence|forged/i.test(c.detail)
+    ),
+    `full-shaped forged checks must fail prerequisites, got ${JSON.stringify(
+      (result.last.checks || []).filter((c) => c.id.startsWith("prerequisite-"))
+    )}`
+  );
+  return "REJECT";
+}
+
+async function testR3RerunsViProvenance() {
+  const dir = copyFixtureToTmp("pass-minimal-three");
+  fs.writeFileSync(
+    path.join(dir, "vi.json"),
+    `${JSON.stringify({ note: "colors similar to Acme brand" }, null, 2)}\n`,
+    "utf8"
+  );
+  const reportsDir = writeBoundReports(dir, ["R0", "R-VI", "R1", "R1b", "R2"], fakeHopChecks);
+  const result = await runHops({
+    packageDir: dir,
+    hops: ["R3"],
+    reportsDir,
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    result.last.verdict === "REJECT",
+    "R3 must REJECT garbage VI even if forged R-VI is ACCEPT"
+  );
+  assert(
+    hasFail(result.last, "r3-vi-not-similar-to") ||
+      hasFail(result.last, "r3-vi-source-url") ||
+      hasFail(result.last, "r3-vi-hex") ||
+      hasFail(result.last, "r3-vi-date") ||
+      hasFail(result.last, "r3-vi-font") ||
+      hasFail(result.last, "r3-vi-radius"),
+    `R3 must independently re-verify VI provenance, got ${failuresOf(result.last)}`
+  );
+  return "REJECT";
+}
+
 async function testR3RescansClaimlockSlopOnCvCl() {
   const dir = copyFixtureToTmp("pass-minimal-three");
   fs.appendFileSync(
@@ -239,12 +254,6 @@ async function testR3RescansClaimlockSlopOnCvCl() {
   assert(
     result.last.verdict === "REJECT",
     "R3 must REJECT poisoned CV even when prior reports are bound ACCEPT"
-  );
-  assert(
-    (result.last.checks || []).every(
-      (c) => !(c.id.startsWith("prerequisite-") && c.status === "FAIL")
-    ),
-    "this case must isolate content rescan, not prerequisite binding"
   );
   assert(
     hasFail(result.last, "r3-cv-claim-lock-sundance-win") ||
@@ -610,6 +619,36 @@ const SKIP_PATTERN_COVERAGE = [
   ["用主页代替", "这次先不做公司专页，用主页代替。"],
   ["(用|使用).{0,12}(主页|首页|prompt-builder).{0,12}代替", "这次先不做公司专页，用主页代替。"],
   ["专页.{0,16}(可跳过|可省略|不需要|无需|可选|先放)", "专页可跳过"],
+  [
+    "nice[- ]to[- ]have.{0,40}(profile|cover letter|company page|role page|cl)\\b",
+    "nice-to-have profile this round",
+  ],
+  [
+    "(profile|cover letter|company page|role page).{0,32}nice[- ]to[- ]have",
+    "The profile is a nice-to-have.",
+  ],
+  [
+    "ship without (the )?(company page|role page|profile|cover letter|cl)\\b",
+    "ship without the company page",
+  ],
+  ["without (the )?(company page|role page)\\b", "go without the role page"],
+  [
+    "(company page|role page)[:\\s]+(n/?a|none|skipped|waived|optional|not needed|nice[- ]to[- ]have)",
+    "company page: optional",
+  ],
+  [
+    "(skip|omit|waive|leave out|drop|bypass|exclude|forgo) (the )?(company page|role page)",
+    "skip the company page",
+  ],
+  [
+    "(company page|role page) (is|are) (not )?(required|necessary|needed|optional)",
+    "The role page is optional.",
+  ],
+  [
+    "(company page|role page) (can|may|could) be (skipped|omitted|waived|dropped)",
+    "company page can be skipped",
+  ],
+  ["no need (for )?(a |the )?(company page|role page)", "No need for a role page."],
 ];
 
 async function testSkipLanguageChineseAndParaphrase() {
@@ -719,6 +758,70 @@ async function testSlugMatchesCompanyAliasSet() {
   return "ACCEPT";
 }
 
+async function testCompanyAliasesNotBuilderSelfCertified() {
+  const steal = copyFixtureToTmp("pass-minimal-three");
+  await rewritePackCompany(steal, {
+    company: "Meta",
+    slug: "cloudflare",
+    aliases: ["cloudflare"],
+    profileUrl: "https://ai.drsfilms.com/cloudflare/",
+  });
+  const stolen = await runHops({
+    packageDir: steal,
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult("Meta", "cloudflare"),
+  });
+  assert(
+    stolen.last.verdict === "REJECT",
+    "Meta + aliases:[cloudflare] + /cloudflare/ must REJECT"
+  );
+  assert(
+    hasFail(stolen.last, "profile-slug-matches-company"),
+    `builder-self-certified foreign alias must fail, got ${failuresOf(stolen.last)}`
+  );
+
+  const legal = copyFixtureToTmp("pass-minimal-three");
+  await rewritePackCompany(legal, {
+    company: "Meta Platforms, Inc.",
+    slug: "meta",
+    aliases: ["meta"],
+    profileUrl: "https://ai.drsfilms.com/meta/",
+  });
+  const ok = await runHops({
+    packageDir: legal,
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult("Meta Platforms, Inc.", "meta"),
+  });
+  assert(
+    ok.last.verdict === "ACCEPT",
+    `Meta Platforms, Inc. + /meta/ must ACCEPT, got ${ok.last.verdict}: ${(ok.last.failures || []).join("; ")}`
+  );
+  return "REJECT";
+}
+
+async function testSkipLanguageNiceToHaveAndProfileSynonyms() {
+  const { rules } = loadRuleset();
+  const patterns =
+    (rules.rules.find((r) => r.id === "brief-no-skip-language") || {}).patterns || [];
+  const samples = [
+    "The profile is a nice-to-have for this role.",
+    "Cover letter is nice to have.",
+    "We can ship without the company page.",
+    "Skip the company page this cycle.",
+    "The role page is optional.",
+    "No need for a role page.",
+  ];
+  for (const sample of samples) {
+    const hits = scanSkipLanguage(sample, patterns);
+    assert(hits.length > 0, `skip language must match: ${sample}`);
+  }
+  return "REJECT";
+}
+
 function testRulesetPinCoversLibLogic() {
   assert(fs.existsSync(PIN_PATH), "integrity.pin must exist (git-tracked honesty pin, not an HSM)");
   const expected = expectedIntegrityPin();
@@ -728,10 +831,26 @@ function testRulesetPinCoversLibLogic() {
   assert(libFiles.includes("hops.js"), "pin inputs must include hops.js");
   assert(libFiles.includes("text-scan.js"), "pin inputs must include text-scan.js");
   assert(libFiles.includes("reports.js"), "pin inputs must include reports.js");
+  assert(libFiles.includes("integrity.js"), "pin inputs must include integrity.js");
+  assert(libFiles.includes("check.js"), "pin inputs must include check.js");
   assert(!libFiles.includes("self-test.js"), "pin may exclude self-test.js");
   assert(
     parts.some((p) => p.endsWith(`${path.sep}hops.js`)),
     "pin parts must include lib/hops.js"
+  );
+  assert(
+    parts.some((p) => p.endsWith(`${path.sep}integrity.js`)),
+    "pin parts must include lib/integrity.js (pin comparison + assertion table)"
+  );
+  const integritySrc = fs.readFileSync(path.join(__dirname, "integrity.js"), "utf8");
+  assert(
+    /assertIntegrityPin/.test(integritySrc) && /REQUIRED_RULE_IDS/.test(integritySrc),
+    "pin comparison and assertion table must live in pinned integrity.js"
+  );
+  const checkSrc = fs.readFileSync(path.join(__dirname, "check.js"), "utf8");
+  assert(
+    /assertIntegrityPin/.test(checkSrc),
+    "loadRuleset must compare the pin (not only excluded self-test.js)"
   );
   const rulesOnly = crypto
     .createHash("sha256")
@@ -869,6 +988,24 @@ async function runSelfTest() {
     classifyProfileUrl("https://ai.drsfilms.com/acme").normalized ===
       "https://ai.drsfilms.com/acme/",
     "trailing slash normalized"
+  );
+
+  const metaPkg = {
+    manifest: { company: "Meta", profile_url: "https://ai.drsfilms.com/meta/" },
+  };
+  assert(
+    bodyHasProfileMarker(
+      "<html><head><title>Site</title></head><body>See metadata and other metadata.</body></html>",
+      metaPkg
+    ).ok === false,
+    "Meta must not match metadata as a bare substring"
+  );
+  assert(
+    bodyHasProfileMarker(
+      '<html><p>https://ai.drsfilms.com/meta/</p></html>',
+      metaPkg
+    ).ok === true,
+    "path identity /meta/ is a dedicated-profile marker"
   );
 
   const sundanceWin = scanClaimLocks("Selected at Sundance as winner of a sidebar prize.");
@@ -1053,6 +1190,9 @@ async function runSelfTest() {
     "test-report-forgery-rejected": await testReportForgeryRejected(),
     "test-forged-report-with-recomputed-binding-rejected":
       await testForgedReportWithRecomputedBindingRejected(),
+    "test-forged-report-with-fullshaped-checks-rejected":
+      await testForgedReportWithFullshapedChecksRejected(),
+    "test-r3-reruns-vi-provenance": await testR3RerunsViProvenance(),
     "test-r3-rescans-claimlock-slop-on-cv-cl": await testR3RescansClaimlockSlopOnCvCl(),
     "test-report-binds-to-package-and-inputs": await testReportBindsToPackageAndInputs(),
     "test-stale-report-invalidated-on-input-change": await testStaleReportInvalidatedOnInputChange(),
@@ -1067,6 +1207,10 @@ async function runSelfTest() {
     "test-skip-language-chinese-and-paraphrase": await testSkipLanguageChineseAndParaphrase(),
     "test-skip-language-open-vocabulary": await testSkipLanguageOpenVocabulary(),
     "test-slug-matches-company-alias-set": await testSlugMatchesCompanyAliasSet(),
+    "test-company-aliases-not-builder-self-certified":
+      await testCompanyAliasesNotBuilderSelfCertified(),
+    "test-skip-language-nice-to-have-and-profile-synonyms":
+      await testSkipLanguageNiceToHaveAndProfileSynonyms(),
     "test-ruleset-pin-covers-lib-logic": testRulesetPinCoversLibLogic(),
     "test-loosening-any-p0-rule-breaks-selftest": testLooseningAnyP0RuleBreaksSelftest(),
   };

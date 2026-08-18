@@ -6,7 +6,7 @@
     "all_green": "ACCEPT",
     "repair_is_not_accept": true,
     "recover": "Re-run the same hop after fix. Never waive and proceed.",
-    "reports": "Harness-generated only. Bound to this package_dir + input file hashes. Prerequisite reports need non-empty checks that match a real hop run. Forged, grafted, empty-check, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML; disk ACCEPT cannot waive content gates."
+    "reports": "Harness-generated only. Bound to this package_dir + input file hashes. Prerequisite reports need non-empty checks that match a live hop re-run (id+PASS stubs are REJECT). Forged, grafted, empty-check, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML and independently re-verifies VI provenance; disk ACCEPT cannot waive those gates."
   },
   "exit_codes": {
     "ACCEPT": 0,
@@ -85,7 +85,7 @@
         "cl",
         "profile"
       ],
-      "notes": "ACCEPT means CV + CL + a real company Profile exist and match this package now, with qualifying live evidence (2xx+marker). Prior reports must be harness-generated, bound, fresh, and contain the checks of a real hop run. R3 independently re-runs claim-lock, slop, skip-language, and waiver on current files."
+      "notes": "ACCEPT means CV + CL + a real company Profile exist and match this package now, with qualifying live evidence (2xx + dedicated-profile path identity). Prior reports must be harness-generated, bound, fresh, and reproduce live hop evidence (not id+PASS stubs). R3 independently re-runs claim-lock, slop, skip-language, waiver, and R-VI provenance on current files."
     }
   ],
   "non_waivable": [

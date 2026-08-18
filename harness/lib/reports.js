@@ -95,7 +95,42 @@ function checksMatchRealHopRun(report, hopId) {
   return { ok: true, reason: "checks match a real hop run" };
 }
 
-function validatePrerequisiteReport(report, hopId, pkg) {
+function checksHaveReproducibleEvidence(report, hopId, liveChecks) {
+  if (!Array.isArray(liveChecks) || liveChecks.length === 0) {
+    return { ok: false, reason: "no live hop evidence to validate against" };
+  }
+  const required = REQUIRED_HOP_CHECKS[hopId] || [];
+  const claimedById = new Map();
+  for (const c of report.checks || []) {
+    if (c && c.id) claimedById.set(c.id, c);
+  }
+  const liveById = new Map();
+  for (const c of liveChecks) {
+    if (c && c.id) liveById.set(c.id, c);
+  }
+  for (const id of required) {
+    const claimed = claimedById.get(id);
+    const live = liveById.get(id);
+    if (!claimed || !live) {
+      return {
+        ok: false,
+        reason: `checks are only id+PASS stubs (missing live evidence for ${id})`,
+      };
+    }
+    if (
+      claimed.status !== live.status ||
+      String(claimed.detail || "") !== String(live.detail || "")
+    ) {
+      return {
+        ok: false,
+        reason: `checks are only id+PASS stubs, not harness-reproducible evidence (${id})`,
+      };
+    }
+  }
+  return { ok: true, reason: "checks match live harness evidence" };
+}
+
+function validatePrerequisiteReport(report, hopId, pkg, liveChecks) {
   if (!report) {
     return { ok: false, reason: "missing" };
   }
@@ -119,6 +154,10 @@ function validatePrerequisiteReport(report, hopId, pkg) {
   const hopShape = checksMatchRealHopRun(report, hopId);
   if (!hopShape.ok) {
     return { ok: false, reason: hopShape.reason };
+  }
+  const evidence = checksHaveReproducibleEvidence(report, hopId, liveChecks);
+  if (!evidence.ok) {
+    return { ok: false, reason: evidence.reason };
   }
   return { ok: true, reason: "harness-generated, bound, fresh, real hop checks" };
 }
@@ -205,4 +244,5 @@ module.exports = {
   validatePrerequisiteReport,
   canonicalPackageDir,
   checksMatchRealHopRun,
+  checksHaveReproducibleEvidence,
 };

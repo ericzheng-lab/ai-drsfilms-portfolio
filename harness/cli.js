@@ -34,7 +34,7 @@ Exit codes:
 
 Nobody may waive Profile or cover letter. Recover = re-run the same hop after fix.
 This CLI does not apply to jobs, fill an ATS, or submit anything.
-Reports are harness-generated and bound to this package's input hashes. Forged, empty-check, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML.
+Reports are harness-generated and bound to this package's input hashes. Forged, empty-check, id+PASS stub, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML and re-verifies VI provenance.
 `.trim();
   console.log(text);
 }

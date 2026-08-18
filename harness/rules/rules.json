@@ -73,7 +73,16 @@
         "(这轮先|这次先).{0,16}(放一放|不做|省略|跳过|不要)",
         "用主页代替",
         "(用|使用).{0,12}(主页|首页|prompt-builder).{0,12}代替",
-        "专页.{0,16}(可跳过|可省略|不需要|无需|可选|先放)"
+        "专页.{0,16}(可跳过|可省略|不需要|无需|可选|先放)",
+        "nice[- ]to[- ]have.{0,40}(profile|cover letter|company page|role page|cl)\\b",
+        "(profile|cover letter|company page|role page).{0,32}nice[- ]to[- ]have",
+        "ship without (the )?(company page|role page|profile|cover letter|cl)\\b",
+        "without (the )?(company page|role page)\\b",
+        "(company page|role page)[:\\s]+(n/?a|none|skipped|waived|optional|not needed|nice[- ]to[- ]have)",
+        "(skip|omit|waive|leave out|drop|bypass|exclude|forgo) (the )?(company page|role page)",
+        "(company page|role page) (is|are) (not )?(required|necessary|needed|optional)",
+        "(company page|role page) (can|may|could) be (skipped|omitted|waived|dropped)",
+        "no need (for )?(a |the )?(company page|role page)"
       ]
     },
     {
@@ -111,7 +120,7 @@
       "hops": [
         "R3"
       ],
-      "note": "Apply package is always CV + cover letter + a real company Profile. Qualifying live evidence is HTTP 2xx AND a company/slug marker in the body. Local HTML or SPA 200 empty shell is not enough. R3 independently re-runs claim-lock, slop, skip-language, and waiver on current files. Disk ACCEPT reports cannot waive content gates."
+      "note": "Apply package is always CV + cover letter + a real company Profile. Qualifying live evidence is HTTP 2xx AND a dedicated-profile marker (route/slug path identity; tiny tokens like Meta must not match metadata). Local HTML or SPA 200 empty shell is not enough. R3 independently re-runs claim-lock, slop, skip-language, waiver, and R-VI provenance on current files. Disk ACCEPT / id+PASS stubs cannot waive those gates."
     },
     {
       "id": "portfolio-url-matches-profile",
