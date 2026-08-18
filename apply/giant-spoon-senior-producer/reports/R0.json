@@ -1,0 +1,75 @@
+{
+  "generator": "career-hop-harness",
+  "hop": "R0",
+  "name": "Brief",
+  "verdict": "ACCEPT",
+  "ruleset": "1.11.0",
+  "generated_at": "2026-08-18T21:47:50.693Z",
+  "package_dir": "/workspace/apply/giant-spoon-senior-producer",
+  "input_hashes": {
+    "manifest": "eb3ab8a64371c2a8d3c6020a6c626a19e78346ba9df94f01f988f55e310e2c89",
+    "brief": "304f2831eadf9a29c455ae59fb9690753a1b8b9aa8e9af737e207f7d36bf4dbd",
+    "cv": "6d5145bab43d42dec490c6eba0b9526f24735b9a3d20bc4ee6dd6b85d7777d83",
+    "cl": "f7beae8c4504260968d8cb71869083ebe9266887644355988866b168a9a561b0",
+    "vi": "4a05d2694e5160e1deec82c447f67327a4dae355ecf7fe4319541bbe9c0db4c8",
+    "profile_html": "bc3982f1740e2c6ccff5140807c95def9e7439b2b230613284abf6239c7b6817"
+  },
+  "checks": [
+    {
+      "id": "brief-exists",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "Brief file present"
+    },
+    {
+      "id": "brief-names-cv",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "Brief names CV"
+    },
+    {
+      "id": "brief-names-cl",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "Brief names cover letter"
+    },
+    {
+      "id": "brief-names-profile",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "Brief names Profile"
+    },
+    {
+      "id": "brief-profile-route",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "Profile route https://ai.drsfilms.com/giant-spoon/"
+    },
+    {
+      "id": "brief-selected-work-ids",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "selected work ids: showreel-trad, brief-history-of-a-family"
+    },
+    {
+      "id": "brief-no-skip-language",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "no skip/omit language for Profile or CL"
+    },
+    {
+      "id": "no-profile-waiver",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "no Profile waiver"
+    },
+    {
+      "id": "no-cl-waiver",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "no CL waiver"
+    }
+  ],
+  "failures": [],
+  "binding": "5dd8cb5ffda192db543fa3d7216d644ba9aa5971746a93efa8b7320cbf695cf5"
+}

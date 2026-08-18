@@ -1,0 +1,87 @@
+{
+  "generator": "career-hop-harness",
+  "hop": "R-VI",
+  "name": "VI distill",
+  "verdict": "ACCEPT",
+  "ruleset": "1.11.0",
+  "generated_at": "2026-08-18T21:47:50.727Z",
+  "package_dir": "/workspace/apply/giant-spoon-senior-producer",
+  "input_hashes": {
+    "manifest": "eb3ab8a64371c2a8d3c6020a6c626a19e78346ba9df94f01f988f55e310e2c89",
+    "brief": "304f2831eadf9a29c455ae59fb9690753a1b8b9aa8e9af737e207f7d36bf4dbd",
+    "cv": "6d5145bab43d42dec490c6eba0b9526f24735b9a3d20bc4ee6dd6b85d7777d83",
+    "cl": "f7beae8c4504260968d8cb71869083ebe9266887644355988866b168a9a561b0",
+    "vi": "4a05d2694e5160e1deec82c447f67327a4dae355ecf7fe4319541bbe9c0db4c8",
+    "profile_html": "bc3982f1740e2c6ccff5140807c95def9e7439b2b230613284abf6239c7b6817"
+  },
+  "checks": [
+    {
+      "id": "vi-exists",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "VI record present"
+    },
+    {
+      "id": "vi-source-url",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "source_url https://giantspoon.com/"
+    },
+    {
+      "id": "vi-date",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "date 2026-08-18"
+    },
+    {
+      "id": "vi-hex",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "hex #FFFFFF, #0033A0, #000000, #0033A0, #000000, #D26403"
+    },
+    {
+      "id": "vi-font",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "font Sora"
+    },
+    {
+      "id": "vi-radius",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "radius present"
+    },
+    {
+      "id": "vi-not-similar-to",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "VI values are exact (no 'similar to')"
+    },
+    {
+      "id": "vi-usage",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "VI usage notes present"
+    },
+    {
+      "id": "vi-not-chrome-only",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "Giant Spoon distill includes chrome + work/case content"
+    },
+    {
+      "id": "vi-primary-as-field",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "primary used as field/wordmark (.wordmark)"
+    },
+    {
+      "id": "prerequisite-R0",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "R0 ACCEPT (disk, bound)"
+    }
+  ],
+  "failures": [],
+  "binding": "da752defaa88b3f3447cbfabd583731228fd319f623223d91a617d33a257a08a"
+}

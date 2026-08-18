@@ -1,0 +1,87 @@
+{
+  "generator": "career-hop-harness",
+  "hop": "R1",
+  "name": "CV",
+  "verdict": "ACCEPT",
+  "ruleset": "1.11.0",
+  "generated_at": "2026-08-18T21:47:50.766Z",
+  "package_dir": "/workspace/apply/giant-spoon-senior-producer",
+  "input_hashes": {
+    "manifest": "eb3ab8a64371c2a8d3c6020a6c626a19e78346ba9df94f01f988f55e310e2c89",
+    "brief": "304f2831eadf9a29c455ae59fb9690753a1b8b9aa8e9af737e207f7d36bf4dbd",
+    "cv": "6d5145bab43d42dec490c6eba0b9526f24735b9a3d20bc4ee6dd6b85d7777d83",
+    "cl": "f7beae8c4504260968d8cb71869083ebe9266887644355988866b168a9a561b0",
+    "vi": "4a05d2694e5160e1deec82c447f67327a4dae355ecf7fe4319541bbe9c0db4c8",
+    "profile_html": "bc3982f1740e2c6ccff5140807c95def9e7439b2b230613284abf6239c7b6817"
+  },
+  "checks": [
+    {
+      "id": "r1-cv-exists",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV file present"
+    },
+    {
+      "id": "claim-lock-sundance-win",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV clear of claim-lock-sundance-win"
+    },
+    {
+      "id": "claim-lock-berlinale-win",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV clear of claim-lock-berlinale-win"
+    },
+    {
+      "id": "claim-lock-dungeon-fighter",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV clear of claim-lock-dungeon-fighter"
+    },
+    {
+      "id": "claim-lock-rmb-cny",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV clear of claim-lock-rmb-cny"
+    },
+    {
+      "id": "claim-lock-p007",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV clear of claim-lock-p007"
+    },
+    {
+      "id": "claim-lock-five-films-four-weeks",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV clear of claim-lock-five-films-four-weeks"
+    },
+    {
+      "id": "slop-lexicon",
+      "severity": "P1",
+      "status": "PASS",
+      "detail": "CV clear of slop lexicon"
+    },
+    {
+      "id": "cv-header-not-homepage",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "CV header portfolio is not a generic homepage"
+    },
+    {
+      "id": "prerequisite-R0",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "R0 ACCEPT (disk, bound)"
+    },
+    {
+      "id": "prerequisite-R-VI",
+      "severity": "P0",
+      "status": "PASS",
+      "detail": "R-VI ACCEPT (disk, bound)"
+    }
+  ],
+  "failures": [],
+  "binding": "1ff8e3dc32759c0f791b9d956d6de1b2de651a6e7d3557d8eb3b40d4257ffd16"
+}
