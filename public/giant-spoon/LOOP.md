@@ -460,3 +460,23 @@ Catalog: `harness/rules/asset-clearance.json`. New checks: `r2-profile-asset-cle
 ### 3) Exam page (secondary)
 
 Removed the Prompt Builder gallery / tools section. Reel stays 21:9 + play. Reskinned `workflow-6stage.svg` stays in the method slot. No invented brand photos.
+
+---
+
+## Loop 11 — 2026-08-18 (R-VI official audit, fixtures first)
+
+Official Giant Spoon distill (giantspoon.com, 2026-08-18). Compiled as hop fixtures. **Page HTML not restyled.**
+
+Chrome-only distill = REJECT even if hex/font match. Home hero type-only white is chrome, not the brand. Distill must include work/case pages (full-bleed autoplay video + duotone scrims, named gradients, Yeti #D26403, HBO oxblood/black, 6 videos + 29 images, zero illustration). A black/white/navy résumé page = R-VI FAIL.
+
+### 1) Harness first
+
+New P0 `vi-not-chrome-only`. Fixtures: `fail-vi-chrome-only`, `fail-vi-home-hero-brand`, `fail-vi-bw-navy-resume`, `pass-vi-gs-content-distill`. `--self-test` PASS (`test-vi-chrome-only-rejected`).
+
+### 2) Current exam `vi.json` vs those fixtures
+
+The previous exam record (white / Klein Blue / black + “do not invent extra colors”) **FAILED** `vi-not-chrome-only`.
+
+### 3) Exam record (secondary; not a page restyle)
+
+`public/giant-spoon/vi.json` now holds the audit chrome + work/case content. `index.html` unchanged. The page remains the exam, not the deliverable.

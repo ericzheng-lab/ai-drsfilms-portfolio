@@ -2,23 +2,36 @@
   "source_url": "https://giantspoon.com/",
   "date": "2026-08-18",
   "hex": {
+    "canvas": "#FFFFFF",
     "primary": "#0033A0",
-    "black": "#000000",
-    "white": "#FFFFFF"
+    "nav": "#000000",
+    "flood_services_contact": "#0033A0",
+    "flood_logo_garden": "#000000",
+    "yeti": "#D26403"
+  },
+  "gradients": {
+    "work_scrims": [
+      ["#337789", "#2D434B"],
+      ["#BA2210", "#2D4654"],
+      ["#01388B", "#4E2652"],
+      ["#775714", "#665B3A"]
+    ],
+    "hbo": ["oxblood", "#000000"]
   },
   "font": {
     "family": "Sora",
     "fallback": "sans-serif",
-    "weights": [300, 500, 600, 700]
+    "weights": [300, 500, 600, 700],
+    "transform": "uppercase",
+    "letter_spacing": "-0.1px"
   },
   "radius": {
     "button": "0px",
-    "popup": "10px"
+    "chip": "none"
   },
   "usage": {
-    "canvas": "white",
-    "primary": "Klein Blue #0033A0/#0033A1 as wordmark and field on the white canvas — not 10px labels",
-    "palette": "primary + black + white only; do not invent extra colors",
-    "type": "Sora"
+    "chrome": "canvas #FFFFFF, brand blue #0033A0, nav #000000. Sora 300/500/600/700 all-caps letter-spacing -0.1px. Radius 0. No filled chips. CTAs are uppercase text arrows. Flood fields: services/contact #0033A0, logo garden #000000. Home hero type-only white is chrome, not the brand.",
+    "content": "Work/case pages (not home chrome): work cards are full-bleed autoplay video + per-project duotone scrims. Real gradients #337789→#2D434B, #BA2210→#2D4654, #01388B→#4E2652, #775714→#665B3A, plus Yeti section #D26403 and HBO oxblood/black. Home has 6 videos + 29 images. Zero illustration.",
+    "primary": "Klein Blue #0033A0 as wordmark/field and services/contact flood — not 10px labels on a black/white/navy résumé"
   }
 }
