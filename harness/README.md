@@ -97,7 +97,10 @@ Hop order:
    cannot point at another company's slug. Live marker prefers route/slug
    path identity; tiny tokens like `Meta` must not match `metadata`.
    HTML, when present, still gets structure + noindex + claim-lock/slop
-   checks. `--fetch-profile` is how the CLI obtains live evidence; 4xx /
+   checks, and **must contain real work stills** (`<img>` with a real src).
+   Text-only pages, empty/placeholder/decorative marks, and local HTML
+   without stills are `REJECT`. Images are not optional; there is no waiver.
+   `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
 6. **R3 Closeout** — `ACCEPT` means CV + cover letter + a *real* company
@@ -230,6 +233,7 @@ Paths are relative to the package directory.
 | `fixtures/fail-skip-profile` | R3 `REJECT` (no Profile URL/HTML) |
 | `fixtures/fail-generic-homepage` | R2 or R3 `REJECT` (`ai.drsfilms.com/` root) |
 | `fixtures/fail-missing-cl` | `REJECT` (no cover letter file) |
+| `fixtures/fail-text-only-profile` | R2 `REJECT` (Profile HTML has no real work stills) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 All fixture people, emails, companies, and sentences are synthetic.

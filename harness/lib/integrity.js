@@ -13,6 +13,7 @@ const REQUIRED_RULE_IDS = [
   "no-cl-waiver",
   "brief-no-skip-language",
   "profile-not-homepage",
+  "r2-profile-work-images",
   "r3-three-live-pieces",
   "portfolio-url-matches-profile",
   "slop-lexicon",

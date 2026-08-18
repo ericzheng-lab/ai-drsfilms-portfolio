@@ -30,6 +30,7 @@ const {
   companySlug,
   bodyHasProfileMarker,
 } = require("./hops");
+const { htmlHasWorkImages } = require("./profile-images");
 const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
@@ -75,7 +76,7 @@ function qualifyingFetchResult(company = "Acme", slug = "acme") {
     status: 200,
     timedOut: false,
     error: null,
-    body: `<!DOCTYPE html><html><head><title>${company}</title></head><body><h1>${company}</h1><p>https://ai.drsfilms.com/${slug}/</p></body></html>`,
+    body: `<!DOCTYPE html><html><head><title>${company}</title></head><body><h1>${company}</h1><p>https://ai.drsfilms.com/${slug}/</p><img src="https://ai.drsfilms.com/${slug}/work-still.png" alt="${company} selected work still" width="640" height="360"></body></html>`,
   };
 }
 
@@ -807,6 +808,58 @@ async function testGhostProfileUrlWithoutLivePageRejected() {
   return "REJECT";
 }
 
+async function testTextOnlyProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-text-only-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "text-only Profile must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-work-images"),
+    `text-only Profile must fail r2-profile-work-images, got ${failuresOf(r2.last)}`
+  );
+
+  const liveText = {
+    status: 200,
+    timedOut: false,
+    error: null,
+    body: `<!DOCTYPE html><html><head><title>Acme</title></head><body><h1>Acme</h1><p>https://ai.drsfilms.com/acme/</p><p>Resume text only. No stills.</p></body></html>`,
+  };
+  const liveOnly = await runHops({
+    packageDir: fixture("fail-text-only-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: liveText,
+  });
+  assert(liveOnly.last.verdict === "REJECT", "text-only live Profile must REJECT R2");
+  assert(
+    hasFail(liveOnly.last, "r2-profile-work-images"),
+    `text-only live Profile must fail r2-profile-work-images, got ${failuresOf(liveOnly.last)}`
+  );
+
+  assert(htmlHasWorkImages("").ok === false, "empty HTML is not work images");
+  assert(
+    htmlHasWorkImages('<img src="" alt="x">').ok === false,
+    "empty src is not a work image"
+  );
+  assert(
+    htmlHasWorkImages('<img src="placeholder.png" alt="x">').ok === false,
+    "placeholder src is not a work image"
+  );
+  assert(
+    htmlHasWorkImages(
+      '<img src="https://ai.drsfilms.com/acme/work-still.png" alt="Acme still">'
+    ).ok === true,
+    "http still must count"
+  );
+  return "REJECT";
+}
+
 async function testProfileRequiresDeploymentNotLocalHtml() {
   const r2 = await runHops({
     packageDir: fixture("pass-minimal-three"),
@@ -1343,6 +1396,12 @@ function testLooseningAnyP0RuleBreaksSelftest() {
       ),
     "profile-not-homepage": () =>
       assert(classifyProfileUrl("https://ai.drsfilms.com/").ok === false, "homepage"),
+    "r2-profile-work-images": () =>
+      assert(
+        htmlHasWorkImages("<html><body><h1>Acme</h1><p>text only</p></body></html>").ok ===
+          false,
+        "text-only Profile HTML"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -1643,6 +1702,7 @@ async function runSelfTest() {
     "test-stale-report-invalidated-on-input-change": await testStaleReportInvalidatedOnInputChange(),
     "test-ghost-profile-url-without-live-page-rejected":
       await testGhostProfileUrlWithoutLivePageRejected(),
+    "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
     "test-live-fetch-rejects-spa-fallback": await testLiveFetchRejectsSpaFallback(),
@@ -1666,6 +1726,7 @@ async function runSelfTest() {
       "fail-skip-profile": skip.last.verdict,
       "fail-generic-homepage": home.last.verdict,
       "fail-missing-cl": missCl.last.verdict,
+      "fail-text-only-profile": "REJECT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

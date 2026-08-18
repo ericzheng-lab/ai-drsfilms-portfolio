@@ -13,6 +13,7 @@ const {
   findForbiddenWaivers,
 } = require("./text-scan");
 const { workIdsFrom } = require("./manifest");
+const { htmlHasWorkImages } = require("./profile-images");
 
 function check(id, severity, ok, detail) {
   return {
@@ -670,6 +671,41 @@ function slugMatchesCompany(pkg, classified) {
   };
 }
 
+function profileWorkImageGate(pkg, opts = {}) {
+  const localHtml =
+    pkg.paths.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  const parts = [];
+  let ok = true;
+  if (localHtml) {
+    const ev = htmlHasWorkImages(localHtml);
+    parts.push(`local HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (liveHtml) {
+    const ev = htmlHasWorkImages(liveHtml);
+    parts.push(`live HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (!localHtml && !liveHtml) {
+    return {
+      ok: false,
+      detail: "no Profile HTML to inspect for work images; text-only / missing stills",
+    };
+  }
+  return {
+    ok,
+    detail: ok
+      ? parts.join("; ")
+      : `text-only Profile (work stills required): ${parts.join("; ")}`,
+  };
+}
+
 function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
@@ -682,6 +718,8 @@ function hopR2(pkg, rules, opts = {}) {
       evidence.detail
     )
   );
+  const stills = profileWorkImageGate(pkg, opts);
+  checks.push(check("r2-profile-work-images", "P0", stills.ok, stills.detail));
   checks.push(
     check(
       "profile-not-homepage",
@@ -788,6 +826,8 @@ function hopR3(pkg, rules, opts = {}) {
         : "closeout missing CV, cover letter, or a real company Profile"
     )
   );
+  const stills = profileWorkImageGate(pkg, opts);
+  checks.push(check("r3-profile-work-images", "P0", stills.ok, stills.detail));
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -919,6 +959,7 @@ const REQUIRED_HOP_CHECKS = {
   R1b: ["r1b-cl-exists", "r1b-cl-distinct", "no-cl-waiver", ...CLAIM_LOCK_IDS, "slop-lexicon"],
   R2: [
     "r2-profile-present",
+    "r2-profile-work-images",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -929,6 +970,7 @@ const REQUIRED_HOP_CHECKS = {
     "r3-cl-distinct",
     "r3-profile-present",
     "r3-three-live-pieces",
+    "r3-profile-work-images",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",
@@ -963,6 +1005,7 @@ module.exports = {
   realProfileExists,
   localProfileHtmlEvidence,
   liveFetchEvidence,
+  profileWorkImageGate,
   companySlug,
   companyAliasSet,
   isTrustedCompanyAlias,
