@@ -115,12 +115,14 @@ Hop order:
    work-sample titles is `REJECT` (B-EL1). Token-only VI application
    (primary only in tiny labels) is `REJECT`. A showreel described in a
    paragraph (`A-SHOWREEL-TRAD · IN-CARD`) is `REJECT` — the reel must
-   be a *picture*. Brand credits as a legal grey wall are `REJECT`.
+   be a *21:9 poster + play*. Brand credits as a legal grey wall or as
+   typeset wordmarks are `REJECT`. Empty white work cards are `REJECT`.
    Visible internal asset ids (`A-SHOWREEL-TRAD`, `A-WORKFLOW-6STAGE`,
    `A-WORKFLOW-58NODE`, `A-TOOL-PROMPTBUILDER`, `A-TOOLS-DEV4`,
-   `A-FILM-*`) on the public page are `REJECT`. Invocation must match
-   the JD archetype (see matrix below). Images are not optional;
-   there is no waiver.
+   `A-FILM-*`) on the public page are `REJECT`. P-led `A-WORKFLOW-6STAGE`
+   must be one PNG/SVG + locked footnote (not a text grid / 7-stage).
+   Invocation must match the JD archetype (see matrix below). Images
+   are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
@@ -274,6 +276,13 @@ Paths are relative to the package directory.
 | `fixtures/fail-p-led-indev-wall` | R2 `REJECT` (P-led in-dev tool wall) |
 | `fixtures/fail-o-led-58node` | R2 `REJECT` (O-led `A-WORKFLOW-58NODE` without JD process depth) |
 | `fixtures/fail-a-led-tools-first` | R2 `REJECT` (A-led tools before `A-FILM-*`; Wonder exam) |
+| `fixtures/fail-empty-white-cards` | R2 `REJECT` (work-card / brand row with no still) |
+| `fixtures/fail-showreel-not-21x9` | R2 `REJECT` (showreel img is not 21:9 + play) |
+| `fixtures/fail-brand-wordmarks` | R2 `REJECT` (COACH/Nike/BMW as typeset wordmarks) |
+| `fixtures/fail-p-led-7stage` | R2 `REJECT` (7-stage on Senior Producer) |
+| `fixtures/fail-p-led-6stage-text` | R2 `REJECT` (P-led 6-stage as a text grid) |
+| `fixtures/fail-indev-before-reel` | R2 `REJECT` (in-dev tools before the trad reel) |
+| `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip + 58-node) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 ## Asset invocation matrix
@@ -282,9 +291,9 @@ Do not copy HyperAgent files into this repo. Name the asset id and the rule.
 
 | Archetype | Invoke | Forbidden |
 |---|---|---|
-| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *picture*; brand marks, not a paragraph; `A-WORKFLOW-6STAGE` as a silent strip; `A-TOOL-PROMPTBUILDER` last, one card | `A-WORKFLOW-58NODE`; `A-TOOLS-DEV4` wall; text-card reel; legal-paragraph credits; visible `A-*` ids |
+| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *21:9 poster + play*; brand *stills*, not wordmarks; `A-WORKFLOW-6STAGE` as one reskinned PNG/SVG + locked footnote; `A-TOOL-PROMPTBUILDER` last, one card | text showreel card; legal-paragraph credits; empty white work cards; `A-WORKFLOW-58NODE` / 7-stage; in-dev tool wall before/taller than the trad reel; visible `A-*` ids; Klein Blue only as 10px labels |
 | **O-led** | `A-WORKFLOW-6STAGE` first | `A-WORKFLOW-58NODE` unless the JD asks for process depth |
-| **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip with *In development* labels | tools before films |
+| **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip with *In development* labels; `A-WORKFLOW-58NODE` **allowed** | tools before films |
 
 All fixture people, emails, companies, and sentences are synthetic.
 

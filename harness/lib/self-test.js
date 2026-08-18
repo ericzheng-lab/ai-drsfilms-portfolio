@@ -52,6 +52,9 @@ const {
   creditsNotLegalParagraph,
   noInternalAssetIds,
   invocationOk,
+  noEmptyWhiteWorkCards,
+  brandStillsNotWordmarks,
+  sixStageOneGraphic,
 } = require("./profile-cards");
 const {
   PIN_PATH,
@@ -99,7 +102,7 @@ function qualifyingFetchResult(company = "Acme", slug = "acme") {
     status: 200,
     timedOut: false,
     error: null,
-    body: `<!DOCTYPE html><html><head><title>${company} Senior Producer</title><style>.wordmark{background:#1A2B3C;color:#fff;padding:20px 24px;font-size:22px}</style></head><body><header class="wordmark">${company}</header>${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><img src="https://ai.drsfilms.com/${slug}/work-still.png" alt="Traditional showreel still" width="640" height="360"><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article></body></html>`,
+    body: `<!DOCTYPE html><html><head><title>${company} Senior Producer</title><style>.wordmark{background:#1A2B3C;color:#fff;padding:20px 24px;font-size:22px}.reel-poster{aspect-ratio:21/9;width:100%}</style></head><body><header class="wordmark">${company}</header>${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><img class="reel-poster" src="https://ai.drsfilms.com/${slug}/work-still.png" alt="Traditional showreel still" width="840" height="360"><span class="play">Play</span><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article><figure><img src="https://ai.drsfilms.com/${slug}/workflow-6stage.svg" alt="Six-stage production method"><figcaption class="footnote">Locked six-stage method.</figcaption></figure></body></html>`,
   };
 }
 
@@ -1165,6 +1168,89 @@ async function testInvocationMatrixRejected() {
   return "REJECT";
 }
 
+async function testClosedDebateCardsRejected() {
+  const cases = [
+    ["fail-empty-white-cards", "r2-profile-empty-work-cards", "empty white work cards"],
+    ["fail-showreel-not-21x9", "r2-profile-showreel-picture", "showreel not 21:9 + play"],
+    ["fail-brand-wordmarks", "r2-profile-brand-stills", "brand wordmarks not stills"],
+    ["fail-p-led-7stage", "r2-profile-invocation", "P-led 7-stage"],
+    ["fail-p-led-6stage-text", "r2-profile-six-stage", "P-led 6-stage text grid"],
+    ["fail-indev-before-reel", "r2-profile-invocation", "P-led in-dev before reel"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+
+  const wonder = await runHops({
+    packageDir: fixture("pass-a-led-wonder"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    wonder.last.verdict === "ACCEPT",
+    `A-led Wonder exam (films first + tools + 58-node) must ACCEPT R2, got ${failuresOf(wonder.last)}`
+  );
+
+  const pLedPkg = {
+    manifest: { role: "Senior Producer" },
+    brief: { value: "Archetype: p-led." },
+    briefAttrs: {},
+  };
+  const aLedPkg = {
+    manifest: { role: "Wonder Creative Technologist" },
+    brief: { value: "Archetype: a-led. Wonder is the exam." },
+    briefAttrs: {},
+  };
+  assert(
+    invocationOk("<p>7-stage</p><p>Traditional showreel</p>", pLedPkg).ok === false,
+    "P-led + 7-stage must fail"
+  );
+  assert(
+    invocationOk(
+      "<p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><p>Prompt Builder. In development. 58-node</p>",
+      aLedPkg
+    ).ok === true,
+    "A-led films-first + tools strip + 58-node must pass"
+  );
+  assert(
+    showreelIsPicture(
+      '<style>.poster{aspect-ratio:16/9}</style><article><img class="poster" src="work-still.png" alt="Traditional showreel still"></article>'
+    ).ok === false,
+    "16:9 showreel without play must fail"
+  );
+  assert(
+    noEmptyWhiteWorkCards(
+      '<article class="work-card"><h3>Empty</h3></article>'
+    ).ok === false,
+    "empty work-card must fail"
+  );
+  assert(
+    brandStillsNotWordmarks("<p>COACH. Nike. BMW.</p>").ok === false,
+    "typeset brand wordmarks must fail"
+  );
+  assert(
+    sixStageOneGraphic(
+      '<div class="strip"><div>01 Intake</div><div>02 Route</div></div><p>6-stage</p>',
+      pLedPkg
+    ).ok === false,
+    "P-led 6-stage text grid must fail"
+  );
+  return "REJECT";
+}
+
 async function testGs18HtmlStillRejected() {
   const gs18 = `<style>:root{--blue:#0033a0}.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}.hero .header-line{font-size:14px;color:var(--blue)}.stat span{font-size:11px;color:var(--blue)}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
   assert(
@@ -1831,6 +1917,27 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         }).ok === false,
         "P-led 58-node"
       ),
+    "r2-profile-empty-work-cards": () =>
+      assert(
+        noEmptyWhiteWorkCards(
+          '<article class="work-card"><h3>Empty white card</h3><p>No still.</p></article>'
+        ).ok === false,
+        "empty white work card"
+      ),
+    "r2-profile-brand-stills": () =>
+      assert(
+        brandStillsNotWordmarks("<p>COACH. Nike. BMW.</p>").ok === false,
+        "brand wordmarks"
+      ),
+    "r2-profile-six-stage": () =>
+      assert(
+        sixStageOneGraphic('<div class="strip">6-stage text grid</div>', {
+          manifest: { role: "Senior Producer" },
+          brief: { value: "p-led" },
+          briefAttrs: {},
+        }).ok === false,
+        "P-led text 6-stage"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -2142,6 +2249,7 @@ async function runSelfTest() {
     "test-vi-tiny-labels-rejected": await testViTinyLabelsRejected(),
     "test-text-card-and-credits-rejected": await testTextCardAndCreditsRejected(),
     "test-invocation-matrix-rejected": await testInvocationMatrixRejected(),
+    "test-closed-debate-cards-rejected": await testClosedDebateCardsRejected(),
     "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -2185,6 +2293,13 @@ async function runSelfTest() {
       "fail-p-led-indev-wall": "REJECT",
       "fail-o-led-58node": "REJECT",
       "fail-a-led-tools-first": "REJECT",
+      "fail-empty-white-cards": "REJECT",
+      "fail-showreel-not-21x9": "REJECT",
+      "fail-brand-wordmarks": "REJECT",
+      "fail-p-led-7stage": "REJECT",
+      "fail-p-led-6stage-text": "REJECT",
+      "fail-indev-before-reel": "REJECT",
+      "pass-a-led-wonder": "ACCEPT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

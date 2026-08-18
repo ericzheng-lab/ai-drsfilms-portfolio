@@ -1,5 +1,5 @@
 {
-  "version": "1.8.0",
+  "version": "1.9.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -179,7 +179,7 @@
       "severity": "P0",
       "failure": "text-only showreel card / A-SHOWREEL-TRAD described in a paragraph",
       "hops": ["R2", "R3"],
-      "note": "If a showreel is claimed, it must be a picture on the card (an <img>), not a paragraph or iframe-only IN-CARD kicker. Recruiter 6-second FAIL. No waiver."
+      "note": "If a showreel is claimed, it must be a 21:9 poster + play on the card, not a paragraph, iframe-only IN-CARD kicker, or 16:9 text card. Recruiter 6-second FAIL. No waiver."
     },
     {
       "id": "r2-profile-credits-not-legal",
@@ -200,7 +200,28 @@
       "severity": "P0",
       "failure": "assets dumped instead of invoked by JD archetype",
       "hops": ["R2", "R3"],
-      "note": "P-led (agency Senior Producer): reel as a picture; brand marks not a paragraph; 6-stage as a silent strip; Prompt Builder last, one card. No 58-node. No in-dev tool wall. O-led: 6-stage first; 58-node only if JD wants process depth. A-led: films first, then tools strip with In development labels (Wonder is the exam). Do not copy HyperAgent files; name the asset id and the rule. No waiver."
+      "note": "P-led (agency Senior Producer): reel poster 21:9 + play; brand stills not wordmarks; A-WORKFLOW-6STAGE one reskinned PNG/SVG + locked footnote; Prompt Builder last, one card. REJECT: text showreel card; legal-paragraph credits; empty white work cards; 58-node/7-stage; in-dev tool wall before/taller than trad reel; visible A-* ids; Klein Blue only as 10px labels. O-led: 6-stage first; 58-node only if JD wants process depth. A-led (Wonder exam): films first + tools strip; 58-node allowed (different fixture). Do not copy HyperAgent files. No waiver."
+    },
+    {
+      "id": "r2-profile-empty-work-cards",
+      "severity": "P0",
+      "failure": "empty white work cards / brand boxes with no stills",
+      "hops": ["R2", "R3"],
+      "note": "A work-card or brand-mark row without a real still is an empty white card. Recruiter 6-second FAIL. No waiver."
+    },
+    {
+      "id": "r2-profile-brand-stills",
+      "severity": "P0",
+      "failure": "brand wordmarks standing in for brand stills",
+      "hops": ["R2", "R3"],
+      "note": "If COACH/Nike/BMW (or named brands) are claimed, they must be stills, not typeset wordmarks. No waiver."
+    },
+    {
+      "id": "r2-profile-six-stage",
+      "severity": "P0",
+      "failure": "P-led 6-stage dumped as a text grid / 7-stage / missing locked footnote",
+      "hops": ["R2", "R3"],
+      "note": "P-led must invoke A-WORKFLOW-6STAGE as one reskinned PNG/SVG plus a locked footnote. A 6-cell text strip or 7-stage is REJECT. Off P-led this check is N/A. No waiver."
     },
     {
       "id": "r2-profile-not-homepage-skin",

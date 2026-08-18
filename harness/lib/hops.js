@@ -35,6 +35,9 @@ const {
   creditsNotLegalParagraph,
   noInternalAssetIds,
   invocationOk,
+  noEmptyWhiteWorkCards,
+  brandStillsNotWordmarks,
+  sixStageOneGraphic,
 } = require("./profile-cards");
 
 function check(id, severity, ok, detail) {
@@ -894,6 +897,41 @@ const profileNoInternalIdsGate = profileGateFrom(
   "internal asset ids visible on the public page"
 );
 
+const profileEmptyWhiteCardsGate = profileGateFrom(
+  noEmptyWhiteWorkCards,
+  "no Profile HTML to inspect for empty white work cards",
+  "empty white work cards"
+);
+
+const profileBrandStillsGate = profileGateFrom(
+  brandStillsNotWordmarks,
+  "no Profile HTML to inspect for brand stills",
+  "brand credits are wordmarks, not stills"
+);
+
+function profileSixStageGate(pkg, opts = {}) {
+  const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
+  const parts = [];
+  let ok = true;
+  if (localHtml) {
+    const ev = sixStageOneGraphic(localHtml, pkg);
+    parts.push(`local HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (liveHtml) {
+    const ev = sixStageOneGraphic(liveHtml, pkg);
+    parts.push(`live HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (!localHtml && !liveHtml) {
+    return { ok: false, detail: "no Profile HTML to inspect for 6-stage graphic" };
+  }
+  return {
+    ok,
+    detail: ok ? parts.join("; ") : `P-led 6-stage graphic: ${parts.join("; ")}`,
+  };
+}
+
 function profileViFieldGate(pkg, opts = {}) {
   const rec =
     pkg.vi && pkg.vi.ok && pkg.vi.value && typeof pkg.vi.value === "object"
@@ -986,6 +1024,16 @@ function hopR2(pkg, rules, opts = {}) {
   );
   const invoke = profileInvocationGate(pkg, opts);
   checks.push(check("r2-profile-invocation", "P0", invoke.ok, invoke.detail));
+  const emptyCards = profileEmptyWhiteCardsGate(pkg, opts);
+  checks.push(
+    check("r2-profile-empty-work-cards", "P0", emptyCards.ok, emptyCards.detail)
+  );
+  const brandStills = profileBrandStillsGate(pkg, opts);
+  checks.push(
+    check("r2-profile-brand-stills", "P0", brandStills.ok, brandStills.detail)
+  );
+  const six = profileSixStageGate(pkg, opts);
+  checks.push(check("r2-profile-six-stage", "P0", six.ok, six.detail));
   checks.push(
     check(
       "profile-not-homepage",
@@ -1134,6 +1182,16 @@ function hopR3(pkg, rules, opts = {}) {
   );
   const invoke = profileInvocationGate(pkg, opts);
   checks.push(check("r3-profile-invocation", "P0", invoke.ok, invoke.detail));
+  const emptyCards = profileEmptyWhiteCardsGate(pkg, opts);
+  checks.push(
+    check("r3-profile-empty-work-cards", "P0", emptyCards.ok, emptyCards.detail)
+  );
+  const brandStills = profileBrandStillsGate(pkg, opts);
+  checks.push(
+    check("r3-profile-brand-stills", "P0", brandStills.ok, brandStills.detail)
+  );
+  const six = profileSixStageGate(pkg, opts);
+  checks.push(check("r3-profile-six-stage", "P0", six.ok, six.detail));
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1282,6 +1340,9 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-credits-not-legal",
     "r2-profile-no-internal-ids",
     "r2-profile-invocation",
+    "r2-profile-empty-work-cards",
+    "r2-profile-brand-stills",
+    "r2-profile-six-stage",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1307,6 +1368,9 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-credits-not-legal",
     "r3-profile-no-internal-ids",
     "r3-profile-invocation",
+    "r3-profile-empty-work-cards",
+    "r3-profile-brand-stills",
+    "r3-profile-six-stage",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",
