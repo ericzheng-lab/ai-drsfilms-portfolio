@@ -13,6 +13,18 @@ const {
   findForbiddenWaivers,
 } = require("./text-scan");
 const { workIdsFrom } = require("./manifest");
+const {
+  htmlHasWorkImages,
+  firstViewportHasStill,
+  firstStillIsEarly,
+  htmlHasEnoughStills,
+  hasTraditionalCredits,
+  traditionalLeads,
+  aiFilmOrderOk,
+  vimeoEmbedInCard,
+  oldShellIsGone,
+  isRoleProfileNotHomepage,
+} = require("./profile-images");
 
 function check(id, severity, ok, detail) {
   return {
@@ -670,6 +682,158 @@ function slugMatchesCompany(pkg, classified) {
   };
 }
 
+function profileWorkImageGate(pkg, opts = {}) {
+  const localHtml =
+    pkg.paths.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  const parts = [];
+  let ok = true;
+  if (localHtml) {
+    const ev = htmlHasWorkImages(localHtml);
+    parts.push(`local HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (liveHtml) {
+    const ev = htmlHasWorkImages(liveHtml);
+    parts.push(`live HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (!localHtml && !liveHtml) {
+    return {
+      ok: false,
+      detail: "no Profile HTML to inspect for work images; text-only / missing stills",
+    };
+  }
+  return {
+    ok,
+    detail: ok
+      ? parts.join("; ")
+      : `text-only Profile (work stills required): ${parts.join("; ")}`,
+  };
+}
+
+function profileFirstViewportGate(pkg, opts = {}) {
+  const localHtml =
+    pkg.paths.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  const parts = [];
+  let ok = true;
+  if (localHtml) {
+    const ev = firstViewportHasStill(localHtml);
+    parts.push(`local HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (liveHtml) {
+    const ev = firstViewportHasStill(liveHtml);
+    parts.push(`live HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (!localHtml && !liveHtml) {
+    return { ok: false, detail: "no Profile HTML to inspect for first-viewport still" };
+  }
+  return {
+    ok,
+    detail: ok
+      ? parts.join("; ")
+      : `blank / spacer first viewport: ${parts.join("; ")}`,
+  };
+}
+
+function profileHtmlSides(pkg, opts = {}) {
+  const localHtml =
+    pkg.paths.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  return { localHtml, liveHtml };
+}
+
+function profileGateFrom(fn, emptyDetail, failPrefix) {
+  return function profileGate(pkg, opts = {}) {
+    const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
+    const parts = [];
+    let ok = true;
+    if (localHtml) {
+      const ev = fn(localHtml);
+      parts.push(`local HTML: ${ev.reason}`);
+      if (!ev.ok) ok = false;
+    }
+    if (liveHtml) {
+      const ev = fn(liveHtml);
+      parts.push(`live HTML: ${ev.reason}`);
+      if (!ev.ok) ok = false;
+    }
+    if (!localHtml && !liveHtml) {
+      return { ok: false, detail: emptyDetail };
+    }
+    return {
+      ok,
+      detail: ok ? parts.join("; ") : `${failPrefix}: ${parts.join("; ")}`,
+    };
+  };
+}
+
+const profileStillEarlyGate = profileGateFrom(
+  firstStillIsEarly,
+  "no Profile HTML to inspect for still-early (B-C6)",
+  "first still is too late (B-C6 / B-WKS4 / B-P3)"
+);
+
+const profileStillCountGate = profileGateFrom(
+  htmlHasEnoughStills,
+  "no Profile HTML to inspect for still count (B-WKS4)",
+  "too few work stills (B-WKS4)"
+);
+
+const profileTraditionalCreditsGate = profileGateFrom(
+  hasTraditionalCredits,
+  "no Profile HTML to inspect for traditional credits (B-WKS5)",
+  "traditional film/showreel credits missing (B-WKS5)"
+);
+
+const profileTraditionalLeadGate = profileGateFrom(
+  traditionalLeads,
+  "no Profile HTML to inspect for traditional lead (B-WKS6)",
+  "AI/3D occupies the lead (B-WKS6)"
+);
+
+const profileAiOrderGate = profileGateFrom(
+  aiFilmOrderOk,
+  "no Profile HTML to inspect for AI film order (B-WKS3)",
+  "AI stack order is wrong (B-WKS3)"
+);
+
+const profileVimeoInCardGate = profileGateFrom(
+  vimeoEmbedInCard,
+  "no Profile HTML to inspect for in-card Vimeo (B-WKS7)",
+  "Vimeo not embedded on the card (B-WKS7)"
+);
+
+const profileOldShellGate = profileGateFrom(
+  oldShellIsGone,
+  "no Profile HTML to inspect for old-shell patch (B-C5)",
+  "patch-on-old-shell (B-C5)"
+);
+
+const profileNotHomepageSkinGate = profileGateFrom(
+  isRoleProfileNotHomepage,
+  "no Profile HTML to inspect for homepage-as-profile (B-EL1)",
+  "homepage-as-profile (B-EL1)"
+);
+
 function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
@@ -681,6 +845,32 @@ function hopR2(pkg, rules, opts = {}) {
       evidence.ok,
       evidence.detail
     )
+  );
+  const stills = profileWorkImageGate(pkg, opts);
+  checks.push(check("r2-profile-work-images", "P0", stills.ok, stills.detail));
+  const viewport = profileFirstViewportGate(pkg, opts);
+  checks.push(
+    check("r2-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
+  );
+  const early = profileStillEarlyGate(pkg, opts);
+  checks.push(check("r2-profile-still-early", "P0", early.ok, early.detail));
+  const count = profileStillCountGate(pkg, opts);
+  checks.push(check("r2-profile-still-count", "P0", count.ok, count.detail));
+  const trad = profileTraditionalCreditsGate(pkg, opts);
+  checks.push(
+    check("r2-profile-traditional-credits", "P0", trad.ok, trad.detail)
+  );
+  const lead = profileTraditionalLeadGate(pkg, opts);
+  checks.push(check("r2-profile-traditional-lead", "P0", lead.ok, lead.detail));
+  const order = profileAiOrderGate(pkg, opts);
+  checks.push(check("r2-profile-ai-film-order", "P0", order.ok, order.detail));
+  const vimeo = profileVimeoInCardGate(pkg, opts);
+  checks.push(check("r2-profile-vimeo-in-card", "P0", vimeo.ok, vimeo.detail));
+  const shell = profileOldShellGate(pkg, opts);
+  checks.push(check("r2-profile-not-old-shell", "P0", shell.ok, shell.detail));
+  const homeSkin = profileNotHomepageSkinGate(pkg, opts);
+  checks.push(
+    check("r2-profile-not-homepage-skin", "P0", homeSkin.ok, homeSkin.detail)
   );
   checks.push(
     check(
@@ -787,6 +977,32 @@ function hopR3(pkg, rules, opts = {}) {
         ? "CV + CL + a real company Profile exist now"
         : "closeout missing CV, cover letter, or a real company Profile"
     )
+  );
+  const stills = profileWorkImageGate(pkg, opts);
+  checks.push(check("r3-profile-work-images", "P0", stills.ok, stills.detail));
+  const viewport = profileFirstViewportGate(pkg, opts);
+  checks.push(
+    check("r3-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
+  );
+  const early = profileStillEarlyGate(pkg, opts);
+  checks.push(check("r3-profile-still-early", "P0", early.ok, early.detail));
+  const count = profileStillCountGate(pkg, opts);
+  checks.push(check("r3-profile-still-count", "P0", count.ok, count.detail));
+  const trad = profileTraditionalCreditsGate(pkg, opts);
+  checks.push(
+    check("r3-profile-traditional-credits", "P0", trad.ok, trad.detail)
+  );
+  const lead = profileTraditionalLeadGate(pkg, opts);
+  checks.push(check("r3-profile-traditional-lead", "P0", lead.ok, lead.detail));
+  const order = profileAiOrderGate(pkg, opts);
+  checks.push(check("r3-profile-ai-film-order", "P0", order.ok, order.detail));
+  const vimeo = profileVimeoInCardGate(pkg, opts);
+  checks.push(check("r3-profile-vimeo-in-card", "P0", vimeo.ok, vimeo.detail));
+  const shell = profileOldShellGate(pkg, opts);
+  checks.push(check("r3-profile-not-old-shell", "P0", shell.ok, shell.detail));
+  const homeSkin = profileNotHomepageSkinGate(pkg, opts);
+  checks.push(
+    check("r3-profile-not-homepage-skin", "P0", homeSkin.ok, homeSkin.detail)
   );
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
@@ -919,6 +1135,16 @@ const REQUIRED_HOP_CHECKS = {
   R1b: ["r1b-cl-exists", "r1b-cl-distinct", "no-cl-waiver", ...CLAIM_LOCK_IDS, "slop-lexicon"],
   R2: [
     "r2-profile-present",
+    "r2-profile-work-images",
+    "r2-profile-first-viewport-still",
+    "r2-profile-still-early",
+    "r2-profile-still-count",
+    "r2-profile-traditional-credits",
+    "r2-profile-traditional-lead",
+    "r2-profile-ai-film-order",
+    "r2-profile-vimeo-in-card",
+    "r2-profile-not-old-shell",
+    "r2-profile-not-homepage-skin",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -929,6 +1155,16 @@ const REQUIRED_HOP_CHECKS = {
     "r3-cl-distinct",
     "r3-profile-present",
     "r3-three-live-pieces",
+    "r3-profile-work-images",
+    "r3-profile-first-viewport-still",
+    "r3-profile-still-early",
+    "r3-profile-still-count",
+    "r3-profile-traditional-credits",
+    "r3-profile-traditional-lead",
+    "r3-profile-ai-film-order",
+    "r3-profile-vimeo-in-card",
+    "r3-profile-not-old-shell",
+    "r3-profile-not-homepage-skin",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",
@@ -963,6 +1199,7 @@ module.exports = {
   realProfileExists,
   localProfileHtmlEvidence,
   liveFetchEvidence,
+  profileWorkImageGate,
   companySlug,
   companyAliasSet,
   isTrustedCompanyAlias,

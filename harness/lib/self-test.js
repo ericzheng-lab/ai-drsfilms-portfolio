@@ -31,6 +31,18 @@ const {
   bodyHasProfileMarker,
 } = require("./hops");
 const {
+  htmlHasWorkImages,
+  firstViewportHasStill,
+  firstStillIsEarly,
+  htmlHasEnoughStills,
+  hasTraditionalCredits,
+  traditionalLeads,
+  aiFilmOrderOk,
+  vimeoEmbedInCard,
+  oldShellIsGone,
+  isRoleProfileNotHomepage,
+} = require("./profile-images");
+const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
   pinInputPaths,
@@ -71,11 +83,12 @@ function hasFail(report, idPrefix) {
 }
 
 function qualifyingFetchResult(company = "Acme", slug = "acme") {
+  const img = `<img src="https://ai.drsfilms.com/${slug}/work-still.png" alt="${company} selected work still" width="640" height="360">`;
   return {
     status: 200,
     timedOut: false,
     error: null,
-    body: `<!DOCTYPE html><html><head><title>${company}</title></head><body><h1>${company}</h1><p>https://ai.drsfilms.com/${slug}/</p></body></html>`,
+    body: `<!DOCTYPE html><html><head><title>${company} Senior Producer</title></head><body>${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article></body></html>`,
   };
 }
 
@@ -807,6 +820,193 @@ async function testGhostProfileUrlWithoutLivePageRejected() {
   return "REJECT";
 }
 
+async function testEmptyHeroProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-empty-hero-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "78vh empty hero must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-first-viewport-still"),
+    `empty hero must fail r2-profile-first-viewport-still, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-work-images"),
+    "empty-hero fixture still has a later work image; fail must be the spacer, not zero stills"
+  );
+
+  const gs18 = `<style>.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
+  assert(
+    firstViewportHasStill(gs18).ok === false,
+    "Giant Spoon #18 spacer pattern must fail first-viewport still"
+  );
+  const rebuiltLead = `<nav class="site-nav"></nav><a class="lead-still"><img src="stills/one-click-mute-key-frame-01.jpg" alt="One Click Mute film still"></a>`;
+  assert(
+    firstViewportHasStill(rebuiltLead).ok === true,
+    "lead still without hero spacer must pass"
+  );
+  return "REJECT";
+}
+
+async function testLateStillsProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-late-stills-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "type-only open with later stills must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-still-early"),
+    `late stills must fail r2-profile-still-early, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-work-images"),
+    "late-stills fixture has four real images; fail must be timing, not zero stills"
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-first-viewport-still"),
+    "late-stills fixture has no 78vh hero spacer"
+  );
+  return "REJECT";
+}
+
+async function testPatchedShellAndHomepageSkinRejected() {
+  const patched = await runHops({
+    packageDir: fixture("fail-patched-shell-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(patched.last.verdict === "REJECT", "patched #18 shell must REJECT R2");
+  assert(
+    hasFail(patched.last, "r2-profile-not-old-shell"),
+    `patched shell must fail r2-profile-not-old-shell, got ${failuresOf(patched.last)}`
+  );
+  assert(
+    !hasFail(patched.last, "r2-profile-first-viewport-still"),
+    "img stuffed into the 78vh hero still passes the empty-hero gate; fail must be B-C5"
+  );
+
+  const home = await runHops({
+    packageDir: fixture("fail-homepage-skin-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(home.last.verdict === "REJECT", "homepage skin must REJECT R2");
+  assert(
+    hasFail(home.last, "r2-profile-not-homepage-skin"),
+    `homepage skin must fail r2-profile-not-homepage-skin, got ${failuresOf(home.last)}`
+  );
+  return "REJECT";
+}
+
+async function testNamedCareerWorkSampleRejected() {
+  const cases = [
+    ["fail-ai-only-profile", "r2-profile-traditional-credits", "AI-only stack"],
+    ["fail-ai-lead-profile", "r2-profile-traditional-lead", "AI lead"],
+    ["fail-ai-order-profile", "r2-profile-ai-film-order", "swapped AI order"],
+    ["fail-folded-vimeo-profile", "r2-profile-vimeo-in-card", "folded Vimeo"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+  return "REJECT";
+}
+
+async function testThinStackProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-thin-stack-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "two-film stack must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-still-count"),
+    `thin stack must fail r2-profile-still-count, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-work-images"),
+    "thin-stack fixture has real images; fail must be count, not zero stills"
+  );
+  return "REJECT";
+}
+
+async function testTextOnlyProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-text-only-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "text-only Profile must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-work-images"),
+    `text-only Profile must fail r2-profile-work-images, got ${failuresOf(r2.last)}`
+  );
+
+  const liveText = {
+    status: 200,
+    timedOut: false,
+    error: null,
+    body: `<!DOCTYPE html><html><head><title>Acme</title></head><body><h1>Acme</h1><p>https://ai.drsfilms.com/acme/</p><p>Resume text only. No stills.</p></body></html>`,
+  };
+  const liveOnly = await runHops({
+    packageDir: fixture("fail-text-only-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: liveText,
+  });
+  assert(liveOnly.last.verdict === "REJECT", "text-only live Profile must REJECT R2");
+  assert(
+    hasFail(liveOnly.last, "r2-profile-work-images"),
+    `text-only live Profile must fail r2-profile-work-images, got ${failuresOf(liveOnly.last)}`
+  );
+
+  assert(htmlHasWorkImages("").ok === false, "empty HTML is not work images");
+  assert(
+    htmlHasWorkImages('<img src="" alt="x">').ok === false,
+    "empty src is not a work image"
+  );
+  assert(
+    htmlHasWorkImages('<img src="placeholder.png" alt="x">').ok === false,
+    "placeholder src is not a work image"
+  );
+  assert(
+    htmlHasWorkImages(
+      '<img src="https://ai.drsfilms.com/acme/work-still.png" alt="Acme still">'
+    ).ok === true,
+    "http still must count"
+  );
+  return "REJECT";
+}
+
 async function testProfileRequiresDeploymentNotLocalHtml() {
   const r2 = await runHops({
     packageDir: fixture("pass-minimal-three"),
@@ -1343,6 +1543,73 @@ function testLooseningAnyP0RuleBreaksSelftest() {
       ),
     "profile-not-homepage": () =>
       assert(classifyProfileUrl("https://ai.drsfilms.com/").ok === false, "homepage"),
+    "r2-profile-work-images": () =>
+      assert(
+        htmlHasWorkImages("<html><body><h1>Acme</h1><p>text only</p></body></html>").ok ===
+          false,
+        "text-only Profile HTML"
+      ),
+    "r2-profile-first-viewport-still": () =>
+      assert(
+        firstViewportHasStill(
+          '<style>.hero{min-height:78vh}</style><header class="hero"><h1>x</h1></header><img src="later.jpg">'
+        ).ok === false,
+        "78vh hero without still"
+      ),
+    "r2-profile-still-early": () =>
+      assert(
+        firstStillIsEarly(
+          `<body><h1>x</h1><p>${"word ".repeat(90)}</p><img src="later.jpg"></body>`
+        ).ok === false,
+        "stills below a long type hero"
+      ),
+    "r2-profile-still-count": () =>
+      assert(
+        htmlHasEnoughStills(
+          '<img src="a.jpg"><img src="b.jpg">'
+        ).ok === false,
+        "two stills do not carry a page"
+      ),
+    "r2-profile-traditional-credits": () =>
+      assert(
+        hasTraditionalCredits(
+          "<p>One Click Mute. Manga Cut. DoomBrush.</p>"
+        ).ok === false,
+        "AI-only stack"
+      ),
+    "r2-profile-traditional-lead": () =>
+      assert(
+        traditionalLeads(
+          "<p>One Click Mute. Brief History of a Family. showreel.</p>"
+        ).ok === false,
+        "AI title before traditional"
+      ),
+    "r2-profile-ai-film-order": () =>
+      assert(
+        aiFilmOrderOk("<p>DoomBrush. One Click Mute. Manga Cut.</p>").ok === false,
+        "swapped AI stack"
+      ),
+    "r2-profile-vimeo-in-card": () =>
+      assert(
+        vimeoEmbedInCard(
+          '<p>Brief History</p><div class="modal"><iframe src="https://player.vimeo.com/video/1"></iframe></div>'
+        ).ok === false,
+        "modal-only Vimeo"
+      ),
+    "r2-profile-not-old-shell": () =>
+      assert(
+        oldShellIsGone(
+          '<style>.hero{min-height:78vh}</style><header class="hero"><img src="x.jpg"></header>'
+        ).ok === false,
+        "patched 78vh hero"
+      ),
+    "r2-profile-not-homepage-skin": () =>
+      assert(
+        isRoleProfileNotHomepage(
+          "<h1>We are Acme</h1><p>Independent creative company.</p>"
+        ).ok === false,
+        "homepage skin"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -1643,6 +1910,13 @@ async function runSelfTest() {
     "test-stale-report-invalidated-on-input-change": await testStaleReportInvalidatedOnInputChange(),
     "test-ghost-profile-url-without-live-page-rejected":
       await testGhostProfileUrlWithoutLivePageRejected(),
+    "test-empty-hero-profile-rejected": await testEmptyHeroProfileRejected(),
+    "test-late-stills-profile-rejected": await testLateStillsProfileRejected(),
+    "test-thin-stack-profile-rejected": await testThinStackProfileRejected(),
+    "test-named-career-work-sample-rejected": await testNamedCareerWorkSampleRejected(),
+    "test-patched-shell-and-homepage-skin-rejected":
+      await testPatchedShellAndHomepageSkinRejected(),
+    "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
     "test-live-fetch-rejects-spa-fallback": await testLiveFetchRejectsSpaFallback(),
@@ -1666,6 +1940,16 @@ async function runSelfTest() {
       "fail-skip-profile": skip.last.verdict,
       "fail-generic-homepage": home.last.verdict,
       "fail-missing-cl": missCl.last.verdict,
+      "fail-text-only-profile": "REJECT",
+      "fail-empty-hero-profile": "REJECT",
+      "fail-late-stills-profile": "REJECT",
+      "fail-thin-stack-profile": "REJECT",
+      "fail-ai-only-profile": "REJECT",
+      "fail-ai-lead-profile": "REJECT",
+      "fail-ai-order-profile": "REJECT",
+      "fail-folded-vimeo-profile": "REJECT",
+      "fail-patched-shell-profile": "REJECT",
+      "fail-homepage-skin-profile": "REJECT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

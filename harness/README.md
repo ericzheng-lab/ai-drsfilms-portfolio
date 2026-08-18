@@ -97,7 +97,19 @@ Hop order:
    cannot point at another company's slug. Live marker prefers route/slug
    path identity; tiny tokens like `Meta` must not match `metadata`.
    HTML, when present, still gets structure + noindex + claim-lock/slop
-   checks. `--fetch-profile` is how the CLI obtains live evidence; 4xx /
+   checks, and **must contain real work stills** (`<img>` with a real src).
+   Text-only pages, empty/placeholder/decorative marks, and local HTML
+   without stills are `REJECT` (`_CAREER` B-C6 / B-P3 / B-WKS4). A
+   `.hero` / `header` with `min-height >= 70vh` and no still in that
+   hero is `REJECT` even if a thumb appears later (B-C6 blank first
+   viewport; Giant Spoon #18). A type-only open with stills after 80
+   words of body copy is `REJECT` (Wonder/Kalshi class; B-C6 / B-WKS4).
+   Fewer than 4 real work images is `REJECT` (B-WKS4). A leftover
+   70vh+ `.hero` shell is `REJECT` even with an image inside (B-C5
+   patch-on-old-shell). A company homepage skin without a role and
+   work-sample titles is `REJECT` (B-EL1). Images are not optional;
+   there is no waiver.
+   `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
 6. **R3 Closeout** — `ACCEPT` means CV + cover letter + a *real* company
@@ -230,6 +242,16 @@ Paths are relative to the package directory.
 | `fixtures/fail-skip-profile` | R3 `REJECT` (no Profile URL/HTML) |
 | `fixtures/fail-generic-homepage` | R2 or R3 `REJECT` (`ai.drsfilms.com/` root) |
 | `fixtures/fail-missing-cl` | `REJECT` (no cover letter file) |
+| `fixtures/fail-text-only-profile` | R2 `REJECT` (Profile HTML has no real work stills) |
+| `fixtures/fail-empty-hero-profile` | R2 `REJECT` (78vh / min-height hero spacer, no still in first viewport) |
+| `fixtures/fail-late-stills-profile` | R2 `REJECT` (type-only open; stills below 80 words) |
+| `fixtures/fail-thin-stack-profile` | R2 `REJECT` (fewer than 4 real work stills) |
+| `fixtures/fail-ai-only-profile` | R2 `REJECT` (no traditional film/showreel credits) |
+| `fixtures/fail-ai-lead-profile` | R2 `REJECT` (AI title in the lead slot) |
+| `fixtures/fail-ai-order-profile` | R2 `REJECT` (AI stack not OCM → Manga Cut → DoomBrush) |
+| `fixtures/fail-folded-vimeo-profile` | R2 `REJECT` (traditional Vimeo only in a modal) |
+| `fixtures/fail-patched-shell-profile` | R2 `REJECT` (78vh hero shell kept; image stuffed in) |
+| `fixtures/fail-homepage-skin-profile` | R2 `REJECT` (company homepage skin, no role/work titles) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 All fixture people, emails, companies, and sentences are synthetic.
