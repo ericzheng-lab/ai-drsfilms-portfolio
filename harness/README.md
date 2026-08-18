@@ -89,7 +89,9 @@ Hop order:
    ids are in the list is `REJECT` (`brief-lead-matches-archetype`).
    A lead id with no dual-gate still is `REPAIR`
    (`brief-lead-assets-clearable`) — later hops may not substitute
-   another category. Page composition is locked here, not after the
+   another category (film for ads). Allowed Vimeo embeds that count
+   as a hang when INDEX has no still: Coach `190660903`, trad reel
+   `1174467043`. Page composition is locked here, not after the
    Profile exists.
 2. **R-VI** — VI distill record has source URL + date + exact hex / font /
    radius **and usage notes** (how the primary is a wordmark/field on the
@@ -147,19 +149,30 @@ Hop order:
    (DOC-6/R8). A-led: supporting only.    P-led pages may not hang a
    Prompt Builder gallery. Invocation must match the JD archetype
    (see matrix below). Every new Profile is judged against the
-   **newest 3** shipped `public/*/index.html` peers (last git commit
-   that touched the file; mtime if git is unavailable), not a frozen
-   ElevenLabs/Luma or Wonder/Kalshi pair. Manifest `compared_to` must
-   record that same set (`r2-profile-recent-bar` / R3 echo). First
+   **newest 3 still-first** shipped `public/*/index.html` peers (last git
+   commit that touched the file; mtime if git is unavailable). Skip
+   type-wall / Thread B pages whose first viewport is type, not a
+   still/reel poster. Manifest `compared_to` must record that same
+   still-first set (`r2-profile-recent-bar` / R3 echo). Timestamp-only
+   newest-3 that are type-first while a still-first peer exists is
+   `REJECT`. First
    viewport / first work row must match Brief `page_slots.lead` (ids
    or named category: trad reel, brand spot). A page that is only film
    stills while Brief lead is ads/reel is `REJECT`
    (`r2-profile-follows-brief-slots`). `/giant-spoon/` must follow
    Brief `page_slots` (ads/reel first). A
    text/résumé page (0 work images / empty first viewport) is `REJECT`
-   when any of those 3 has a first-viewport still. Images are not optional; there is no waiver.
+   when any of those 3 has a first-viewport still. Work column capped
+   `min(1120px, calc(100% - 40px))` (1080–1240 band);
+   `100vw` work img/iframe/video is `REJECT` (`r2-profile-max-width`).
+   Wordmark/nav may be a full row. Images are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
-   5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
+   5xx / timeout / error is `FAIL` (not PASS). When `--fetch-profile`
+   succeeds against `https://ai.drsfilms.com/{company}/`, profile
+   content gates judge the **live** body. A stale package `profile.html`
+   (old 78vh spacer) must not flip R2/R3 to `REJECT` if live would
+   `PASS`. Local-only runs (no fetch) still judge local HTML. Self-test
+   may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
 6. **R3 Closeout** — `ACCEPT` means CV + cover letter + a *real* company
    Profile exist and match **this** package *now* (qualifying live
@@ -248,6 +261,16 @@ hop to recover. Do not invent a waiver.
 
 This CLI will not apply, submit, or restyle `public/` for you.
 
+### Supervisor first-viewport screenshot
+
+First-viewport screenshot compare is a **supervisor check**, not CI.
+Career Manager / Mac takes the shot of `https://ai.drsfilms.com/{company}/`
+and compares it to the still-first bar. This repo has no Playwright;
+`--self-test` does not open a browser. The mechanical stand-in is a
+cheap HTML heuristic: the first 800px of body text/images must be
+still-led (work `<img>` / reel poster / in-page Vimeo before a type-wall).
+A type-first Thread B page is not the recent bar.
+
 ## How a Cursor Profile PR drops an R2 report
 
 1. Put role-specific Profile HTML at `public/{company}/index.html` and
@@ -281,7 +304,7 @@ See `schema/package-manifest.schema.json`. Required fields:
 | `profile_html` | Optional local HTML (not sufficient for R2/R3 ACCEPT) |
 | `company_aliases` | Trusted shortenings only (whole token or hyphen-boundary prefix of `company`, or built-in map). Prefix collisions inside a longer token (Metaphor + meta) and foreign slugs are ignored. |
 | `vi` | VI distill record (required for R-VI) |
-| `compared_to` | Newest 3 shipped `public/{company}/` routes this Profile was built against. `r2-profile-recent-bar` ACCEPT only when this matches the live bar. |
+| `compared_to` | Newest 3 **still-first** shipped `public/{company}/` routes this Profile was built against (skip type-wall / Thread B). `r2-profile-recent-bar` ACCEPT only when this matches that still-first bar. |
 | `waivers` | **Forbidden** for Profile / CL. Presence is P0 REJECT. Novel skip/omit/optional/defer keys are also REJECT. |
 
 Paths are relative to the package directory.
@@ -330,7 +353,11 @@ Paths are relative to the package directory.
 | `fixtures/fail-o-led-missing-6stage` | R2 `REJECT` (O-led missing 6-stage picture) |
 | `fixtures/fail-p-led-pb-gallery` | R2 `REJECT` (P-led Prompt Builder gallery) |
 | `fixtures/fail-stale-classic-bar` | R2 `REJECT` (`compared_to` is elevenlabs+luma while a newer peer exists) |
+| `fixtures/fail-typewall-as-recent-bar` | R2 `REJECT` (timestamp-only newest 3 are type-wall / Thread B while a still-first peer exists) |
 | `fixtures/pass-recent-bar` | `r2-profile-recent-bar` `ACCEPT` (`compared_to` matches the newest 3 in the fixture tree) |
+| `fixtures/fail-brief-lead-not-clearable` | R0 `REPAIR` (`brief-lead-assets-clearable`; lead cannot hang dual-gate still or allowed Vimeo) |
+| `fixtures/fail-full-bleed-profile` | R2 `REJECT` (`r2-profile-max-width`; work img/iframe/video is `100vw`) |
+| `fixtures/pass-still-first-live-over-stale` | R2 `ACCEPT` when fetch is on (still-first `compared_to` + capped wrap + live body wins over stale local 78vh exam HTML) |
 | `fixtures/fail-brief-no-slots` | R0 `REJECT` (no `page_slots` / slot order) |
 | `fixtures/fail-p-led-film-lead` | R0 `REJECT` (P-led agency producer, lead = BHOAF only while ads/reel ids are listed) |
 | `fixtures/fail-page-ignores-brief-lead` | R2 `REJECT` (Brief lead = reel+coach; HTML is four BHOAF cards) |

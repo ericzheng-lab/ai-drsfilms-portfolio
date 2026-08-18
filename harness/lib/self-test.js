@@ -41,6 +41,9 @@ const {
   vimeoEmbedInCard,
   oldShellIsGone,
   isRoleProfileNotHomepage,
+  workColumnMaxWidthOk,
+  isStillFirstPage,
+  firstViewportIsStillLed,
 } = require("./profile-images");
 const {
   viHasUsage,
@@ -117,8 +120,29 @@ function qualifyingFetchResult(company = "Acme", slug = "acme") {
     status: 200,
     timedOut: false,
     error: null,
-    body: `<!DOCTYPE html><html><head><title>${company} Senior Producer</title><style>.wordmark{background:#1A2B3C;color:#fff;padding:20px 24px;font-size:22px}.reel-poster{aspect-ratio:21/9;width:100%}</style></head><body><header class="wordmark">${company}</header>${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><img class="reel-poster" src="https://ai.drsfilms.com/${slug}/work-still.png" alt="Traditional showreel still" width="840" height="360"><span class="play">Play</span><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article><figure><img src="https://ai.drsfilms.com/${slug}/workflow-6stage.svg" alt="Six-stage production method"><figcaption class="footnote">Locked six-stage method.</figcaption></figure></body></html>`,
+    body: `<!DOCTYPE html><html><head><meta name="robots" content="noindex"><title>${company} Senior Producer</title><style>.wordmark{background:#1A2B3C;color:#fff;padding:20px 24px;font-size:22px;width:100%}.wrap{width:min(1120px, calc(100% - 40px));margin:0 auto}.reel-poster{aspect-ratio:21/9;width:100%}</style></head><body><header class="wordmark">${company}</header><div class="wrap">${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><img class="reel-poster" src="https://ai.drsfilms.com/${slug}/work-still.png" alt="Traditional showreel still" width="840" height="360"><span class="play">Play</span><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article><figure><img src="https://ai.drsfilms.com/${slug}/workflow-6stage.svg" alt="Six-stage production method"><figcaption class="footnote">Locked six-stage method.</figcaption></figure></div></body></html>`,
   };
+}
+
+function fixtureFetchResult(name) {
+  const dir = fixture(name);
+  const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8"));
+  const htmlPath = path.join(dir, "profile.html");
+  let body = fs.existsSync(htmlPath) ? fs.readFileSync(htmlPath, "utf8") : "";
+  const url = String(manifest.profile_url || "https://ai.drsfilms.com/acme/");
+  const slug =
+    url
+      .replace(/^https?:\/\/ai\.drsfilms\.com\//i, "")
+      .replace(/\/+$/, "")
+      .split("/")[0] || "acme";
+  const marker = `ai.drsfilms.com/${slug}`;
+  if (body && !body.toLowerCase().includes(marker.toLowerCase())) {
+    const tag = `<p>https://ai.drsfilms.com/${slug}/</p>`;
+    body = /<\/body>/i.test(body)
+      ? body.replace(/<\/body>/i, `${tag}</body>`)
+      : `${body}${tag}`;
+  }
+  return { status: 200, timedOut: false, error: null, body };
 }
 
 function rulesetPinInputs() {
@@ -364,14 +388,21 @@ async function testR0R1R2OnlyGatesSurviveForgedPrereq() {
   let html = fs.readFileSync(htmlPath, "utf8");
   html = html.replace(/\s*<meta name="robots" content="noindex" \/>\s*/i, "\n");
   fs.writeFileSync(htmlPath, html, "utf8");
+  const fetchMissingNoindex = {
+    ...fetchResult,
+    body: String(fetchResult.body || "").replace(
+      /\s*<meta name="robots" content="noindex"\s*\/?>\s*/i,
+      "\n"
+    ),
+  };
   const htmlReports = writeLiveHopReports(htmlDir, ["R0", "R-VI", "R1", "R1b", "R2"], {
     forgeAcceptHops: ["R2"],
-    fetchResult,
+    fetchResult: fetchMissingNoindex,
   });
   const liveR2 = HOP_RUNNERS.R2(
     loadPackage({ packageDir: htmlDir }),
     loadRuleset().rules,
-    { fetchResult }
+    { fetchResult: fetchMissingNoindex }
   );
   assert(
     liveR2.some((c) => c.id === "r2-html-noindex" && c.status === "FAIL"),
@@ -386,7 +417,7 @@ async function testR0R1R2OnlyGatesSurviveForgedPrereq() {
     hops: ["R3"],
     reportsDir: htmlReports,
     stopOnFail: false,
-    fetchResult,
+    fetchResult: fetchMissingNoindex,
   });
   assert(
     htmlR3.last.verdict === "REJECT",
@@ -851,7 +882,7 @@ async function testGhostProfileUrlWithoutLivePageRejected() {
 }
 
 async function testEmptyHeroProfileRejected() {
-  const fetchResult = qualifyingFetchResult();
+  const fetchResult = fixtureFetchResult("fail-empty-hero-profile");
   const r2 = await runHops({
     packageDir: fixture("fail-empty-hero-profile"),
     hops: ["R2"],
@@ -883,7 +914,7 @@ async function testEmptyHeroProfileRejected() {
 }
 
 async function testLateStillsProfileRejected() {
-  const fetchResult = qualifyingFetchResult();
+  const fetchResult = fixtureFetchResult("fail-late-stills-profile");
   const r2 = await runHops({
     packageDir: fixture("fail-late-stills-profile"),
     hops: ["R2"],
@@ -913,7 +944,7 @@ async function testPatchedShellAndHomepageSkinRejected() {
     hops: ["R2"],
     reportsDir: tmpReports(),
     stopOnFail: false,
-    fetchResult: qualifyingFetchResult(),
+    fetchResult: fixtureFetchResult("fail-patched-shell-profile"),
   });
   assert(patched.last.verdict === "REJECT", "patched #18 shell must REJECT R2");
   assert(
@@ -930,7 +961,7 @@ async function testPatchedShellAndHomepageSkinRejected() {
     hops: ["R2"],
     reportsDir: tmpReports(),
     stopOnFail: false,
-    fetchResult: qualifyingFetchResult(),
+    fetchResult: fixtureFetchResult("fail-homepage-skin-profile"),
   });
   assert(home.last.verdict === "REJECT", "homepage skin must REJECT R2");
   assert(
@@ -953,7 +984,7 @@ async function testNamedCareerWorkSampleRejected() {
       hops: ["R2"],
       reportsDir: tmpReports(),
       stopOnFail: false,
-      fetchResult: qualifyingFetchResult(),
+      fetchResult: fixtureFetchResult(name),
     });
     assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
     assert(
@@ -965,7 +996,7 @@ async function testNamedCareerWorkSampleRejected() {
 }
 
 async function testThinStackProfileRejected() {
-  const fetchResult = qualifyingFetchResult();
+  const fetchResult = fixtureFetchResult("fail-thin-stack-profile");
   const r2 = await runHops({
     packageDir: fixture("fail-thin-stack-profile"),
     hops: ["R2"],
@@ -986,7 +1017,7 @@ async function testThinStackProfileRejected() {
 }
 
 async function testTextOnlyProfileRejected() {
-  const fetchResult = qualifyingFetchResult();
+  const fetchResult = fixtureFetchResult("fail-text-only-profile");
   const r2 = await runHops({
     packageDir: fixture("fail-text-only-profile"),
     hops: ["R2"],
@@ -1144,7 +1175,7 @@ async function testViTinyLabelsRejected() {
     hops: ["R2"],
     reportsDir: tmpReports(),
     stopOnFail: false,
-    fetchResult: qualifyingFetchResult(),
+    fetchResult: fixtureFetchResult("fail-vi-tiny-labels"),
   });
   assert(r2.last.verdict === "REJECT", "tiny-label résumé must REJECT R2");
   assert(
@@ -1183,7 +1214,7 @@ async function testTextCardAndCreditsRejected() {
       hops: ["R2"],
       reportsDir: tmpReports(),
       stopOnFail: false,
-      fetchResult: qualifyingFetchResult(),
+      fetchResult: fixtureFetchResult(name),
     });
     assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
     assert(
@@ -1217,7 +1248,7 @@ async function testInvocationMatrixRejected() {
       hops: ["R2"],
       reportsDir: tmpReports(),
       stopOnFail: false,
-      fetchResult: qualifyingFetchResult(),
+      fetchResult: fixtureFetchResult(name),
     });
     assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
     assert(
@@ -1263,7 +1294,7 @@ async function testClosedDebateCardsRejected() {
       hops: ["R2"],
       reportsDir: tmpReports(),
       stopOnFail: false,
-      fetchResult: qualifyingFetchResult(),
+      fetchResult: fixtureFetchResult(name),
     });
     assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
     assert(
@@ -1353,7 +1384,7 @@ async function testAssetLibrarianRejected() {
       hops: ["R2"],
       reportsDir: tmpReports(),
       stopOnFail: false,
-      fetchResult: qualifyingFetchResult(),
+      fetchResult: fixtureFetchResult(name),
     });
     assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
     assert(
@@ -1584,6 +1615,136 @@ async function testBriefPageSlotsRejected() {
   );
 
   return "REJECT";
+}
+
+async function testTypewallAsRecentBarRejected() {
+  const r2 = await runHops({
+    packageDir: fixture("fail-typewall-as-recent-bar"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(r2.last.verdict === "REJECT", "fail-typewall-as-recent-bar R2 must REJECT");
+  assert(
+    hasFail(r2.last, "r2-profile-recent-bar"),
+    `type-wall as recent bar must fail r2-profile-recent-bar, got ${failuresOf(r2.last)}`
+  );
+  const check = (r2.last.checks || []).find((c) => c.id === "r2-profile-recent-bar");
+  assert(
+    check && /type-wall|Thread B|still-first/i.test(check.detail),
+    `type-wall bar detail must name the skip, got ${check && check.detail}`
+  );
+  assert(
+    sameSlugSet(check.compared_to || [], ["still-alpha", "still-beta", "still-gamma"]),
+    `still-first bar must be still-alpha/beta/gamma, got ${JSON.stringify(check.compared_to)}`
+  );
+  const typeHtml = fs.readFileSync(
+    path.join(fixture("fail-typewall-as-recent-bar"), "public", "aaa-typewall", "index.html"),
+    "utf8"
+  );
+  assert(isStillFirstPage(typeHtml) === false, "aaa-typewall must be type-wall, not still-first");
+  const stillHtml = fs.readFileSync(
+    path.join(fixture("fail-typewall-as-recent-bar"), "public", "still-alpha", "index.html"),
+    "utf8"
+  );
+  assert(isStillFirstPage(stillHtml) === true, "still-alpha must be still-first");
+  return "REJECT";
+}
+
+async function testBriefLeadNotClearableRepair() {
+  const r0 = await runHops({
+    packageDir: fixture("fail-brief-lead-not-clearable"),
+    hops: ["R0"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(r0.last.verdict === "REPAIR", "fail-brief-lead-not-clearable R0 must REPAIR");
+  assert(
+    hasFail(r0.last, "brief-lead-assets-clearable"),
+    `must fail brief-lead-assets-clearable, got ${failuresOf(r0.last)}`
+  );
+  assert(
+    !hasFail(r0.last, "brief-page-slots"),
+    "slots must exist so the named fail is lead clearance"
+  );
+  return "REPAIR";
+}
+
+async function testFullBleedProfileRejected() {
+  const r2 = await runHops({
+    packageDir: fixture("fail-full-bleed-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: fixtureFetchResult("fail-full-bleed-profile"),
+  });
+  assert(r2.last.verdict === "REJECT", "fail-full-bleed-profile R2 must REJECT");
+  assert(
+    hasFail(r2.last, "r2-profile-max-width"),
+    `full-bleed must fail r2-profile-max-width, got ${failuresOf(r2.last)}`
+  );
+  const r3 = await runHops({
+    packageDir: fixture("fail-full-bleed-profile"),
+    hops: ["R3"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: fixtureFetchResult("fail-full-bleed-profile"),
+  });
+  assert(
+    hasFail(r3.last, "r3-profile-max-width"),
+    `R3 must echo r3-profile-max-width, got ${failuresOf(r3.last)}`
+  );
+  return "REJECT";
+}
+
+async function testLiveOverStaleLocalAccepted() {
+  const live = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("pass-still-first-live-over-stale"),
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: true,
+    fetchResult: live,
+  });
+  assert(
+    r2.reports.length === 5,
+    `pass-still-first-live-over-stale should finish 5 hops, got ${r2.reports.length}`
+  );
+  for (const r of r2.reports) {
+    assert(
+      r.verdict === "ACCEPT",
+      `${r.hop} should ACCEPT when fetch live wins over stale local, got ${r.verdict}: ${r.failures.join("; ")}`
+    );
+  }
+  const recent = (r2.last.checks || []).find((c) => c.id === "r2-profile-recent-bar");
+  assert(
+    recent && recent.status === "PASS",
+    "still-first compared_to must PASS r2-profile-recent-bar"
+  );
+  assert(
+    sameSlugSet(recent.compared_to || [], ["still-alpha", "still-beta", "still-gamma"]),
+    `compared_to must be still-first peers, got ${JSON.stringify(recent && recent.compared_to)}`
+  );
+  const width = (r2.last.checks || []).find((c) => c.id === "r2-profile-max-width");
+  assert(width && width.status === "PASS", "capped wrap on live body must PASS r2-profile-max-width");
+
+  const localOnly = await runHops({
+    packageDir: fixture("pass-still-first-live-over-stale"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(
+    hasFail(localOnly.last, "r2-profile-first-viewport-still") ||
+      hasFail(localOnly.last, "r2-profile-not-old-shell"),
+    `local-only must still judge stale 78vh HTML, got ${failuresOf(localOnly.last)}`
+  );
+  assert(
+    firstViewportIsStillLed(live.body).ok === true,
+    "live body first 800px must be still-led"
+  );
+  return "ACCEPT";
 }
 
 async function testGs18HtmlStillRejected() {
@@ -2329,6 +2490,11 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         recentBarOk(resume).ok === false,
         "résumé/text page vs bar first-viewport still"
       );
+      const typewall = loadPackage({ packageDir: fixture("fail-typewall-as-recent-bar") });
+      assert(
+        recentBarOk(typewall).ok === false,
+        "timestamp-only type-wall compared_to while still-first peer exists"
+      );
     },
     "brief-page-slots": () => {
       assert(
@@ -2383,7 +2549,7 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         ).ok === false,
         "P-led film-only lead"
       ),
-    "brief-lead-assets-clearable": () =>
+    "brief-lead-assets-clearable": () => {
       assert(
         briefLeadAssetsClearable({
           selected_work_ids: ["unclearable-lead-still"],
@@ -2396,7 +2562,21 @@ function testLooseningAnyP0RuleBreaksSelftest() {
           },
         }).ok === false,
         "lead without dual-gate still"
-      ),
+      );
+      assert(
+        briefLeadAssetsClearable({
+          selected_work_ids: ["coach-make-the-ground-shake", "showreel-trad"],
+          page_slots: {
+            archetype: "P-led",
+            lead: ["Coach brand spot", "traditional advertising showreel"],
+            second: [],
+            supporting: [],
+            omit: [],
+          },
+        }).ok === true,
+        "Coach 190660903 / trad reel 1174467043 are allowed lead hangs"
+      );
+    },
     "r2-profile-follows-brief-slots": () => {
       assert(
         profileFollowsBriefSlots(
@@ -2431,6 +2611,20 @@ function testLooseningAnyP0RuleBreaksSelftest() {
           }
         ).ok === true,
         "ads-first work row matches Brief lead"
+      );
+    },
+    "r2-profile-max-width": () => {
+      assert(
+        workColumnMaxWidthOk(
+          '<style>.work img{width:100vw}</style><img src="a.jpg" alt="still">'
+        ).ok === false,
+        "100vw work img"
+      );
+      assert(
+        workColumnMaxWidthOk(
+          '<style>.wordmark{width:100vw;background:#1A2B3C}.wrap{width:min(1120px, calc(100% - 40px))}</style><header class="wordmark">Acme</header><div class="wrap"><img src="a.jpg" alt="still"></div>'
+        ).ok === true,
+        "wordmark may be full row when work wrap is capped"
       );
     },
     "r3-three-live-pieces": () =>
@@ -2748,6 +2942,10 @@ async function runSelfTest() {
     "test-closed-debate-cards-rejected": await testClosedDebateCardsRejected(),
     "test-asset-librarian-rejected": await testAssetLibrarianRejected(),
     "test-recent-bar-fixtures": await testRecentBarFixtures(),
+    "test-typewall-as-recent-bar": await testTypewallAsRecentBarRejected(),
+    "test-brief-lead-not-clearable": await testBriefLeadNotClearableRepair(),
+    "test-full-bleed-profile": await testFullBleedProfileRejected(),
+    "test-live-over-stale-local": await testLiveOverStaleLocalAccepted(),
     "test-brief-page-slots-rejected": await testBriefPageSlotsRejected(),
     "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
     "test-profile-requires-deployment-not-local-html":
@@ -2810,6 +3008,10 @@ async function runSelfTest() {
       "fail-o-led-missing-6stage": "REJECT",
       "fail-p-led-pb-gallery": "REJECT",
       "fail-stale-classic-bar": "REJECT",
+      "fail-typewall-as-recent-bar": "REJECT",
+      "fail-brief-lead-not-clearable": "REPAIR",
+      "fail-full-bleed-profile": "REJECT",
+      "pass-still-first-live-over-stale": "ACCEPT",
       "pass-recent-bar": "ACCEPT",
       "fail-brief-no-slots": "REJECT",
       "fail-p-led-film-lead": "REJECT",

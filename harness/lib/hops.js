@@ -30,6 +30,7 @@ const {
   vimeoEmbedInCard,
   oldShellIsGone,
   isRoleProfileNotHomepage,
+  workColumnMaxWidthOk,
 } = require("./profile-images");
 const {
   viHasUsage,
@@ -559,7 +560,8 @@ function hopR0(pkg, rules) {
   return checks;
 }
 
-function hopRVI(pkg) {
+function hopRVI(pkg, _rules, opts = {}) {
+  const gateOpts = contentGateOpts(pkg, opts);
   const checks = [];
   const loaded = pkg.vi.ok && pkg.vi.value && typeof pkg.vi.value === "object";
   checks.push(
@@ -680,8 +682,14 @@ function hopRVI(pkg) {
     pkg.paths && pkg.paths.profileHtml && pkg.profileHtml && pkg.profileHtml.ok
       ? String(pkg.profileHtml.value || "").trim()
       : "";
-  if (localHtml) {
-    const field = primaryAppliedAsField(localHtml, primaryHexFromVi(rec));
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  const judgedHtml =
+    gateOpts.preferLiveHtml && liveHtml ? liveHtml : localHtml;
+  if (judgedHtml) {
+    const field = primaryAppliedAsField(judgedHtml, primaryHexFromVi(rec));
     checks.push(check("vi-primary-as-field", "P0", field.ok, field.reason));
   } else {
     checks.push(
@@ -767,14 +775,7 @@ function slugMatchesCompany(pkg, classified) {
 }
 
 function profileWorkImageGate(pkg, opts = {}) {
-  const localHtml =
-    pkg.paths.profileHtml && pkg.profileHtml.ok
-      ? String(pkg.profileHtml.value || "").trim()
-      : "";
-  const liveHtml =
-    opts.fetchResult && opts.fetchResult.body
-      ? String(opts.fetchResult.body || "").trim()
-      : "";
+  const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
   const parts = [];
   let ok = true;
   if (localHtml) {
@@ -802,14 +803,7 @@ function profileWorkImageGate(pkg, opts = {}) {
 }
 
 function profileFirstViewportGate(pkg, opts = {}) {
-  const localHtml =
-    pkg.paths.profileHtml && pkg.profileHtml.ok
-      ? String(pkg.profileHtml.value || "").trim()
-      : "";
-  const liveHtml =
-    opts.fetchResult && opts.fetchResult.body
-      ? String(opts.fetchResult.body || "").trim()
-      : "";
+  const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
   const parts = [];
   let ok = true;
   if (localHtml) {
@@ -842,7 +836,15 @@ function profileHtmlSides(pkg, opts = {}) {
     opts.fetchResult && opts.fetchResult.body
       ? String(opts.fetchResult.body || "").trim()
       : "";
+  if (opts.preferLiveHtml && liveHtml) {
+    return { localHtml: "", liveHtml };
+  }
   return { localHtml, liveHtml };
+}
+
+function contentGateOpts(pkg, opts = {}) {
+  const live = liveFetchEvidence(opts.fetchResult, pkg);
+  return { ...opts, preferLiveHtml: Boolean(live.ok) };
 }
 
 function profileGateFrom(fn, emptyDetail, failPrefix) {
@@ -1087,6 +1089,7 @@ function profileInvocationGate(pkg, opts = {}) {
 }
 
 function hopR2(pkg, rules, opts = {}) {
+  opts = contentGateOpts(pkg, opts);
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
   const evidence = realProfileExists(pkg, opts);
@@ -1176,6 +1179,12 @@ function hopR2(pkg, rules, opts = {}) {
       followsSlots.detail
     )
   );
+  const maxWidth = profileGateFrom(
+    workColumnMaxWidthOk,
+    "no Profile HTML to inspect for work-column max-width",
+    "work column / work media is full-bleed 100vw"
+  )(pkg, opts);
+  checks.push(check("r2-profile-max-width", "P0", maxWidth.ok, maxWidth.detail));
   checks.push(
     check(
       "profile-not-homepage",
@@ -1190,9 +1199,9 @@ function hopR2(pkg, rules, opts = {}) {
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile"]));
 
-  const htmlPresent = evidence.local.ok || Boolean(pkg.paths.profileHtml && pkg.profileHtml.ok);
-  if (htmlPresent) {
-    const html = pkg.profileHtml.value || "";
+  const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
+  const html = liveHtml || localHtml;
+  if (html) {
     const looksHtml = /<!DOCTYPE\s+html/i.test(html) || /<html[\s>]/i.test(html);
     const hasTitle = /<title[\s>]/i.test(html) || /<h1[\s>]/i.test(html);
     checks.push(
@@ -1235,6 +1244,7 @@ function hopR2(pkg, rules, opts = {}) {
 }
 
 function hopR3(pkg, rules, opts = {}) {
+  opts = contentGateOpts(pkg, opts);
   const checks = [];
   const cvOk = Boolean(pkg.cv.ok && pkg.cv.value);
   const clOk = Boolean(pkg.cl.ok && pkg.cl.value);
@@ -1360,6 +1370,12 @@ function hopR3(pkg, rules, opts = {}) {
       followsSlots.detail
     )
   );
+  const maxWidth = profileGateFrom(
+    workColumnMaxWidthOk,
+    "no Profile HTML to inspect for work-column max-width",
+    "work column / work media is full-bleed 100vw"
+  )(pkg, opts);
+  checks.push(check("r3-profile-max-width", "P0", maxWidth.ok, maxWidth.detail));
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1424,13 +1440,10 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(...textGateChecks(pkg.brief.value || "", "Brief", rules, "r3-brief-"));
   checks.push(...textGateChecks(pkg.cv.value || "", "CV", rules, "r3-cv-"));
   checks.push(...textGateChecks(pkg.cl.value || "", "CL", rules, "r3-cl-"));
+  const judgedHtmlSides = profileHtmlSides(pkg, opts);
+  const judgedHtml = judgedHtmlSides.liveHtml || judgedHtmlSides.localHtml;
   checks.push(
-    ...textGateChecks(
-      (pkg.profileHtml && pkg.profileHtml.value) || "",
-      "Profile HTML",
-      rules,
-      "r3-html-"
-    )
+    ...textGateChecks(judgedHtml || "", "Profile HTML", rules, "r3-html-")
   );
   checks.push(
     skipLanguageCheck(pkg.brief.value || "", "Brief", rules, "r3-brief-no-skip-language")
@@ -1439,7 +1452,7 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(skipLanguageCheck(pkg.cl.value || "", "CL", rules, "r3-cl-no-skip-language"));
   checks.push(
     skipLanguageCheck(
-      (pkg.profileHtml && pkg.profileHtml.value) || "",
+      judgedHtml || "",
       "Profile HTML",
       rules,
       "r3-html-no-skip-language"
@@ -1448,7 +1461,7 @@ function hopR3(pkg, rules, opts = {}) {
 
   // Disk ACCEPT cannot waive VI provenance. Re-run R-VI on current vi.json.
   checks.push(
-    ...hopRVI(pkg).map((c) => ({
+    ...hopRVI(pkg, rules, opts).map((c) => ({
       ...c,
       id: c.id.startsWith("r3-") ? c.id : `r3-${c.id}`,
     }))
@@ -1521,6 +1534,7 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-p-led-pb-gallery",
     "r2-profile-recent-bar",
     "r2-profile-follows-brief-slots",
+    "r2-profile-max-width",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1555,6 +1569,7 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-p-led-pb-gallery",
     "r3-profile-recent-bar",
     "r3-profile-follows-brief-slots",
+    "r3-profile-max-width",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

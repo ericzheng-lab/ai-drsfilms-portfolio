@@ -71,7 +71,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "The current visual bar: the newest 3 shipped public/{company}/index.html routes (excluding this package company), by last git commit timestamp (mtime if git is unavailable). r2-profile-recent-bar ACCEPT only when this array matches that set. A frozen pair (elevenlabs+luma, wonder+kalshi) is REJECT when newer pages exist."
+      "description": "The current visual bar: the newest 3 still-first shipped public/{company}/index.html routes (excluding this package company), by last git commit timestamp (mtime if git is unavailable). Skip type-wall / Thread B. r2-profile-recent-bar ACCEPT only when this array matches that still-first set. Timestamp-only newest 3 that are type-first while a still-first peer exists is REJECT. A frozen pair (elevenlabs+luma, wonder+kalshi) is REJECT when newer pages exist."
     }
   }
 }

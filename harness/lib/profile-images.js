@@ -344,6 +344,242 @@ function firstViewportHasStill(html) {
   };
 }
 
+const FIRST_VIEWPORT_PX = 800;
+const STILL_LED_MAX_WORDS = 24;
+const WORK_WRAP_MIN_PX = 1080;
+const WORK_WRAP_MAX_PX = 1240;
+const WORK_WRAP_FORMULA_RE =
+  /min\(\s*1120px\s*,\s*calc\(\s*100%\s*-\s*40px\s*\)\s*\)/i;
+const NAV_CHROME_RE =
+  /(^|[\s,#.>+~])(wordmark|nav|navbar|site-nav|brand-mark|logo|masthead)\b/i;
+const WORK_MEDIA_RE =
+  /\b(img|iframe|video|work-card|work-col(?:umn)?|work-wrap|reel-poster|poster|article|main)\b/i;
+
+function bodyInner(html) {
+  const src = String(html || "");
+  const body = src.match(/<body\b[^>]*>([\s\S]*)<\/body>/i);
+  return body ? body[1] : src;
+}
+
+function stripChrome(htmlChunk) {
+  return String(htmlChunk || "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ");
+}
+
+function firstVisualStillIndex(chunk) {
+  const src = String(chunk || "");
+  const candidates = [];
+  const imgRe = /<img\b[^>]*>/gi;
+  let m;
+  while ((m = imgRe.exec(src))) {
+    const attrs = attrValues(m[0]);
+    const urls = [...attrs.src];
+    for (const set of attrs.srcset) urls.push(...srcsetUrls(set));
+    if (urls.some(isRealWorkSrc) || /reel-poster|\bposter\b/i.test(m[0])) {
+      candidates.push(m.index);
+      break;
+    }
+  }
+  const iframe = /<iframe\b[^>]*src=["'][^"']*(?:player\.)?vimeo\.com[^"']*["'][^>]*>/i.exec(
+    src
+  );
+  if (iframe) candidates.push(iframe.index);
+  const video = /<video\b[^>]*>/i.exec(src);
+  if (video) candidates.push(video.index);
+  if (!candidates.length) return -1;
+  return Math.min(...candidates);
+}
+
+function firstViewportIsStillLed(html) {
+  const src = String(html || "");
+  if (!src.trim()) {
+    return { ok: false, reason: "empty HTML; first 800px is not still-led" };
+  }
+  const chunk = stripChrome(bodyInner(src));
+  const visualAt = firstVisualStillIndex(chunk);
+  if (visualAt < 0) {
+    return {
+      ok: false,
+      reason: "first 800px has no still / reel poster (type-wall / Thread B)",
+    };
+  }
+  const prefix = chunk.slice(0, visualAt);
+  const words = stripToWords(prefix);
+  if (words.length > STILL_LED_MAX_WORDS) {
+    return {
+      ok: false,
+      reason: `first ${FIRST_VIEWPORT_PX}px is type-led (${words.length} words before still/reel poster; Thread B)`,
+    };
+  }
+  if (prefix.length > 3500) {
+    return {
+      ok: false,
+      reason: "first 800px is a type-wall / Thread B (markup before still is a type hero)",
+    };
+  }
+  return {
+    ok: true,
+    reason: `first ${FIRST_VIEWPORT_PX}px is still/reel-poster led`,
+  };
+}
+
+function isStillFirstPage(html) {
+  const src = String(html || "");
+  if (!src.trim()) return false;
+  if (!htmlHasWorkImages(src).ok) return false;
+  if (!firstViewportHasStill(src).ok) return false;
+  if (!firstStillIsEarly(src).ok) return false;
+  return firstViewportIsStillLed(src).ok;
+}
+
+function isTypeWallPage(html) {
+  return !isStillFirstPage(html);
+}
+
+function isNavChromeSelector(sel) {
+  const parts = String(sel || "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (!parts.length) return false;
+  return parts.every(
+    (p) => NAV_CHROME_RE.test(p) && !WORK_MEDIA_RE.test(p)
+  );
+}
+
+function looksLikeWorkSelector(sel) {
+  const s = String(sel || "");
+  if (isNavChromeSelector(s)) return false;
+  if (WORK_MEDIA_RE.test(s)) return true;
+  if (/(^|[\s,#.>+~])wrap\b/i.test(s)) return true;
+  if (/\b(img|iframe|video)\b/i.test(s)) return true;
+  return false;
+}
+
+function stripMinFn(cssBody) {
+  return String(cssBody || "").replace(/min\s*\((?:[^)(]+|\([^)(]*\))*\)/gi, " ");
+}
+
+function ruleHasUncapped100vw(cssBody) {
+  const stripped = stripMinFn(cssBody);
+  return /(?:max-)?width\s*:\s*100vw\b/i.test(stripped);
+}
+
+function wrapCapFromBody(cssBody) {
+  const body = String(cssBody || "");
+  if (WORK_WRAP_FORMULA_RE.test(body)) {
+    return { ok: true, px: 1120, via: "min(1120px, calc(100% - 40px))" };
+  }
+  const minPx = body.match(/min\(\s*(\d+)px\b/i);
+  if (minPx) {
+    const n = Number(minPx[1]);
+    if (n >= WORK_WRAP_MIN_PX && n <= WORK_WRAP_MAX_PX) {
+      return { ok: true, px: n, via: `min(${n}px, …)` };
+    }
+  }
+  const widths = [
+    ...body.matchAll(/(?:max-width|width)\s*:\s*(\d+)px/gi),
+  ].map((m) => Number(m[1]));
+  const band = widths.filter(
+    (n) => n >= WORK_WRAP_MIN_PX && n <= WORK_WRAP_MAX_PX
+  );
+  if (band.length) {
+    return { ok: true, px: band[0], via: `${band[0]}px` };
+  }
+  return { ok: false, px: null, via: null };
+}
+
+function inlineWorkFullBleed(html) {
+  const src = String(html || "");
+  const hits = [];
+  const mediaRe = /<(img|iframe|video)\b[^>]*>/gi;
+  let m;
+  while ((m = mediaRe.exec(src))) {
+    const tag = m[0];
+    if (!/(?:max-)?width\s*:\s*100vw\b/i.test(tag)) continue;
+    const before = src.slice(Math.max(0, m.index - 400), m.index);
+    if (
+      /<(header|nav)\b[^>]*(wordmark|site-nav|navbar|logo)[^>]*>[\s\S]*$/i.test(
+        before
+      )
+    ) {
+      continue;
+    }
+    hits.push(m[1]);
+  }
+  return hits;
+}
+
+function workColumnMaxWidthOk(html) {
+  const src = String(html || "");
+  const css = styleBlocks(src);
+  const fullBleed = [];
+  const ruleRe = /([^{}]+)\{([^{}]+)\}/g;
+  let m;
+  while ((m = ruleRe.exec(css))) {
+    const sel = m[1];
+    const body = m[2];
+    if (!ruleHasUncapped100vw(body)) continue;
+    if (isNavChromeSelector(sel)) continue;
+    if (looksLikeWorkSelector(sel) || /\b(img|iframe|video)\b/i.test(sel)) {
+      fullBleed.push(sel.trim().replace(/\s+/g, " ").slice(0, 80));
+    } else if (!NAV_CHROME_RE.test(sel)) {
+      fullBleed.push(sel.trim().replace(/\s+/g, " ").slice(0, 80));
+    }
+  }
+  const inlineHits = inlineWorkFullBleed(src);
+  if (fullBleed.length || inlineHits.length) {
+    const who = fullBleed.length
+      ? fullBleed[0]
+      : `${inlineHits[0]}[style]`;
+    return {
+      ok: false,
+      reason: `work img/iframe/video is 100vw (${who}); cap work column at min(1120px, calc(100% - 40px)) (1080–1240). Wordmark/nav may be full row`,
+    };
+  }
+
+  const hasWork =
+    workImagesInHtml(src).length > 0 ||
+    /<iframe\b/i.test(src) ||
+    /<video\b/i.test(src);
+  if (!hasWork) {
+    return { ok: true, reason: "no work media to cap" };
+  }
+
+  let cap = { ok: false };
+  ruleRe.lastIndex = 0;
+  while ((m = ruleRe.exec(css))) {
+    const sel = m[1];
+    const body = m[2];
+    if (isNavChromeSelector(sel)) continue;
+    const found = wrapCapFromBody(body);
+    if (!found.ok) continue;
+    if (
+      looksLikeWorkSelector(sel) ||
+      /(^|[\s,#.>+~])wrap\b/i.test(sel) ||
+      WORK_WRAP_FORMULA_RE.test(body)
+    ) {
+      cap = found;
+      break;
+    }
+  }
+  if (!cap.ok && WORK_WRAP_FORMULA_RE.test(css)) {
+    cap = { ok: true, px: 1120, via: "min(1120px, calc(100% - 40px))" };
+  }
+  if (!cap.ok) {
+    return {
+      ok: false,
+      reason:
+        "work column is not capped at min(1120px, calc(100% - 40px)) (1080–1240 band)",
+    };
+  }
+  return {
+    ok: true,
+    reason: `work column capped ${cap.via}`,
+  };
+}
+
 module.exports = {
   workImagesInHtml,
   htmlHasWorkImages,
@@ -360,6 +596,13 @@ module.exports = {
   isRoleProfileNotHomepage,
   titleHits,
   heroMinHeightVh,
+  firstViewportIsStillLed,
+  isStillFirstPage,
+  isTypeWallPage,
+  workColumnMaxWidthOk,
+  FIRST_VIEWPORT_PX,
+  WORK_WRAP_MIN_PX,
+  WORK_WRAP_MAX_PX,
   MIN_STILL_COUNT,
   MAX_WORDS_BEFORE_STILL,
 };

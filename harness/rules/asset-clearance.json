@@ -75,7 +75,8 @@
         "traditional reel"
       ],
       "external_ready": true,
-      "drs_public": true
+      "drs_public": true,
+      "vimeo_id": "1174467043"
     },
     {
       "id": "coach-make-the-ground-shake",
@@ -83,14 +84,16 @@
       "aliases": ["make the ground shake"],
       "external_ready": true,
       "drs_public": true,
-      "note": "Vimeo 190660903 in-page. INDEX brand/ and commercial/ are empty — no still file to hang."
+      "vimeo_id": "190660903",
+      "note": "Vimeo 190660903 in-page. INDEX brand/ and commercial/ are empty — no still file to hang. Allowed lead Vimeo when dual-gate still is missing."
     },
     {
       "id": "coach-spot",
       "category": "brand_spot",
       "aliases": ["coach", "brand spot"],
       "external_ready": true,
-      "drs_public": true
+      "drs_public": true,
+      "vimeo_id": "190660903"
     },
     {
       "id": "tencent-dungeon-and-fighter",
@@ -113,7 +116,7 @@
       "aliases": [],
       "external_ready": false,
       "drs_public": false,
-      "note": "Named for brief-lead-assets-clearable REPAIR. Dual-gate missing; later hops must not substitute another category."
+      "note": "Named for brief-lead-assets-clearable REPAIR. Dual-gate missing and not Coach 190660903 / trad reel 1174467043; later hops must not substitute another category."
     }
   ]
 }

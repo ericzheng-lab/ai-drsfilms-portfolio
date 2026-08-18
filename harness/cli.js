@@ -23,7 +23,7 @@ Options:
   --package <dir>      Apply-package directory (contains manifest.json)
   --manifest <path>    Manifest file (package dir = its dirname)
   --reports <dir>      Where hop reports are written (default: <package>/reports)
-  --fetch-profile      Live GET of profile_url. ACCEPT needs HTTP 2xx AND dedicated-profile path identity (/{slug}/) in the body. Company-word mention alone is not enough. SPA 200 empty shell / 4xx / 5xx / timeout / error is FAIL. Local profile.html is not enough.
+  --fetch-profile      Live GET of profile_url. ACCEPT needs HTTP 2xx AND dedicated-profile path identity (/{slug}/) in the body. Company-word mention alone is not enough. SPA 200 empty shell / 4xx / 5xx / timeout / error is FAIL. Local profile.html is not enough. When the fetch succeeds, profile content gates judge the live body; a stale local exam HTML must not AND-fail R2/R3.
   --verify             Supervisor mode for R3: re-run R3 live and re-derive decideVerdict. Do not trust disk reports/R3.json. Missing, handwritten, or disk-vs-live disagreement is REJECT. Exit 0 only if live R3 ACCEPT.
   --json               Print reports as JSON
   --self-test          Run built-in units + the four fixtures; exit 0 on pass

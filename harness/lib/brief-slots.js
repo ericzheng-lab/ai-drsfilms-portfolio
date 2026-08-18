@@ -256,35 +256,120 @@ function dualGateClearable(row) {
   return Boolean(row && row.external_ready && row.drs_public);
 }
 
+const ALLOWED_LEAD_VIMEO = {
+  "190660903": {
+    ids: ["coach-make-the-ground-shake", "coach-spot"],
+    aliases: ["coach", "coach brand spot", "brand spot"],
+    category: CATEGORY.BRAND_SPOT,
+  },
+  "1174467043": {
+    ids: ["showreel-trad"],
+    aliases: [
+      "trad reel",
+      "traditional reel",
+      "showreel",
+      "traditional advertising showreel",
+      "traditional advertising reel",
+    ],
+    category: CATEGORY.TRAD_REEL,
+  },
+};
+
+function allowedLeadVimeo(item, row) {
+  const n = normalizeToken(item);
+  const compact = compactToken(item);
+  const rowId = row && row.id ? normalizeToken(row.id) : "";
+  for (const [vimeoId, meta] of Object.entries(ALLOWED_LEAD_VIMEO)) {
+    const ids = meta.ids.map(normalizeToken);
+    const aliases = (meta.aliases || []).map(normalizeToken);
+    if (rowId && ids.includes(rowId)) {
+      return { ok: true, vimeoId, reason: `allowed Vimeo ${vimeoId}` };
+    }
+    if (ids.includes(n) || aliases.includes(n)) {
+      return { ok: true, vimeoId, reason: `allowed Vimeo ${vimeoId}` };
+    }
+    if (
+      ids.map(compactToken).includes(compact) ||
+      aliases.map(compactToken).includes(compact)
+    ) {
+      return { ok: true, vimeoId, reason: `allowed Vimeo ${vimeoId}` };
+    }
+    if (row && row.category === meta.category && ids.includes(rowId)) {
+      return { ok: true, vimeoId, reason: `allowed Vimeo ${vimeoId}` };
+    }
+  }
+  return { ok: false, vimeoId: null, reason: null };
+}
+
+function leadItemHangable(item) {
+  const row = catalogMatch(item);
+  if (row && dualGateClearable(row)) {
+    return { ok: true, reason: `dual-gate still (${row.id})` };
+  }
+  const vimeo = allowedLeadVimeo(item, row);
+  if (vimeo.ok) {
+    return {
+      ok: true,
+      reason: `${vimeo.reason} (Coach 190660903 / trad reel 1174467043)`,
+    };
+  }
+  if (row) {
+    return {
+      ok: false,
+      reason: `${row.id} has no dual-gate still and is not an allowed Vimeo embed`,
+    };
+  }
+  const cat = categorize(item);
+  if (cat) {
+    const peers = workCatalog().filter((w) => w.category === cat);
+    if (peers.some(dualGateClearable)) {
+      return { ok: true, reason: `category ${cat} has a dual-gate still` };
+    }
+    const vimeoPeer = peers.some((w) => allowedLeadVimeo(w.id, w).ok);
+    if (vimeoPeer) {
+      return { ok: true, reason: `category ${cat} has an allowed Vimeo embed` };
+    }
+    if (peers.length) {
+      return {
+        ok: false,
+        reason: `${item} has no dual-gate still and is not an allowed Vimeo embed`,
+      };
+    }
+  }
+  return { ok: true, reason: "uncatalogued fixture id" };
+}
+
 function briefLeadAssetsClearable(attrs) {
   const slots = pageSlotsFrom(attrs);
   if (!slots.ok || !slots.lead.length) {
     return { ok: true, reason: "lead-asset clearance N/A until page_slots.lead exists" };
   }
+  const workIds = yamlSelectedWorkIds(attrs);
+  const leadItems = [
+    ...slots.lead,
+    ...workIds.slice(0, Math.max(slots.lead.length, 1)),
+  ];
+  const seen = new Set();
   const blocked = [];
-  for (const item of slots.lead) {
-    const row = catalogMatch(item);
-    if (row && !dualGateClearable(row)) {
-      blocked.push(row.id || item);
-      continue;
-    }
-    const cat = categorize(item);
-    if (!row && cat) {
-      const peers = workCatalog().filter((w) => w.category === cat);
-      if (peers.length && !peers.some(dualGateClearable)) {
-        blocked.push(item);
-      }
-    }
+  for (const item of leadItems) {
+    const key = normalizeToken(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const hang = leadItemHangable(item);
+    if (!hang.ok) blocked.push(item);
   }
   if (blocked.length) {
     return {
       ok: false,
-      reason: `lead id cannot be hung (no dual-gate still): ${blocked.join(", ")} — do not substitute another category later`,
+      reason: `lead id cannot be hung (no dual-gate still and not Coach 190660903 / trad reel 1174467043): ${blocked.join(
+        ", "
+      )} — do not substitute another category later`,
     };
   }
   return {
     ok: true,
-    reason: "Brief lead ids are dual-gate clearable, or uncatalogued fixture ids",
+    reason:
+      "Brief lead ids are dual-gate clearable, or allowed Vimeo (Coach 190660903 / trad reel 1174467043), or uncatalogued fixture ids",
   };
 }
 
@@ -385,4 +470,6 @@ module.exports = {
   isPLedAgencyProducer,
   firstWorkRow,
   firstViewportChunk,
+  ALLOWED_LEAD_VIMEO,
+  allowedLeadVimeo,
 };
