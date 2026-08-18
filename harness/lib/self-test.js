@@ -1194,7 +1194,7 @@ async function testClosedDebateCardsRejected() {
 
   const wonder = await runHops({
     packageDir: fixture("pass-a-led-wonder"),
-    hops: ["R2"],
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
     reportsDir: tmpReports(),
     stopOnFail: false,
     fetchResult: qualifyingFetchResult(),
