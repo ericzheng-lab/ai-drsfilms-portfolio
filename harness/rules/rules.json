@@ -1,5 +1,5 @@
 {
-  "version": "1.13.0",
+  "version": "1.14.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -207,7 +207,7 @@
       "severity": "P0",
       "failure": "assets dumped instead of invoked by JD archetype",
       "hops": ["R2", "R3"],
-      "note": "P-led: reel as picture + brand stills; no 58-node file; no DEV4 suite; no Prompt Builder gallery; 6-stage only in the method slot when JD has process/gates as must-or-should, as one reskin picture. O-led: 6-stage required (DOC-6/R8). A-led (Wonder exam): films first; 58-node file legal only on /wonder/ until generic public:true. Visible A-* ids REJECT. Do not copy HyperAgent files. No waiver."
+      "note": "P-led: reel as picture + brand hang (still, or Coach Vimeo 190660903 if INDEX has no still); no 58-node file; no DEV4 suite; Prompt Builder at most one public:true screenshot, not a gallery/tools wall; 6-stage only in the method slot when JD has process/gates as must-or-should, as one reskin picture. O-led: 6-stage required (DOC-6/R8). A-led (Wonder exam): films first; 58-node file legal only on /wonder/ until generic public:true. Visible A-* ids REJECT. Do not copy HyperAgent files. No waiver."
     },
     {
       "id": "r2-profile-empty-work-cards",
@@ -221,7 +221,7 @@
       "severity": "P0",
       "failure": "brand wordmarks standing in for brand stills",
       "hops": ["R2", "R3"],
-      "note": "If COACH/Nike/BMW (or named brands) are claimed, they must be stills, not typeset wordmarks. No waiver."
+      "note": "If COACH/Nike/BMW/Tencent are claimed, they must be hung — not typeset wordmarks. Hang = dual-gate still, Coach in-page Vimeo 190660903 when INDEX has no still, or a Tencent heading type card when INDEX has no game still. Do not invent frames. No waiver."
     },
     {
       "id": "r2-profile-six-stage",
@@ -256,7 +256,7 @@
       "severity": "P0",
       "failure": "P-led Prompt Builder gallery / product-UI suite",
       "hops": ["R2", "R3"],
-      "note": "P-led exam leads the reel + brand stills. No DEV4 suite. No Prompt Builder gallery. Off P-led this check is N/A. No waiver."
+      "note": "P-led may hang prompt-builder-ui-01 once as a supporting screenshot. Multiple UI stills, or a product shot in a tools section, is a gallery = REJECT. No DEV4 suite. Off P-led this check is N/A. No waiver."
     },
     {
       "id": "r2-profile-not-homepage-skin",
@@ -291,7 +291,7 @@
       "severity": "P0",
       "failure": "Profile first viewport / first work row ignores Brief page_slots.lead",
       "hops": ["R2", "R3"],
-      "note": "First viewport or first work row must match Brief page_slots.lead (ids or named category: trad reel, brand spot). A page that is only film stills while Brief lead is ads/reel is REJECT. Giant Spoon hung BHOAF ×4. Do not restyle /giant-spoon/; it is the exam, not the patch. No waiver."
+      "note": "First viewport or first work row must match Brief page_slots.lead (ids or named category: trad reel, brand spot). A page that is only film stills while Brief lead is ads/reel is REJECT. Giant Spoon live hung BHOAF ×4; the Profile must follow the Brief ads lead. No waiver."
     },
     {
       "id": "r2-profile-recent-bar",

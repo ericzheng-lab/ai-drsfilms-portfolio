@@ -78,11 +78,27 @@
       "drs_public": true
     },
     {
+      "id": "coach-make-the-ground-shake",
+      "category": "brand_spot",
+      "aliases": ["make the ground shake"],
+      "external_ready": true,
+      "drs_public": true,
+      "note": "Vimeo 190660903 in-page. INDEX brand/ and commercial/ are empty — no still file to hang."
+    },
+    {
       "id": "coach-spot",
       "category": "brand_spot",
       "aliases": ["coach", "brand spot"],
       "external_ready": true,
       "drs_public": true
+    },
+    {
+      "id": "tencent-dungeon-and-fighter",
+      "category": "brand_spot",
+      "aliases": ["dungeon and fighter", "dungeon & fighter"],
+      "external_ready": false,
+      "drs_public": false,
+      "note": "No INDEX still. Type card OK for second. Do not invent a game still."
     },
     {
       "id": "brief-history-of-a-family",

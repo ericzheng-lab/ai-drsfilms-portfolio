@@ -65,18 +65,23 @@ function categorize(raw) {
   const compact = compactToken(raw);
   if (
     /^(trad(itional)?\s+reel|showreel|a-showreel-trad|showreel-trad)$/.test(n) ||
+    /traditional\s+advertising\s+(show)?reel/.test(n) ||
     compact === "showreel" ||
     compact === "showreeltrad" ||
     compact === "traditionalreel" ||
-    compact === "tradreel"
+    compact === "tradreel" ||
+    compact === "traditionaladvertisingshowreel" ||
+    compact === "traditionaladvertisingreel"
   ) {
     return CATEGORY.TRAD_REEL;
   }
   if (
     /^(brand\s+spot|ads?|campaign|coach([- ]spot)?|nike|bmw)$/.test(n) ||
+    /coach\s+brand\s+spot/.test(n) ||
     compact === "brandspot" ||
     compact === "coachspot" ||
-    compact === "coach"
+    compact === "coach" ||
+    compact === "coachbrandspot"
   ) {
     return CATEGORY.BRAND_SPOT;
   }
