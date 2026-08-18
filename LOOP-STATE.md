@@ -27,3 +27,6 @@ Reason: quality-gate CLI only. Does not touch `public/` routes or production dep
 - Loop 1: add `harness/` CLI, versioned rules, schema, fixtures, isolated Actions workflow.
 - Verify: `--self-test` green; fixture hops match named outcomes; `git diff origin/main -- public src` empty.
 - Draft PR: https://github.com/ericzheng-lab/ai-drsfilms-portfolio/pull/17 (not merged).
+
+- Loop 2: close leftover harness classes on `feat/career-hop-harness` (R3 content rescan, live 2xx+marker Profile, novel waiver/skip class, company aliases, lib integrity pin). No merge. No `public/` restyle. No apply.
+

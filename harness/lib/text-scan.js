@@ -149,7 +149,11 @@ const WAIVER_TOKENS = new Set([
   "r1b",
 ]);
 
-const WAIVER_KEY_RE = /^(waivers?|waived|exemptions?)$/;
+// Class of skip/omit/exclude/optional/defer keys — not one key name.
+const WAIVER_KEY_RE =
+  /^(waivers?|waived|exemptions?|exempt|skips?|skipped|skipping|skipartifacts?|omits?|omitted|omitting|excludes?|excluded|excluding|exclusions?|optional|optionaldeliverables?|defers?|deferred|deferring|drops?|dropped|dropping|bypass(?:ed|ing)?|forgo|forgone|dispensewith|outofscope|notrequired|unneeded|unnecessary)$/;
+const WAIVER_KEY_PREFIX_RE =
+  /^(skip|omit|exclude|exempt|optional|defer|drop|bypass|forgo|waive|dispense)/;
 
 function normalizeKey(k) {
   return foldText(k)
@@ -158,8 +162,12 @@ function normalizeKey(k) {
 }
 
 function isWaiverKey(k) {
-  return WAIVER_KEY_RE.test(normalizeKey(k));
+  const n = normalizeKey(k);
+  return WAIVER_KEY_RE.test(n) || WAIVER_KEY_PREFIX_RE.test(n);
 }
+
+const SKIP_VALUE_RE =
+  /^(true|false|1|0|yes|no|n\/?a|none|null|skipped?|omitted|waived|optional|excluded?|deferred?|out of scope)$/i;
 
 function extractArtifactToken(str) {
   const n = foldText(str).toLowerCase().trim();
@@ -168,7 +176,10 @@ function extractArtifactToken(str) {
     if (n === "r2" || n === "profile") return "profile";
     return n === "r1b" || n === "cl" ? "cover_letter" : n.replace(/[-\s]/g, "_") === "cover_letter" || /cover/.test(n) ? "cover_letter" : n;
   }
-  if (/(^|[^a-z0-9])profile([^a-z0-9]|$)|(^|[^a-z0-9])r2([^a-z0-9]|$)/.test(n)) {
+  if (
+    /(^|[^a-z0-9])profile([^a-z0-9]|$)|(^|[^a-z0-9])r2([^a-z0-9]|$)/.test(n) ||
+    /专页/.test(n)
+  ) {
     return "profile";
   }
   if (/cover[_\s-]?letter|\bcoverletter\b|(^|[^a-z0-9])cl([^a-z0-9]|$)|(^|[^a-z0-9])r1b([^a-z0-9]|$)/.test(n)) {
@@ -192,6 +203,11 @@ function collectWaiverHits(value, path, out, inWaiverContext) {
     if (context) {
       const token = extractArtifactToken(String(value));
       if (token) out.push({ path: path || "(root)", token });
+    } else {
+      const keyToken = extractArtifactToken(lastKeySegment(path));
+      if (keyToken && SKIP_VALUE_RE.test(String(value).trim())) {
+        out.push({ path: path || "(root)", token: keyToken });
+      }
     }
     return;
   }
@@ -233,4 +249,6 @@ module.exports = {
   findForbiddenWaivers,
   WAIVER_TOKENS,
   extractArtifactToken,
+  isWaiverKey,
+  normalizeKey,
 };

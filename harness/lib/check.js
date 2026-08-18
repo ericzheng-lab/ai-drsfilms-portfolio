@@ -68,13 +68,21 @@ async function optionalFetch(url, timeoutMs) {
       redirect: "manual",
       headers: { "user-agent": "career-hop-harness/1.0" },
     });
-    return { status: res.status, timedOut: false, error: null };
+    let body = "";
+    try {
+      body = await res.text();
+      if (body.length > 512 * 1024) body = body.slice(0, 512 * 1024);
+    } catch {
+      body = "";
+    }
+    return { status: res.status, timedOut: false, error: null, body };
   } catch (err) {
     const timedOut = err && (err.name === "AbortError" || /aborted/i.test(err.message || ""));
     return {
       status: null,
       timedOut,
       error: timedOut ? "timeout" : (err && err.message) || "fetch failed",
+      body: "",
     };
   } finally {
     clearTimeout(timer);

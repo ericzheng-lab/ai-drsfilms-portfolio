@@ -21,7 +21,7 @@ Options:
   --package <dir>      Apply-package directory (contains manifest.json)
   --manifest <path>    Manifest file (package dir = its dirname)
   --reports <dir>      Where hop reports are written (default: <package>/reports)
-  --fetch-profile      Live GET of profile_url. 2xx is evidence; 4xx/5xx/timeout/error is FAIL
+  --fetch-profile      Live GET of profile_url. ACCEPT needs HTTP 2xx AND a company/slug marker in the body. SPA 200 empty shell / 4xx / 5xx / timeout / error is FAIL. Local profile.html is not enough.
   --json               Print reports as JSON
   --self-test          Run built-in units + the four fixtures; exit 0 on pass
   --help               This help
@@ -34,7 +34,7 @@ Exit codes:
 
 Nobody may waive Profile or cover letter. Recover = re-run the same hop after fix.
 This CLI does not apply to jobs, fill an ATS, or submit anything.
-Reports are harness-generated and bound to this package's input hashes. Forged or stale reports are REJECT.
+Reports are harness-generated and bound to this package's input hashes. Forged, empty-check, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML.
 `.trim();
   console.log(text);
 }

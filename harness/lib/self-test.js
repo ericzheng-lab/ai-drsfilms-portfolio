@@ -5,9 +5,22 @@ const os = require("os");
 const path = require("path");
 const crypto = require("crypto");
 const { classifyProfileUrl } = require("./profile-url");
-const { scanClaimLocks, scanSlop, findForbiddenWaivers, scanSkipLanguage } = require("./text-scan");
+const {
+  scanClaimLocks,
+  scanSlop,
+  findForbiddenWaivers,
+  scanSkipLanguage,
+} = require("./text-scan");
 const { loadRuleset, runHops, optionalFetch } = require("./check");
-const { decideVerdict, GENERATOR } = require("./reports");
+const { loadPackage } = require("./manifest");
+const {
+  decideVerdict,
+  GENERATOR,
+  buildReport,
+  writeReport,
+  inputHashesFromPkg,
+} = require("./reports");
+const { REQUIRED_HOP_CHECKS, companySlug } = require("./hops");
 
 const REQUIRED_RULE_IDS = [
   "no-profile-waiver",
@@ -25,8 +38,7 @@ const REQUIRED_RULE_IDS = [
   "claim-lock-five-films-four-weeks",
 ];
 
-const RULESET_INTEGRITY_PIN =
-  "6690af63c2e6c24ee8c34dd606aa82fba771f3c4d5eba4094ea00b61f3d6e5df";
+const PIN_PATH = path.join(__dirname, "..", "rules", "integrity.pin");
 
 function assert(cond, message) {
   if (!cond) {
@@ -60,15 +72,81 @@ function hasFail(report, idPrefix) {
   return failuresOf(report).some((id) => id === idPrefix || id.startsWith(idPrefix));
 }
 
+function qualifyingFetchResult(company = "Acme", slug = "acme") {
+  return {
+    status: 200,
+    timedOut: false,
+    error: null,
+    body: `<!DOCTYPE html><html><head><title>${company}</title></head><body><h1>${company}</h1><p>https://ai.drsfilms.com/${slug}/</p></body></html>`,
+  };
+}
+
+function rulesetPinInputs() {
+  const root = path.join(__dirname, "..");
+  const parts = [
+    path.join(root, "rules", "rules.json"),
+    path.join(root, "rules", "contracts.json"),
+  ];
+  const libDir = path.join(root, "lib");
+  const libFiles = fs
+    .readdirSync(libDir)
+    .filter((f) => f.endsWith(".js") && f !== "self-test.js")
+    .sort();
+  for (const f of libFiles) parts.push(path.join(libDir, f));
+  return { root, parts, libFiles };
+}
+
 function rulesetPin() {
-  const rulesPath = path.join(__dirname, "..", "rules", "rules.json");
-  const contractsPath = path.join(__dirname, "..", "rules", "contracts.json");
-  return crypto
-    .createHash("sha256")
-    .update(fs.readFileSync(rulesPath))
-    .update("\n")
-    .update(fs.readFileSync(contractsPath))
-    .digest("hex");
+  const { root, parts } = rulesetPinInputs();
+  const h = crypto.createHash("sha256");
+  for (const p of parts) {
+    h.update(path.relative(root, p).split(path.sep).join("/"));
+    h.update("\0");
+    h.update(fs.readFileSync(p));
+    h.update("\0");
+  }
+  return h.digest("hex");
+}
+
+function expectedIntegrityPin() {
+  const raw = fs.readFileSync(PIN_PATH, "utf8");
+  const line = raw
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith("#"))
+    .pop();
+  return line || "";
+}
+
+function fakeHopChecks(hopId) {
+  return (REQUIRED_HOP_CHECKS[hopId] || []).map((id) => ({
+    id,
+    severity: "P0",
+    status: "PASS",
+    detail: "forged pass",
+  }));
+}
+
+function writeBoundReports(dir, hops, checksForHop) {
+  const pkg = loadPackage({ packageDir: dir });
+  const hashes = inputHashesFromPkg(pkg);
+  const reportsDir = path.join(dir, "reports");
+  fs.mkdirSync(reportsDir, { recursive: true });
+  const { version } = loadRuleset();
+  for (const hop of hops) {
+    writeReport(
+      reportsDir,
+      buildReport({
+        hop,
+        name: hop,
+        ruleset: version,
+        packageDir: dir,
+        checks: checksForHop(hop),
+        inputHashes: hashes,
+      })
+    );
+  }
+  return reportsDir;
 }
 
 async function testReportForgeryRejected() {
@@ -90,6 +168,7 @@ async function testReportForgeryRejected() {
     hops: ["R3"],
     reportsDir,
     stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
   });
   assert(result.last.verdict === "REJECT", "forged reports must REJECT R3");
   assert(
@@ -105,6 +184,81 @@ async function testReportForgeryRejected() {
   return "REJECT";
 }
 
+async function testForgedReportWithRecomputedBindingRejected() {
+  const dir = copyFixtureToTmp("pass-minimal-three");
+  const reportsDir = writeBoundReports(dir, ["R0", "R-VI", "R1", "R1b", "R2"], () => []);
+  const result = await runHops({
+    packageDir: dir,
+    hops: ["R3"],
+    reportsDir,
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    result.last.verdict === "REJECT",
+    "empty-check reports with recomputed binding must REJECT R3"
+  );
+  assert(
+    (result.last.checks || []).some(
+      (c) =>
+        c.id.startsWith("prerequisite-") &&
+        c.status === "FAIL" &&
+        /forged|empty|missing checks|do not match a real/i.test(c.detail)
+    ),
+    `recomputed-binding empty checks must fail prerequisites, got ${JSON.stringify(
+      (result.last.checks || []).filter((c) => c.id.startsWith("prerequisite-"))
+    )}`
+  );
+  return "REJECT";
+}
+
+async function testR3RescansClaimlockSlopOnCvCl() {
+  const dir = copyFixtureToTmp("pass-minimal-three");
+  fs.appendFileSync(
+    path.join(dir, "cv.md"),
+    "\nSundance winner. RMB 3M. Dungeon Fighter.\n",
+    "utf8"
+  );
+  fs.appendFileSync(
+    path.join(dir, "cl.md"),
+    "\nA proven track record and cutting-edge process.\n",
+    "utf8"
+  );
+  const reportsDir = writeBoundReports(
+    dir,
+    ["R0", "R-VI", "R1", "R1b", "R2"],
+    fakeHopChecks
+  );
+  const result = await runHops({
+    packageDir: dir,
+    hops: ["R3"],
+    reportsDir,
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    result.last.verdict === "REJECT",
+    "R3 must REJECT poisoned CV even when prior reports are bound ACCEPT"
+  );
+  assert(
+    (result.last.checks || []).every(
+      (c) => !(c.id.startsWith("prerequisite-") && c.status === "FAIL")
+    ),
+    "this case must isolate content rescan, not prerequisite binding"
+  );
+  assert(
+    hasFail(result.last, "r3-cv-claim-lock-sundance-win") ||
+      hasFail(result.last, "r3-cv-claim-lock-rmb-cny") ||
+      hasFail(result.last, "r3-cv-claim-lock-dungeon-fighter"),
+    `R3 must rescan CV claim-locks, got ${failuresOf(result.last)}`
+  );
+  assert(
+    hasFail(result.last, "r3-cl-slop-lexicon"),
+    `R3 must rescan CL slop, got ${failuresOf(result.last)}`
+  );
+  return "REJECT";
+}
+
 async function testReportBindsToPackageAndInputs() {
   const donor = copyFixtureToTmp("pass-minimal-three");
   const graft = copyFixtureToTmp("cross-package-graft");
@@ -114,6 +268,7 @@ async function testReportBindsToPackageAndInputs() {
     hops: ["R0", "R-VI", "R1", "R1b", "R2", "R3"],
     reportsDir: donorReports,
     stopOnFail: true,
+    fetchResult: qualifyingFetchResult(),
   });
   assert(pass.last.verdict === "ACCEPT", "donor chain must ACCEPT before graft");
 
@@ -130,6 +285,7 @@ async function testReportBindsToPackageAndInputs() {
     hops: ["R3"],
     reportsDir: graftReports,
     stopOnFail: false,
+    fetchResult: qualifyingFetchResult("Graftco", "graftco"),
   });
   assert(grafted.last.verdict === "REJECT", "cross-package grafted reports must REJECT");
   assert(
@@ -154,6 +310,7 @@ async function testStaleReportInvalidatedOnInputChange() {
     hops: ["R0", "R-VI", "R1", "R1b", "R2", "R3"],
     reportsDir,
     stopOnFail: true,
+    fetchResult: qualifyingFetchResult(),
   });
   assert(pass.last.verdict === "ACCEPT", "stale-input must ACCEPT before mutation");
   fs.appendFileSync(path.join(dir, "cv.md"), "\nMutated after ACCEPT.\n", "utf8");
@@ -162,6 +319,7 @@ async function testStaleReportInvalidatedOnInputChange() {
     hops: ["R3"],
     reportsDir,
     stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
   });
   assert(stale.last.verdict === "REJECT", "mutating CV after ACCEPT must REJECT R3");
   assert(
@@ -201,6 +359,65 @@ async function testGhostProfileUrlWithoutLivePageRejected() {
   assert(
     hasFail(r3.last, "r3-profile-present") || hasFail(r3.last, "r3-three-live-pieces"),
     `ghost-profile R3 must fail real Profile closeout, got ${failuresOf(r3.last)}`
+  );
+  return "REJECT";
+}
+
+async function testProfileRequiresDeploymentNotLocalHtml() {
+  const r2 = await runHops({
+    packageDir: fixture("pass-minimal-three"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(
+    r2.last.verdict === "REJECT",
+    "local HTML without live evidence must REJECT R2"
+  );
+  assert(
+    hasFail(r2.last, "r2-profile-present"),
+    `local-only Profile must fail r2-profile-present, got ${failuresOf(r2.last)}`
+  );
+
+  const r3 = await runHops({
+    packageDir: fixture("pass-minimal-three"),
+    hops: ["R3"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(
+    r3.last.verdict === "REJECT",
+    "local HTML without live evidence must REJECT R3"
+  );
+  assert(
+    hasFail(r3.last, "r3-profile-present") || hasFail(r3.last, "r3-three-live-pieces"),
+    `local-only Profile must fail R3 closeout, got ${failuresOf(r3.last)}`
+  );
+  return "REJECT";
+}
+
+async function testLiveFetchRejectsSpaFallback() {
+  const spa = {
+    status: 200,
+    timedOut: false,
+    error: null,
+    body: `<!DOCTYPE html><html><head><title>Portfolio</title></head><body><div id="root"></div><script src="/assets/index.js"></script></body></html>`,
+  };
+  const r2 = await runHops({
+    packageDir: fixture("pass-minimal-three"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: spa,
+  });
+  assert(r2.last.verdict === "REJECT", "SPA 200 empty shell must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-present") || hasFail(r2.last, "r2-live-fetch"),
+    `SPA fallback must fail live Profile evidence, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    (r2.last.checks || []).some((c) => /SPA fallback|missing company\/slug marker/i.test(c.detail)),
+    "SPA fallback detail must mention missing marker"
   );
   return "REJECT";
 }
@@ -276,6 +493,125 @@ async function testWaiverDetectionShapeVariants() {
   return "REJECT";
 }
 
+async function testWaiverDetectionNovelKeys() {
+  const shapes = [
+    { skip_artifacts: ["profile"] },
+    { optional_deliverables: ["cover_letter"] },
+    { omit: ["profile"] },
+    { excluded: { profile: true } },
+    { defer: ["专页"] },
+    { profile: "optional" },
+  ];
+  for (const obj of shapes) {
+    const hits = findForbiddenWaivers(obj);
+    assert(hits.length > 0, `novel waiver key must be detected: ${JSON.stringify(obj)}`);
+  }
+  const required = findForbiddenWaivers({ artifacts: ["cv", "cover_letter", "profile"] });
+  assert(
+    required.length === 0,
+    `required artifacts[] must not be treated as a waiver, got ${JSON.stringify(required)}`
+  );
+  return "REJECT";
+}
+
+const OPEN_VOCAB_SKIP_SAMPLES = [
+  "Profile is out of scope for this engagement.",
+  "We will defer the profile until the next cycle.",
+  "Use the existing prompt-builder page in place of a dedicated profile.",
+  "这次先不做公司专页，用主页代替。",
+  "Profile 这轮先放一放。",
+];
+
+const SKIP_PATTERN_COVERAGE = [
+  ["skip(ping)? (the )?(role[- ]specific )?profile", "Please skip the profile."],
+  ["omit(ting)? (the )?(role[- ]specific )?profile", "We are omitting the profile."],
+  ["no profile (needed|required|necessary)", "no profile needed"],
+  ["(does not|doesn't|doesnt) need a profile", "does not need a profile"],
+  ["waive[rd]? (the )?profile", "waive the profile"],
+  ["profile[:\\s]+(n/?a|none|skipped|waived|optional|not needed)", "profile: optional"],
+  ["skip(ping)? (the )?(cover letter|cl)\\b", "skip the cover letter"],
+  ["omit(ting)? (the )?(cover letter|cl)\\b", "omit the cover letter"],
+  ["no cover letter (needed|required|necessary)", "no cover letter needed"],
+  ["(does not|doesn't|doesnt) need a (cover letter|cl)\\b", "does not need a cover letter"],
+  ["waive[rd]? (the )?(cover letter|cl)\\b", "waive the cover letter"],
+  ["(cover letter|cl)[:\\s]+(n/?a|none|skipped|waived|optional|not needed)", "cover letter: optional"],
+  [
+    "(leave out|drop|bypass|exclude|forgo|dispense with) (the )?(role[- ]specific )?(profile|cover letter|cl)\\b",
+    "We can leave out the profile for this role.",
+  ],
+  [
+    "(profile|cover letter) (is|are) (not )?(required|necessary|needed|optional)",
+    "The cover letter is optional.",
+  ],
+  ["no need (for )?(a |the )?(role[- ]specific )?(profile|cover letter)", "No need for a cover letter."],
+  [
+    "(doesn't|does not|doesnt) (require|include) (a |the )?(role[- ]specific )?(profile|cover letter)",
+    "doesn't require a profile",
+  ],
+  [
+    "this role (does not|doesn't|doesnt) (need|require) (a )?(profile|cover letter)",
+    "This role does not require a profile.",
+  ],
+  [
+    "(profile|cover letter) (can|may|could) be (skipped|omitted|waived|dropped)",
+    "profile can be skipped",
+  ],
+  ["without (a |the )?(role[- ]specific )?(profile|cover letter)\\b", "ship without a profile"],
+  ["profile (not required|unnecessary|optional)", "profile not required"],
+  ["cover letter (not required|unnecessary|optional)", "cover letter not required"],
+  ["跳过.{0,16}(简介|角色页|作品页|profile|封面|求职信)", "本角色可以跳过简介，无需封面。"],
+  ["省略.{0,16}(简介|角色页|作品页|profile|封面|求职信)", "不需要角色页，省略求职信。"],
+  [
+    "(不需要|无需|不用|不必).{0,16}(简介|角色页|作品页|profile|封面信|封面|求职信|cover letter)",
+    "不需要角色页，省略求职信。",
+  ],
+  ["(简介|角色页|profile|封面信|求职信).{0,8}(可跳过|可省略|不需要|无需|可选)", "简介可跳过"],
+  ["跳过(封面|求职信|简介)", "跳过封面"],
+  ["无需(封面|求职信|简介)", "无需封面"],
+  [
+    "(profile|cover letter|role[- ]specific profile).{0,48}(out of scope|not in scope)",
+    "Profile is out of scope for this engagement.",
+  ],
+  [
+    "(out of scope|not in scope).{0,48}(profile|cover letter)",
+    "Treat as out of scope: the profile.",
+  ],
+  [
+    "(we will |will |we'll )?defer(ring)? (the )?(role[- ]specific )?(profile|cover letter)",
+    "We will defer the profile until the next cycle.",
+  ],
+  [
+    "(profile|cover letter).{0,32}(is |are )?(deferred|postponed)",
+    "The profile is deferred this quarter.",
+  ],
+  [
+    "(in place of|instead of).{0,40}(a |the )?(dedicated |role[- ]specific )?(profile|cover letter)",
+    "Use the existing prompt-builder page in place of a dedicated profile.",
+  ],
+  [
+    "use .{0,80}(in place of|instead of).{0,40}(a |the )?(dedicated )?(profile|cover letter)",
+    "Use the existing prompt-builder page in place of a dedicated profile.",
+  ],
+  [
+    "(prompt-builder|homepage|home page|main page).{0,48}(in place of|instead of).{0,32}(a |the )?(dedicated )?profile",
+    "Use the existing prompt-builder page in place of a dedicated profile.",
+  ],
+  [
+    "(profile|cover letter).{0,24}(this (round|cycle|pass)|for now|later)",
+    "Hold the profile this round.",
+  ],
+  ["postpone.{0,40}(the )?(profile|cover letter)", "postpone the profile"],
+  ["先不做.{0,20}(公司)?(专页|简介|角色页|profile|封面|求职信)", "这次先不做公司专页，用主页代替。"],
+  [
+    "(专页|公司专页|角色页|简介|profile).{0,16}(先不做|不做了|不要了|先放一放|放一放)",
+    "Profile 这轮先放一放。",
+  ],
+  ["(这轮先|这次先).{0,16}(放一放|不做|省略|跳过|不要)", "Profile 这轮先放一放。"],
+  ["用主页代替", "这次先不做公司专页，用主页代替。"],
+  ["(用|使用).{0,12}(主页|首页|prompt-builder).{0,12}代替", "这次先不做公司专页，用主页代替。"],
+  ["专页.{0,16}(可跳过|可省略|不需要|无需|可选|先放)", "专页可跳过"],
+];
+
 async function testSkipLanguageChineseAndParaphrase() {
   const { rules } = loadRuleset();
   const patterns =
@@ -307,13 +643,203 @@ async function testSkipLanguageChineseAndParaphrase() {
   return "REJECT";
 }
 
+async function testSkipLanguageOpenVocabulary() {
+  const { rules } = loadRuleset();
+  const patterns =
+    (rules.rules.find((r) => r.id === "brief-no-skip-language") || {}).patterns || [];
+  for (const sample of OPEN_VOCAB_SKIP_SAMPLES) {
+    const hits = scanSkipLanguage(sample, patterns);
+    assert(hits.length > 0, `open-vocabulary skip language must match: ${sample}`);
+  }
+  return "REJECT";
+}
+
+async function rewritePackCompany(dir, { company, slug, aliases, profileUrl }) {
+  const manifestPath = path.join(dir, "manifest.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  manifest.company = company;
+  manifest.profile_url = profileUrl;
+  if (aliases) manifest.company_aliases = aliases;
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  for (const name of ["cv.md", "cl.md", "brief.md", "profile.html"]) {
+    const file = path.join(dir, name);
+    if (!fs.existsSync(file)) continue;
+    let text = fs.readFileSync(file, "utf8");
+    text = text.replace(/https:\/\/ai\.drsfilms\.com\/acme\//g, profileUrl);
+    text = text.replace(/profile_route:\s*acme/g, `profile_route: ${slug}`);
+    text = text.replace(/Acme/g, company);
+    text = text.replace(/acme/g, slug);
+    fs.writeFileSync(file, text, "utf8");
+  }
+}
+
+async function testSlugMatchesCompanyAliasSet() {
+  const good = copyFixtureToTmp("pass-minimal-three");
+  await rewritePackCompany(good, {
+    company: "Meta Platforms, Inc.",
+    slug: "meta",
+    aliases: ["meta"],
+    profileUrl: "https://ai.drsfilms.com/meta/",
+  });
+  const goodLive = qualifyingFetchResult("Meta Platforms, Inc.", "meta");
+  const ok = await runHops({
+    packageDir: good,
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: path.join(good, "reports"),
+    stopOnFail: true,
+    fetchResult: goodLive,
+  });
+  assert(ok.last.verdict === "ACCEPT", `Meta + /meta/ + aliases must ACCEPT R2, got ${ok.last.verdict}: ${(ok.last.failures || []).join("; ")}`);
+  assert(
+    (ok.last.checks || []).some(
+      (c) => c.id === "profile-slug-matches-company" && c.status === "PASS"
+    ),
+    "alias set must PASS profile-slug-matches-company"
+  );
+
+  const bad = copyFixtureToTmp("pass-minimal-three");
+  await rewritePackCompany(bad, {
+    company: "Meta Platforms, Inc.",
+    slug: "cloudflare",
+    aliases: ["meta"],
+    profileUrl: "https://ai.drsfilms.com/cloudflare/",
+  });
+  const wrong = await runHops({
+    packageDir: bad,
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult("Meta Platforms, Inc.", "cloudflare"),
+  });
+  assert(wrong.last.verdict === "REJECT", "Meta pack pointing at /cloudflare/ must REJECT");
+  assert(
+    hasFail(wrong.last, "profile-slug-matches-company"),
+    `wrong-company slug must fail alias set, got ${failuresOf(wrong.last)}`
+  );
+  return "ACCEPT";
+}
+
+function testRulesetPinCoversLibLogic() {
+  assert(fs.existsSync(PIN_PATH), "integrity.pin must exist (git-tracked honesty pin, not an HSM)");
+  const expected = expectedIntegrityPin();
+  const pin = rulesetPin();
+  assert(pin === expected, `ruleset integrity pin mismatch: got ${pin}`);
+  const { libFiles, parts } = rulesetPinInputs();
+  assert(libFiles.includes("hops.js"), "pin inputs must include hops.js");
+  assert(libFiles.includes("text-scan.js"), "pin inputs must include text-scan.js");
+  assert(libFiles.includes("reports.js"), "pin inputs must include reports.js");
+  assert(!libFiles.includes("self-test.js"), "pin may exclude self-test.js");
+  assert(
+    parts.some((p) => p.endsWith(`${path.sep}hops.js`)),
+    "pin parts must include lib/hops.js"
+  );
+  const rulesOnly = crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(path.join(__dirname, "..", "rules", "rules.json")))
+    .update("\n")
+    .update(fs.readFileSync(path.join(__dirname, "..", "rules", "contracts.json")))
+    .digest("hex");
+  assert(rulesOnly !== expected, "pin must cover lib logic, not only rules+contracts");
+  return "PASS";
+}
+
+function testLooseningAnyP0RuleBreaksSelftest() {
+  const { rules } = loadRuleset();
+  const p0 = (rules.rules || []).filter((r) => r.severity === "P0");
+  for (const rule of p0) {
+    assert(
+      REQUIRED_RULE_IDS.includes(rule.id),
+      `P0 rule ${rule.id} missing from REQUIRED_RULE_IDS dedicated assertion set`
+    );
+  }
+
+  const skip = (rules.rules.find((r) => r.id === "brief-no-skip-language") || {}).patterns || [];
+  const coveragePatterns = SKIP_PATTERN_COVERAGE.map((row) => row[0]);
+  assert(
+    JSON.stringify(skip) === JSON.stringify(coveragePatterns),
+    `every skip regex needs a dedicated coverage sample (deleting one turns this red).\nrules: ${JSON.stringify(skip)}\ncoverage: ${JSON.stringify(coveragePatterns)}`
+  );
+  for (const [pattern, sample] of SKIP_PATTERN_COVERAGE) {
+    const hits = scanSkipLanguage(sample, [pattern]);
+    assert(hits.length > 0, `unused/broken skip regex: ${pattern} did not match: ${sample}`);
+  }
+  for (const sample of OPEN_VOCAB_SKIP_SAMPLES) {
+    assert(
+      scanSkipLanguage(sample, skip).length > 0,
+      `open-vocab sample must keep matching: ${sample}`
+    );
+    assert(
+      scanSkipLanguage(sample, []).length === 0,
+      "empty skip list would miss open-vocab samples (loosening must be detectable)"
+    );
+  }
+
+  const dedicated = {
+    "no-profile-waiver": () =>
+      assert(findForbiddenWaivers({ skip_artifacts: ["profile"] }).length > 0, "profile waiver"),
+    "no-cl-waiver": () =>
+      assert(
+        findForbiddenWaivers({ optional_deliverables: ["cover_letter"] }).length > 0,
+        "CL waiver"
+      ),
+    "brief-no-skip-language": () =>
+      assert(
+        scanSkipLanguage("Profile is out of scope.", skip).length > 0,
+        "skip language"
+      ),
+    "profile-not-homepage": () =>
+      assert(classifyProfileUrl("https://ai.drsfilms.com/").ok === false, "homepage"),
+    "r3-three-live-pieces": () =>
+      assert(
+        (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
+        "r3 rule present"
+      ),
+    "portfolio-url-matches-profile": () =>
+      assert(
+        (rules.rules || []).some((r) => r.id === "portfolio-url-matches-profile"),
+        "portfolio rule present"
+      ),
+    "claim-lock-sundance-win": () =>
+      assert(
+        scanClaimLocks("Sundance winner").some((h) => h.id === "claim-lock-sundance-win"),
+        "sundance"
+      ),
+    "claim-lock-berlinale-win": () =>
+      assert(
+        scanClaimLocks("Berlinale winner").some((h) => h.id === "claim-lock-berlinale-win"),
+        "berlinale"
+      ),
+    "claim-lock-dungeon-fighter": () =>
+      assert(
+        scanClaimLocks("Dungeon Fighter").some((h) => h.id === "claim-lock-dungeon-fighter"),
+        "dungeon"
+      ),
+    "claim-lock-rmb-cny": () =>
+      assert(scanClaimLocks("RMB 3M").some((h) => h.id === "claim-lock-rmb-cny"), "rmb"),
+    "claim-lock-p007": () =>
+      assert(scanClaimLocks("Launched P007").some((h) => h.id === "claim-lock-p007"), "p007"),
+    "claim-lock-five-films-four-weeks": () =>
+      assert(
+        scanClaimLocks("5 films in 4 weeks").some(
+          (h) => h.id === "claim-lock-five-films-four-weeks"
+        ),
+        "five films"
+      ),
+  };
+  for (const id of REQUIRED_RULE_IDS.filter((x) => x !== "slop-lexicon")) {
+    assert(typeof dedicated[id] === "function", `missing dedicated P0 assertion for ${id}`);
+    dedicated[id]();
+  }
+  return "PASS";
+}
+
 async function runSelfTest() {
   const { rules, contracts } = loadRuleset();
   const lexicon = (rules.rules.find((r) => r.id === "slop-lexicon") || {}).lexicon || [];
 
   const pin = rulesetPin();
   assert(
-    pin === RULESET_INTEGRITY_PIN,
+    pin === expectedIntegrityPin(),
     `ruleset integrity pin mismatch: got ${pin}`
   );
   for (const id of REQUIRED_RULE_IDS) {
@@ -481,6 +1007,7 @@ async function runSelfTest() {
     hops: ["R0", "R-VI", "R1", "R1b", "R2", "R3"],
     reportsDir: passReports,
     stopOnFail: true,
+    fetchResult: qualifyingFetchResult(),
   });
   assert(pass.reports.length === 6, `pass chain should finish 6 hops, got ${pass.reports.length}`);
   for (const r of pass.reports) {
@@ -494,6 +1021,7 @@ async function runSelfTest() {
     hops: ["R3"],
     reportsDir: tmpReports(),
     stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
   });
   assert(
     orphanR3.last.verdict !== "ACCEPT",
@@ -519,14 +1047,28 @@ async function runSelfTest() {
   const fetchMiss = await optionalFetch("https://127.0.0.1:1/", 200);
   assert(fetchMiss.error || fetchMiss.timedOut, "optional fetch must not throw");
 
+  assert(companySlug("Meta Platforms, Inc.") === "meta-platforms-inc", "slugify legal name");
+
   const named = {
     "test-report-forgery-rejected": await testReportForgeryRejected(),
+    "test-forged-report-with-recomputed-binding-rejected":
+      await testForgedReportWithRecomputedBindingRejected(),
+    "test-r3-rescans-claimlock-slop-on-cv-cl": await testR3RescansClaimlockSlopOnCvCl(),
     "test-report-binds-to-package-and-inputs": await testReportBindsToPackageAndInputs(),
     "test-stale-report-invalidated-on-input-change": await testStaleReportInvalidatedOnInputChange(),
-    "test-ghost-profile-url-without-live-page-rejected": await testGhostProfileUrlWithoutLivePageRejected(),
+    "test-ghost-profile-url-without-live-page-rejected":
+      await testGhostProfileUrlWithoutLivePageRejected(),
+    "test-profile-requires-deployment-not-local-html":
+      await testProfileRequiresDeploymentNotLocalHtml(),
+    "test-live-fetch-rejects-spa-fallback": await testLiveFetchRejectsSpaFallback(),
     "test-fetch-profile-4xx-5xx-timeout-is-fail": await testFetchProfile4xx5xxTimeoutIsFail(),
     "test-waiver-detection-shape-variants": await testWaiverDetectionShapeVariants(),
+    "test-waiver-detection-novel-keys": await testWaiverDetectionNovelKeys(),
     "test-skip-language-chinese-and-paraphrase": await testSkipLanguageChineseAndParaphrase(),
+    "test-skip-language-open-vocabulary": await testSkipLanguageOpenVocabulary(),
+    "test-slug-matches-company-alias-set": await testSlugMatchesCompanyAliasSet(),
+    "test-ruleset-pin-covers-lib-logic": testRulesetPinCoversLibLogic(),
+    "test-loosening-any-p0-rule-breaks-selftest": testLooseningAnyP0RuleBreaksSelftest(),
   };
 
   return {

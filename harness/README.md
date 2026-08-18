@@ -88,16 +88,24 @@ Hop order:
 3. **R1 CV** — file exists; claim-lock + slop lexicons; header/contact
    cannot use a generic homepage as the portfolio URL.
 4. **R1b CL** — file exists; same slop / claim-lock checks. Cannot be waived.
-5. **R2 Profile** — a *real* local Profile HTML page and/or a live HTTP 2xx
-   fetch. A recorded URL alone is a ghost and `REJECT`. URL must be the
-   company route. HTML gets structure + noindex + claim-lock/slop checks.
-   `--fetch-profile` is optional; 4xx / 5xx / timeout / error is `FAIL`
-   (not PASS). The CLI still does not crash on network errors.
+5. **R2 Profile** — qualifying **live** evidence: HTTP 2xx **and** a
+   company-name or slug marker in the response body. Local `profile.html`
+   or a well-formed `profile_url` is **not** enough. Cloudflare/SPA `200`
+   empty shells are `FAIL`. URL must be the company route (slug may match
+   `slugify(company)` or `company_aliases` / a small built-in legal-name
+   map). HTML, when present, still gets structure + noindex +
+   claim-lock/slop checks. `--fetch-profile` is how the CLI obtains live
+   evidence; 4xx / 5xx / timeout / error is `FAIL` (not PASS). Self-test
+   may inject a qualifying `fetchResult` so fixtures do not need the
+   public internet.
 6. **R3 Closeout** — `ACCEPT` means CV + cover letter + a *real* company
-   Profile exist and match **this** package *now* (live / bound / fresh).
-   Prior hop reports must be harness-generated and bound to this
-   `package_dir` + current file hashes. CV/CL must cite that Profile URL.
-   Missing any piece = REJECT. This is the hop HyperAgent skipped.
+   Profile exist and match **this** package *now* (qualifying live
+   evidence, bound, fresh). Prior hop reports must be harness-generated,
+   bound to this `package_dir` + current file hashes, and contain the
+   non-empty checks of a real hop run. Disk `ACCEPT` reports **cannot**
+   waive content gates: R3 independently re-runs claim-lock, slop,
+   skip-language, and waiver scans on current CV + CL + Brief + Profile
+   HTML. CV/CL must cite that Profile URL. Missing any piece = REJECT.
 
 ## Supervisor contract — exact commands
 
@@ -138,8 +146,11 @@ node harness/cli.js --hop R2 --package "$PACKAGE" --fetch-profile
 node harness/cli.js --hop R3 --manifest "$PACKAGE/manifest.json" --json
 ```
 
-`--fetch-profile` treats HTTP 2xx as live evidence. 4xx, 5xx, timeout, and
-transport error are `FAIL` (P0), not a silent PASS.
+`--fetch-profile` treats HTTP 2xx **plus** a company/slug marker in the
+body as live evidence. SPA `200` empty shells, 4xx, 5xx, timeout, and
+transport error are `FAIL` (P0), not a silent PASS. Default CLI without
+`--fetch-profile` (and without a test-injected `fetchResult`) `REJECT`s
+ghost URLs even when local `profile.html` exists.
 
 Reports are written to `$PACKAGE/reports/<HOP>.json` unless `--reports` is
 set. Those files are harness-generated and include a binding over
@@ -186,9 +197,10 @@ See `schema/package-manifest.schema.json`. Required fields:
 | `cv` | Path to CV |
 | `cl` | Path to cover letter |
 | `profile_url` | Company Profile URL |
-| `profile_html` | Optional local HTML |
+| `profile_html` | Optional local HTML (not sufficient for R2/R3 ACCEPT) |
+| `company_aliases` | Documented short slugs / legal-name aliases (e.g. `meta` for `Meta Platforms, Inc.`) |
 | `vi` | VI distill record (required for R-VI) |
-| `waivers` | **Forbidden** for Profile / CL. Presence is P0 REJECT. |
+| `waivers` | **Forbidden** for Profile / CL. Presence is P0 REJECT. Novel skip/omit/optional/defer keys are also REJECT. |
 
 Paths are relative to the package directory.
 
@@ -225,6 +237,8 @@ here.
   lexicon from the apply-doc shared list).
 - `rules/contracts.json` — hop order, algebra, exit codes, non-waivable
   artifacts.
+- `rules/integrity.pin` — git-tracked SHA-256 of rules + `harness/lib/*.js`
+  (except `self-test.js`). Honesty pin, not an external HSM.
 
 New rules only from named real failures. Do not dump speculative L0 lists.
 

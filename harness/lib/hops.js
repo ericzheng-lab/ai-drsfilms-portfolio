@@ -96,7 +96,65 @@ function localProfileHtmlEvidence(pkg) {
   return { ok: true, reason: "real local profile HTML" };
 }
 
-function liveFetchEvidence(fetchResult) {
+const BUILTIN_COMPANY_ALIASES = {
+  "meta platforms inc": ["meta"],
+  "meta platforms incorporated": ["meta"],
+  "alphabet inc": ["google", "alphabet"],
+  "alphabet incorporated": ["google", "alphabet"],
+};
+
+function normalizeCompanyKey(name) {
+  return String(name || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[.,]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function companyAliasSet(pkg) {
+  const aliases = new Set();
+  const company = String((pkg && pkg.manifest && pkg.manifest.company) || "").trim();
+  const slug = companySlug(company);
+  if (slug) aliases.add(slug);
+  const fromManifest =
+    (pkg && pkg.manifest && pkg.manifest.company_aliases) || [];
+  if (Array.isArray(fromManifest)) {
+    for (const raw of fromManifest) {
+      const s = companySlug(raw);
+      if (s) aliases.add(s);
+    }
+  }
+  const builtin = BUILTIN_COMPANY_ALIASES[normalizeCompanyKey(company)] || [];
+  for (const raw of builtin) {
+    const s = companySlug(raw);
+    if (s) aliases.add(s);
+  }
+  return aliases;
+}
+
+function profileContentMarkers(pkg) {
+  const markers = [];
+  const company = String((pkg && pkg.manifest && pkg.manifest.company) || "").trim();
+  if (company) markers.push(company);
+  const classified = pkg ? classifyProfileUrl((pkg.manifest || {}).profile_url) : null;
+  if (classified && classified.slug) markers.push(classified.slug);
+  for (const alias of companyAliasSet(pkg)) markers.push(alias);
+  return [...new Set(markers.filter(Boolean))];
+}
+
+function bodyHasProfileMarker(body, pkg) {
+  const src = String(body || "").toLowerCase();
+  if (!src.trim()) return { ok: false, marker: null };
+  for (const marker of profileContentMarkers(pkg)) {
+    if (marker && src.includes(String(marker).toLowerCase())) {
+      return { ok: true, marker };
+    }
+  }
+  return { ok: false, marker: null };
+}
+
+function liveFetchEvidence(fetchResult, pkg) {
   if (!fetchResult) {
     return { ok: false, performed: false, reason: "live fetch not performed" };
   }
@@ -110,28 +168,41 @@ function liveFetchEvidence(fetchResult) {
   if (typeof status !== "number") {
     return { ok: false, performed: true, reason: "live fetch returned no HTTP status" };
   }
-  if (status >= 200 && status < 300) {
-    return { ok: true, performed: true, reason: `live fetch HTTP ${status}` };
+  if (status < 200 || status >= 300) {
+    return {
+      ok: false,
+      performed: true,
+      reason: `live fetch HTTP ${status} (need 2xx)`,
+    };
+  }
+  const marked = bodyHasProfileMarker(fetchResult.body, pkg);
+  if (!marked.ok) {
+    return {
+      ok: false,
+      performed: true,
+      reason:
+        "live fetch HTTP 2xx but body missing company/slug marker (SPA fallback / empty shell)",
+    };
   }
   return {
-    ok: false,
+    ok: true,
     performed: true,
-    reason: `live fetch HTTP ${status} (need 2xx)`,
+    reason: `live fetch HTTP ${status} with marker ${marked.marker}`,
   };
 }
 
 function realProfileExists(pkg, opts = {}) {
   const local = localProfileHtmlEvidence(pkg);
-  const live = liveFetchEvidence(opts.fetchResult);
+  const live = liveFetchEvidence(opts.fetchResult, pkg);
   return {
-    ok: local.ok || live.ok,
+    ok: Boolean(live.ok),
     local,
     live,
-    detail: local.ok
-      ? local.reason
-      : live.ok
-        ? live.reason
-        : `no real company Profile (${local.reason}; ${live.reason})`,
+    detail: live.ok
+      ? live.reason
+      : `no qualifying live Profile evidence (${live.reason}${
+          local.ok ? "; local HTML is not sufficient" : `; ${local.reason}`
+        })`,
   };
 }
 
@@ -189,7 +260,8 @@ function waiverChecks(pkg, hops) {
   return out;
 }
 
-function textGateChecks(text, label, rules) {
+function textGateChecks(text, label, rules, idPrefix = "") {
+  const cid = (id) => `${idPrefix}${id}`;
   const checks = [];
   const locks = scanClaimLocks(text);
   const lockIds = [
@@ -204,7 +276,7 @@ function textGateChecks(text, label, rules) {
     const hit = locks.find((h) => h.id === id);
     checks.push(
       check(
-        id,
+        cid(id),
         "P0",
         !hit,
         hit ? `${label} claim-lock: ${hit.excerpt}` : `${label} clear of ${id}`
@@ -214,7 +286,7 @@ function textGateChecks(text, label, rules) {
   const slop = scanSlop(text, slopLexicon(rules));
   checks.push(
     check(
-      "slop-lexicon",
+      cid("slop-lexicon"),
       "P1",
       slop.length === 0,
       slop.length
@@ -223,6 +295,18 @@ function textGateChecks(text, label, rules) {
     )
   );
   return checks;
+}
+
+function skipLanguageCheck(text, label, rules, id) {
+  const skips = scanSkipLanguage(text, skipPatterns(rules));
+  return check(
+    id,
+    "P0",
+    skips.length === 0,
+    skips.length
+      ? `${label} skip/omit/waive language: ${skips.map((s) => s.excerpt).join("; ")}`
+      : `${label} clear of skip/omit language`
+  );
 }
 
 function namesArtifact(text, attrs, kind) {
@@ -501,15 +585,17 @@ function profileUrlFromPkg(pkg) {
 }
 
 function slugMatchesCompany(pkg, classified) {
+  const aliases = companyAliasSet(pkg);
   const expected = companySlug(pkg.manifest.company);
-  const ok = Boolean(classified.ok && classified.slug && expected && classified.slug === expected);
+  const ok = Boolean(classified.ok && classified.slug && aliases.has(classified.slug));
   return {
     ok,
     expected,
+    aliases: [...aliases],
     detail: ok
-      ? `slug ${classified.slug} matches company`
+      ? `slug ${classified.slug} matches company alias set`
       : classified.ok
-        ? `profile slug ${classified.slug} != company slug ${expected || "(empty)"}`
+        ? `profile slug ${classified.slug} not in company alias set {${[...aliases].join(", ") || expected || "(empty)"}}`
         : "no company Profile slug to compare",
   };
 }
@@ -692,8 +778,85 @@ function hopR3(pkg, rules, opts = {}) {
     checks.push(check("r3-live-fetch", "P0", live.ok, live.reason));
   }
 
+  // Disk ACCEPT reports cannot waive content gates. Re-scan current files.
+  checks.push(...textGateChecks(pkg.brief.value || "", "Brief", rules, "r3-brief-"));
+  checks.push(...textGateChecks(pkg.cv.value || "", "CV", rules, "r3-cv-"));
+  checks.push(...textGateChecks(pkg.cl.value || "", "CL", rules, "r3-cl-"));
+  checks.push(
+    ...textGateChecks(
+      (pkg.profileHtml && pkg.profileHtml.value) || "",
+      "Profile HTML",
+      rules,
+      "r3-html-"
+    )
+  );
+  checks.push(
+    skipLanguageCheck(pkg.brief.value || "", "Brief", rules, "r3-brief-no-skip-language")
+  );
+  checks.push(skipLanguageCheck(pkg.cv.value || "", "CV", rules, "r3-cv-no-skip-language"));
+  checks.push(skipLanguageCheck(pkg.cl.value || "", "CL", rules, "r3-cl-no-skip-language"));
+  checks.push(
+    skipLanguageCheck(
+      (pkg.profileHtml && pkg.profileHtml.value) || "",
+      "Profile HTML",
+      rules,
+      "r3-html-no-skip-language"
+    )
+  );
+
   return checks;
 }
+
+const CLAIM_LOCK_IDS = [
+  "claim-lock-sundance-win",
+  "claim-lock-berlinale-win",
+  "claim-lock-dungeon-fighter",
+  "claim-lock-rmb-cny",
+  "claim-lock-p007",
+  "claim-lock-five-films-four-weeks",
+];
+
+const REQUIRED_HOP_CHECKS = {
+  R0: [
+    "brief-exists",
+    "brief-names-cv",
+    "brief-names-cl",
+    "brief-names-profile",
+    "brief-profile-route",
+    "brief-selected-work-ids",
+    "brief-no-skip-language",
+    "no-profile-waiver",
+    "no-cl-waiver",
+  ],
+  "R-VI": [
+    "vi-exists",
+    "vi-source-url",
+    "vi-date",
+    "vi-hex",
+    "vi-font",
+    "vi-radius",
+    "vi-not-similar-to",
+  ],
+  R1: ["r1-cv-exists", ...CLAIM_LOCK_IDS, "slop-lexicon", "cv-header-not-homepage"],
+  R1b: ["r1b-cl-exists", "r1b-cl-distinct", "no-cl-waiver", ...CLAIM_LOCK_IDS, "slop-lexicon"],
+  R2: [
+    "r2-profile-present",
+    "profile-not-homepage",
+    "profile-slug-matches-company",
+    "no-profile-waiver",
+  ],
+  R3: [
+    "r3-cv-exists",
+    "r3-cl-exists",
+    "r3-cl-distinct",
+    "r3-profile-present",
+    "r3-three-live-pieces",
+    "profile-slug-matches-company",
+    "cv-cites-profile-url",
+    "cl-cites-profile-url",
+    "portfolio-url-matches-profile",
+  ],
+};
 
 const HOP_RUNNERS = {
   R0: hopR0,
@@ -716,4 +879,9 @@ module.exports = {
   localProfileHtmlEvidence,
   liveFetchEvidence,
   companySlug,
+  companyAliasSet,
+  profileContentMarkers,
+  REQUIRED_HOP_CHECKS,
+  CLAIM_LOCK_IDS,
+  BUILTIN_COMPANY_ALIASES,
 };

@@ -1,26 +1,36 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
       "id": "no-profile-waiver",
       "severity": "P0",
       "failure": "skip-Profile / builder-declared waiver",
-      "hops": ["R0", "R2", "R3"],
+      "hops": [
+        "R0",
+        "R2",
+        "R3"
+      ],
       "note": "Nobody — harness, README, or Brief waivers[] / waived / exemptions — may waive Profile."
     },
     {
       "id": "no-cl-waiver",
       "severity": "P0",
       "failure": "missing CL / builder-declared waiver",
-      "hops": ["R0", "R1b", "R3"],
+      "hops": [
+        "R0",
+        "R1b",
+        "R3"
+      ],
       "note": "Cover letter cannot be waived. If an ATS has no cover field, the CL still exists as a file."
     },
     {
       "id": "brief-no-skip-language",
       "severity": "P0",
       "failure": "skip-Profile / skip-CL prose",
-      "hops": ["R0"],
+      "hops": [
+        "R0"
+      ],
       "patterns": [
         "skip(ping)? (the )?(role[- ]specific )?profile",
         "omit(ting)? (the )?(role[- ]specific )?profile",
@@ -48,14 +58,33 @@
         "(不需要|无需|不用|不必).{0,16}(简介|角色页|作品页|profile|封面信|封面|求职信|cover letter)",
         "(简介|角色页|profile|封面信|求职信).{0,8}(可跳过|可省略|不需要|无需|可选)",
         "跳过(封面|求职信|简介)",
-        "无需(封面|求职信|简介)"
+        "无需(封面|求职信|简介)",
+        "(profile|cover letter|role[- ]specific profile).{0,48}(out of scope|not in scope)",
+        "(out of scope|not in scope).{0,48}(profile|cover letter)",
+        "(we will |will |we'll )?defer(ring)? (the )?(role[- ]specific )?(profile|cover letter)",
+        "(profile|cover letter).{0,32}(is |are )?(deferred|postponed)",
+        "(in place of|instead of).{0,40}(a |the )?(dedicated |role[- ]specific )?(profile|cover letter)",
+        "use .{0,80}(in place of|instead of).{0,40}(a |the )?(dedicated )?(profile|cover letter)",
+        "(prompt-builder|homepage|home page|main page).{0,48}(in place of|instead of).{0,32}(a |the )?(dedicated )?profile",
+        "(profile|cover letter).{0,24}(this (round|cycle|pass)|for now|later)",
+        "postpone.{0,40}(the )?(profile|cover letter)",
+        "先不做.{0,20}(公司)?(专页|简介|角色页|profile|封面|求职信)",
+        "(专页|公司专页|角色页|简介|profile).{0,16}(先不做|不做了|不要了|先放一放|放一放)",
+        "(这轮先|这次先).{0,16}(放一放|不做|省略|跳过|不要)",
+        "用主页代替",
+        "(用|使用).{0,12}(主页|首页|prompt-builder).{0,12}代替",
+        "专页.{0,16}(可跳过|可省略|不需要|无需|可选|先放)"
       ]
     },
     {
       "id": "profile-not-homepage",
       "severity": "P0",
       "failure": "generic homepage substituted for role-specific Profile",
-      "hops": ["R1", "R2", "R3"],
+      "hops": [
+        "R1",
+        "R2",
+        "R3"
+      ],
       "reject_hosts": [
         "drsfilms.com",
         "www.drsfilms.com",
@@ -79,20 +108,28 @@
       "id": "r3-three-live-pieces",
       "severity": "P0",
       "failure": "skip-Profile at closeout (HyperAgent)",
-      "hops": ["R3"],
-      "note": "Apply package is always CV + cover letter + a real company Profile (local HTML and/or live 2xx). Recorded URL alone is not enough. Missing any piece = REJECT."
+      "hops": [
+        "R3"
+      ],
+      "note": "Apply package is always CV + cover letter + a real company Profile. Qualifying live evidence is HTTP 2xx AND a company/slug marker in the body. Local HTML or SPA 200 empty shell is not enough. R3 independently re-runs claim-lock, slop, skip-language, and waiver on current files. Disk ACCEPT reports cannot waive content gates."
     },
     {
       "id": "portfolio-url-matches-profile",
       "severity": "P0",
       "failure": "generic homepage / mismatched Profile URL in CV or CL",
-      "hops": ["R3"]
+      "hops": [
+        "R3"
+      ]
     },
     {
       "id": "slop-lexicon",
       "severity": "P1",
       "failure": "anti-AI-slop treated as looks-fine",
-      "hops": ["R1", "R1b", "R2"],
+      "hops": [
+        "R1",
+        "R1b",
+        "R2"
+      ],
       "lexicon": [
         "passionate about",
         "results-oriented",
@@ -115,42 +152,66 @@
       "id": "claim-lock-sundance-win",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b", "R2"],
+      "hops": [
+        "R1",
+        "R1b",
+        "R2"
+      ],
       "lock": "Sundance + won/winner/获奖"
     },
     {
       "id": "claim-lock-berlinale-win",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b", "R2"],
+      "hops": [
+        "R1",
+        "R1b",
+        "R2"
+      ],
       "lock": "Berlinale as a win"
     },
     {
       "id": "claim-lock-dungeon-fighter",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b", "R2"],
+      "hops": [
+        "R1",
+        "R1b",
+        "R2"
+      ],
       "lock": "Dungeon Fighter without & (hyphen / Dungeon-Fighter also locked; fullwidth ＆ allowed)"
     },
     {
       "id": "claim-lock-rmb-cny",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b", "R2"],
+      "hops": [
+        "R1",
+        "R1b",
+        "R2"
+      ],
       "lock": "RMB/CNY/¥/人民币 money"
     },
     {
       "id": "claim-lock-p007",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b", "R2"],
+      "hops": [
+        "R1",
+        "R1b",
+        "R2"
+      ],
       "lock": "P007 as an external product name"
     },
     {
       "id": "claim-lock-five-films-four-weeks",
       "severity": "P0",
       "failure": "claim-lock leak",
-      "hops": ["R1", "R1b", "R2"],
+      "hops": [
+        "R1",
+        "R1b",
+        "R2"
+      ],
       "lock": "five-films-in-four-weeks style claims"
     }
   ],

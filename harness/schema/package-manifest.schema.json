@@ -4,7 +4,14 @@
   "title": "Career hop apply package manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["company", "role", "brief", "cv", "cl", "profile_url"],
+  "required": [
+    "company",
+    "role",
+    "brief",
+    "cv",
+    "cl",
+    "profile_url"
+  ],
   "properties": {
     "company": {
       "type": "string",
@@ -45,8 +52,18 @@
     },
     "waivers": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "FORBIDDEN for profile and cover letter. Field exists so the harness can detect and REJECT it. Nobody may waive Profile or CL."
+    },
+    "company_aliases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Documented short slugs or legal-name aliases. profile slug may match slugify(company) or any alias (e.g. Meta Platforms, Inc. + /meta/)."
     }
   }
 }

@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { REQUIRED_HOP_CHECKS } = require("./hops");
 
 const GENERATOR = "career-hop-harness";
 const HASH_KEYS = ["manifest", "brief", "cv", "cl", "vi", "profile_html"];
@@ -73,8 +74,25 @@ function reportLooksHarnessGenerated(report) {
   if (!report.package_dir || typeof report.package_dir !== "string") return false;
   if (!report.input_hashes || typeof report.input_hashes !== "object") return false;
   if (!report.binding || typeof report.binding !== "string") return false;
-  if (!Array.isArray(report.checks)) return false;
+  if (!Array.isArray(report.checks) || report.checks.length === 0) return false;
+  if (report.checks.some((c) => !c || !c.id || !c.severity || !c.status)) return false;
   return computeBinding(report) === report.binding;
+}
+
+function checksMatchRealHopRun(report, hopId) {
+  if (!report || !Array.isArray(report.checks) || report.checks.length === 0) {
+    return { ok: false, reason: "empty or missing checks" };
+  }
+  const required = REQUIRED_HOP_CHECKS[hopId] || [];
+  const ids = new Set(report.checks.map((c) => c && c.id).filter(Boolean));
+  const missing = required.filter((id) => !ids.has(id));
+  if (missing.length) {
+    return {
+      ok: false,
+      reason: `checks do not match a real ${hopId} hop run (missing ${missing.join(", ")})`,
+    };
+  }
+  return { ok: true, reason: "checks match a real hop run" };
 }
 
 function validatePrerequisiteReport(report, hopId, pkg) {
@@ -98,7 +116,11 @@ function validatePrerequisiteReport(report, hopId, pkg) {
   if (!hashesEqual(report.input_hashes, currentHashes)) {
     return { ok: false, reason: "stale or cross-package input hashes" };
   }
-  return { ok: true, reason: "harness-generated, bound, fresh" };
+  const hopShape = checksMatchRealHopRun(report, hopId);
+  if (!hopShape.ok) {
+    return { ok: false, reason: hopShape.reason };
+  }
+  return { ok: true, reason: "harness-generated, bound, fresh, real hop checks" };
 }
 
 function readReport(reportsDir, hopId) {
@@ -182,4 +204,5 @@ module.exports = {
   reportLooksHarnessGenerated,
   validatePrerequisiteReport,
   canonicalPackageDir,
+  checksMatchRealHopRun,
 };
