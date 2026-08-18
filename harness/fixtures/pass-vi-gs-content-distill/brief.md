@@ -3,6 +3,12 @@ profile_route: acme
 selected_work_ids:
   - work-synth-1
   - work-synth-2
+page_slots:
+  archetype: P-led
+  lead: work-synth-1
+  second: work-synth-2
+  supporting: []
+  omit: []
 artifacts:
   - cv
   - cover_letter

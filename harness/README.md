@@ -81,8 +81,16 @@ input change are `REJECT`.
 Hop order:
 
 1. **R0 Brief** — names CV, cover letter, and a Profile *route* (company
-   slug, not a homepage); selected work ids; no skip/omit/waive language
-   for Profile or CL.
+   slug, not a homepage); `selected_work_ids` lead-first; `page_slots`
+   (or equivalent frontmatter) with `archetype`, `lead`, `second`,
+   `supporting`, `omit`; no skip/omit/waive language for Profile or CL.
+   Missing slot order is `REJECT` (`brief-page-slots`). A P-led
+   agency/producer Brief whose `lead` is indie-film-only while ads/reel
+   ids are in the list is `REJECT` (`brief-lead-matches-archetype`).
+   A lead id with no dual-gate still is `REPAIR`
+   (`brief-lead-assets-clearable`) — later hops may not substitute
+   another category. Page composition is locked here, not after the
+   Profile exists.
 2. **R-VI** — VI distill record has source URL + date + exact hex / font /
    radius **and usage notes** (how the primary is a wordmark/field on the
    canvas). Empty or “similar to” = REJECT. Missing provenance = REJECT.
@@ -142,7 +150,12 @@ Hop order:
    **newest 3** shipped `public/*/index.html` peers (last git commit
    that touched the file; mtime if git is unavailable), not a frozen
    ElevenLabs/Luma or Wonder/Kalshi pair. Manifest `compared_to` must
-   record that same set (`r2-profile-recent-bar` / R3 echo). A
+   record that same set (`r2-profile-recent-bar` / R3 echo). First
+   viewport / first work row must match Brief `page_slots.lead` (ids
+   or named category: trad reel, brand spot). A page that is only film
+   stills while Brief lead is ads/reel is `REJECT`
+   (`r2-profile-follows-brief-slots`). Do not restyle `/giant-spoon/`;
+   it is the exam of that miss, not the patch. A
    text/résumé page (0 work images / empty first viewport) is `REJECT`
    when any of those 3 has a first-viewport still. Images are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
@@ -318,6 +331,10 @@ Paths are relative to the package directory.
 | `fixtures/fail-p-led-pb-gallery` | R2 `REJECT` (P-led Prompt Builder gallery) |
 | `fixtures/fail-stale-classic-bar` | R2 `REJECT` (`compared_to` is elevenlabs+luma while a newer peer exists) |
 | `fixtures/pass-recent-bar` | `r2-profile-recent-bar` `ACCEPT` (`compared_to` matches the newest 3 in the fixture tree) |
+| `fixtures/fail-brief-no-slots` | R0 `REJECT` (no `page_slots` / slot order) |
+| `fixtures/fail-p-led-film-lead` | R0 `REJECT` (P-led agency producer, lead = BHOAF only while ads/reel ids are listed) |
+| `fixtures/fail-page-ignores-brief-lead` | R2 `REJECT` (Brief lead = reel+coach; HTML is four BHOAF cards) |
+| `fixtures/pass-brief-slots-lead` | R2 `ACCEPT` (slots present; first work matches Brief lead) |
 | `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip; 58-node *text* cite) |
 | `fixtures/pass-wonder-58node` | R2 `ACCEPT` (58-node *file* legal on `/wonder/`) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |

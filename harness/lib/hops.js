@@ -14,6 +14,12 @@ const {
 } = require("./text-scan");
 const { workIdsFrom } = require("./manifest");
 const {
+  briefPageSlotsOk,
+  briefLeadMatchesArchetype,
+  briefLeadAssetsClearable,
+  profileFollowsBriefSlots,
+} = require("./brief-slots");
+const {
   htmlHasWorkImages,
   firstViewportHasStill,
   firstStillIsEarly,
@@ -525,6 +531,19 @@ function hopR0(pkg, rules) {
     )
   );
 
+  const slots = briefPageSlotsOk(attrs);
+  checks.push(check("brief-page-slots", "P0", slots.ok, slots.reason));
+
+  const leadArch = briefLeadMatchesArchetype(attrs, pkg);
+  checks.push(
+    check("brief-lead-matches-archetype", "P0", leadArch.ok, leadArch.reason)
+  );
+
+  const leadClear = briefLeadAssetsClearable(attrs);
+  checks.push(
+    check("brief-lead-assets-clearable", "P1", leadClear.ok, leadClear.reason)
+  );
+
   const skips = scanSkipLanguage(text, skipPatterns(rules));
   checks.push(
     check(
@@ -1001,6 +1020,34 @@ const profilePLedPbGalleryGate = profileGateFromPkg(
   "P-led Prompt Builder gallery"
 );
 
+function profileFollowsBriefSlotsGate(pkg, opts = {}) {
+  const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
+  const parts = [];
+  let ok = true;
+  if (localHtml) {
+    const ev = profileFollowsBriefSlots(localHtml, pkg);
+    parts.push(`local HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (liveHtml) {
+    const ev = profileFollowsBriefSlots(liveHtml, pkg);
+    parts.push(`live HTML: ${ev.reason}`);
+    if (!ev.ok) ok = false;
+  }
+  if (!localHtml && !liveHtml) {
+    return {
+      ok: false,
+      detail: "no Profile HTML to inspect for Brief page_slots lead",
+    };
+  }
+  return {
+    ok,
+    detail: ok
+      ? parts.join("; ")
+      : `Profile first work does not follow Brief page_slots.lead: ${parts.join("; ")}`,
+  };
+}
+
 function profileViFieldGate(pkg, opts = {}) {
   const rec =
     pkg.vi && pkg.vi.ok && pkg.vi.value && typeof pkg.vi.value === "object"
@@ -1120,6 +1167,15 @@ function hopR2(pkg, rules, opts = {}) {
     ...check("r2-profile-recent-bar", "P0", recentBar.ok, recentBar.detail),
     compared_to: recentBar.compared_to,
   });
+  const followsSlots = profileFollowsBriefSlotsGate(pkg, opts);
+  checks.push(
+    check(
+      "r2-profile-follows-brief-slots",
+      "P0",
+      followsSlots.ok,
+      followsSlots.detail
+    )
+  );
   checks.push(
     check(
       "profile-not-homepage",
@@ -1295,6 +1351,15 @@ function hopR3(pkg, rules, opts = {}) {
     ...check("r3-profile-recent-bar", "P0", recentBar.ok, recentBar.detail),
     compared_to: recentBar.compared_to,
   });
+  const followsSlots = profileFollowsBriefSlotsGate(pkg, opts);
+  checks.push(
+    check(
+      "r3-profile-follows-brief-slots",
+      "P0",
+      followsSlots.ok,
+      followsSlots.detail
+    )
+  );
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1409,6 +1474,9 @@ const REQUIRED_HOP_CHECKS = {
     "brief-names-profile",
     "brief-profile-route",
     "brief-selected-work-ids",
+    "brief-page-slots",
+    "brief-lead-matches-archetype",
+    "brief-lead-assets-clearable",
     "brief-no-skip-language",
     "no-profile-waiver",
     "no-cl-waiver",
@@ -1452,6 +1520,7 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-dev4-private",
     "r2-profile-p-led-pb-gallery",
     "r2-profile-recent-bar",
+    "r2-profile-follows-brief-slots",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1485,6 +1554,7 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-dev4-private",
     "r3-profile-p-led-pb-gallery",
     "r3-profile-recent-bar",
+    "r3-profile-follows-brief-slots",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

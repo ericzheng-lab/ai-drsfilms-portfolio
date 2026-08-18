@@ -12,32 +12,69 @@ function parseFrontmatter(text) {
   return { attrs: parseSimpleYaml(m[1]), body: src.slice(m[0].length) };
 }
 
+function parseYamlScalar(rest) {
+  const t = String(rest || "").trim();
+  if (t === "") return [];
+  if (t.startsWith("[") && t.endsWith("]")) {
+    return t
+      .slice(1, -1)
+      .split(",")
+      .map((s) => unquote(s.trim()))
+      .filter((s) => s.length > 0);
+  }
+  return unquote(t);
+}
+
+function isPlainMap(v) {
+  return Boolean(v) && typeof v === "object" && !Array.isArray(v);
+}
+
+function ensureMap(attrs, key) {
+  if (isPlainMap(attrs[key])) return;
+  if (Array.isArray(attrs[key]) && attrs[key].length === 0) {
+    attrs[key] = {};
+    return;
+  }
+  if (attrs[key] == null) {
+    attrs[key] = {};
+    return;
+  }
+  attrs[key] = {};
+}
+
 function parseSimpleYaml(block) {
   const attrs = {};
   const lines = String(block || "").split(/\r?\n/);
   let currentKey = null;
+  let nestedKey = null;
   for (const raw of lines) {
     if (!raw.trim() || raw.trim().startsWith("#")) continue;
-    const list = raw.match(/^\s+-\s+(.+)$/);
-    if (list && currentKey) {
-      if (!Array.isArray(attrs[currentKey])) attrs[currentKey] = [];
-      attrs[currentKey].push(unquote(list[1].trim()));
+    const top = raw.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
+    if (top) {
+      currentKey = top[1];
+      nestedKey = null;
+      attrs[currentKey] = parseYamlScalar(top[2]);
       continue;
     }
-    const kv = raw.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
-    if (!kv) continue;
-    currentKey = kv[1];
-    const rest = kv[2].trim();
-    if (rest === "") {
-      attrs[currentKey] = [];
-    } else if (rest.startsWith("[") && rest.endsWith("]")) {
-      attrs[currentKey] = rest
-        .slice(1, -1)
-        .split(",")
-        .map((s) => unquote(s.trim()))
-        .filter(Boolean);
-    } else {
-      attrs[currentKey] = unquote(rest);
+    const nest = raw.match(/^(\s+)([A-Za-z0-9_]+):\s*(.*)$/);
+    if (nest && currentKey) {
+      ensureMap(attrs, currentKey);
+      nestedKey = nest[2];
+      attrs[currentKey][nestedKey] = parseYamlScalar(nest[3]);
+      continue;
+    }
+    const list = raw.match(/^\s+-\s+(.+)$/);
+    if (list && currentKey) {
+      if (nestedKey && isPlainMap(attrs[currentKey])) {
+        if (!Array.isArray(attrs[currentKey][nestedKey])) {
+          attrs[currentKey][nestedKey] = [];
+        }
+        attrs[currentKey][nestedKey].push(unquote(list[1].trim()));
+      } else {
+        if (!Array.isArray(attrs[currentKey])) attrs[currentKey] = [];
+        attrs[currentKey].push(unquote(list[1].trim()));
+      }
+      continue;
     }
   }
   return attrs;
@@ -149,6 +186,7 @@ function workIdsFrom(attrs, body) {
 
 module.exports = {
   parseFrontmatter,
+  parseSimpleYaml,
   loadPackage,
   resolveManifestPath,
   workIdsFrom,

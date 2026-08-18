@@ -63,5 +63,41 @@
       "wonder_only_until_generic_public": true,
       "src_patterns": ["workflow-58node", "workflow-58", "58-node", "58node"]
     }
+  ],
+  "work": [
+    {
+      "id": "showreel-trad",
+      "category": "trad_reel",
+      "aliases": [
+        "A-SHOWREEL-TRAD",
+        "showreel",
+        "trad reel",
+        "traditional reel"
+      ],
+      "external_ready": true,
+      "drs_public": true
+    },
+    {
+      "id": "coach-spot",
+      "category": "brand_spot",
+      "aliases": ["coach", "brand spot"],
+      "external_ready": true,
+      "drs_public": true
+    },
+    {
+      "id": "brief-history-of-a-family",
+      "category": "indie_film",
+      "aliases": ["bhoaf", "brief-history", "brief history of a family"],
+      "external_ready": true,
+      "drs_public": true
+    },
+    {
+      "id": "unclearable-lead-still",
+      "category": "trad_reel",
+      "aliases": [],
+      "external_ready": false,
+      "drs_public": false,
+      "note": "Named for brief-lead-assets-clearable REPAIR. Dual-gate missing; later hops must not substitute another category."
+    }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "version": "1.12.0",
+  "version": "1.13.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -264,6 +264,34 @@
       "failure": "company homepage skin standing in for a role Profile",
       "hops": ["R2", "R3"],
       "note": "Page must name a production role and at least two work-sample titles. A marketing homepage with decorative stills is REJECT. B-EL1. No waiver."
+    },
+    {
+      "id": "brief-page-slots",
+      "severity": "P0",
+      "failure": "Brief has selected work ids but no locked page slot order",
+      "hops": ["R0"],
+      "note": "Page composition is locked at analysis. Brief YAML must have selected_work_ids lead-first AND page_slots (or equivalent frontmatter) with archetype, lead, second, supporting, omit. Missing slot order is REJECT. Giant Spoon shipped as a movie page because the lead was not locked here."
+    },
+    {
+      "id": "brief-lead-matches-archetype",
+      "severity": "P0",
+      "failure": "P-led agency/producer Brief lead is indie-film-only while ads/reel ids are in the list",
+      "hops": ["R0"],
+      "note": "A P-led agency/producer Brief whose lead is BHOAF/indie-film-only while ads/reel ids sit in selected_work_ids is REJECT. Do not let later hops substitute film stills for the ad/reel lead. Giant Spoon exam."
+    },
+    {
+      "id": "brief-lead-assets-clearable",
+      "severity": "P1",
+      "failure": "Brief lead id has no dual-gate still; later hops must not substitute another category",
+      "hops": ["R0"],
+      "note": "If a lead id cannot be hung (assets.json external_ready:true AND INDEX public:true), R0 is REPAIR. Do not allow R2 to hang whatever else is public. Uncatalogued fixture ids are N/A."
+    },
+    {
+      "id": "r2-profile-follows-brief-slots",
+      "severity": "P0",
+      "failure": "Profile first viewport / first work row ignores Brief page_slots.lead",
+      "hops": ["R2", "R3"],
+      "note": "First viewport or first work row must match Brief page_slots.lead (ids or named category: trad reel, brand spot). A page that is only film stills while Brief lead is ads/reel is REJECT. Giant Spoon hung BHOAF ×4. Do not restyle /giant-spoon/; it is the exam, not the patch. No waiver."
     },
     {
       "id": "r2-profile-recent-bar",
