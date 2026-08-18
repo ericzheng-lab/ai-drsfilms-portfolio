@@ -1,5 +1,5 @@
 {
-  "version": "1.11.0",
+  "version": "1.12.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -264,6 +264,13 @@
       "failure": "company homepage skin standing in for a role Profile",
       "hops": ["R2", "R3"],
       "note": "Page must name a production role and at least two work-sample titles. A marketing homepage with decorative stills is REJECT. B-EL1. No waiver."
+    },
+    {
+      "id": "r2-profile-recent-bar",
+      "severity": "P0",
+      "failure": "new Profile judged against a frozen pair / stale compared_to, or a résumé page while the current bar has a first-viewport still",
+      "hops": ["R2", "R3"],
+      "note": "Every NEW company Profile is built and judged against the most recently shipped public/*/index.html pages, not a fixed pair (not ElevenLabs/Luma forever, not Wonder/Kalshi forever). Discover peers: every public/*/index.html except the package company. Sort by last git commit timestamp that touched that file (git log -1 --format=%ct -- path); if git is unavailable, fall back to mtime and say so on the check. Newest 3 routes = the bar; write them on the check as compared_to. ACCEPT only if the package records those same 3 on manifest compared_to. A stale fixed pair while newer pages exist is REJECT. Also REJECT if the new local/live HTML is a text/résumé page (0 work images / empty first viewport) while any of the newest 3 have a first-viewport still. Reuses r2-profile-work-images / r2-profile-first-viewport-still gates. No waiver."
     },
     {
       "id": "profile-not-homepage",

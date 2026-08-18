@@ -1,5 +1,5 @@
 {
-  "version": "1.11.0",
+  "version": "1.12.0",
   "algebra": {
     "P0_FAIL": "REJECT",
     "P1_FAIL_without_P0": "REPAIR",
@@ -69,7 +69,7 @@
       "required_inputs": [
         "profile"
       ],
-      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. Profile HTML (local and live) must contain real work stills; text-only / empty / placeholder <img> is REJECT. Images are not optional. Hung files require assets.json external_ready:true AND INDEX public:true. 58-node file only on /wonder/ until generic public. DEV4 UIs are public:false. Visible A-* ids REJECT. Also REJECT token-only VI, text-only showreel cards, legal-paragraph credits, and JD-archetype invocation misses."
+      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. Profile HTML (local and live) must contain real work stills; text-only / empty / placeholder <img> is REJECT. Images are not optional. Hung files require assets.json external_ready:true AND INDEX public:true. 58-node file only on /wonder/ until generic public. DEV4 UIs are public:false. Visible A-* ids REJECT. Also REJECT token-only VI, text-only showreel cards, legal-paragraph credits, and JD-archetype invocation misses. Every new Profile is judged against the newest 3 shipped public/*/index.html peers (git last-touch, mtime fallback); manifest compared_to must record that moving bar — a frozen ElevenLabs/Luma or Wonder/Kalshi pair is REJECT when newer pages exist. A résumé/text page is REJECT when any of those 3 has a first-viewport still."
     },
     {
       "id": "R3",
