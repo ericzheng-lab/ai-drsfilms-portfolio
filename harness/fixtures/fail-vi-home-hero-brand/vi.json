@@ -1,0 +1,22 @@
+{
+  "source_url": "https://giantspoon.com/",
+  "date": "2026-08-18",
+  "hex": {
+    "canvas": "#FFFFFF",
+    "primary": "#0033A0",
+    "nav": "#000000"
+  },
+  "font": {
+    "family": "Sora",
+    "fallback": "sans-serif",
+    "weights": [300, 500, 600, 700]
+  },
+  "radius": {
+    "button": "0px"
+  },
+  "usage": {
+    "canvas": "white",
+    "primary": "Klein Blue #0033A0 as wordmark/field on the white canvas",
+    "brand": "the brand is the type-only white home hero"
+  }
+}

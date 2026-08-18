@@ -363,3 +363,126 @@ self-test PASS
 Fixtures: fail-skip-profile, fail-generic-homepage, fail-missing-cl, fail-text-only-profile, fail-empty-hero-profile, fail-late-stills-profile, fail-thin-stack-profile, fail-ai-only-profile, fail-ai-lead-profile, fail-ai-order-profile, fail-folded-vimeo-profile, fail-patched-shell-profile, fail-homepage-skin-profile → **REJECT**. `pass-minimal-three` → **ACCEPT**.
 
 Named Career Profile tests: `test-text-only-profile-rejected`, `test-empty-hero-profile-rejected`, `test-late-stills-profile-rejected`, `test-thin-stack-profile-rejected`, `test-named-career-work-sample-rejected`, `test-patched-shell-and-homepage-skin-rejected` → **REJECT** as required. Pin + P0 loosening assertions → **PASS**.
+
+---
+
+## Loops 6–8 — 2026-08-18 (R-VI / R2 pipeline, then exam)
+
+These loops are harness first. A restyle-only loop does not count.
+
+### Loop 6 — R-VI token-only
+
+**Escaped failure:** `vi.json` listed `#0033A0` / Sora with no USAGE. Distill without usage is a fail.
+
+**Harness:** P0 `vi-usage`. Fixture `fail-vi-token-only` (Giant Spoon-like tokens, no usage notes). `--self-test` PASS.
+
+### Loop 7 — primary only in 10px labels
+
+**Escaped failure:** Official Klein Blue is a wordmark/field on a white canvas. Live page was a B/W résumé with 10px blue labels. Token+usage without applied chrome still ACCEPT.
+
+**Harness:** P0 `vi-primary-as-field` / `r2-profile-vi-field`. Fixture `fail-vi-tiny-labels`. #18 CSS+markup still FAIL. Token+usage + applied chrome is the pass path. `--self-test` PASS.
+
+### Loop 8 — text cards, legal credits, visible ids, invocation
+
+**Escaped failure:** Showreel described in a paragraph (`A-SHOWREEL-TRAD · IN-CARD`). Brand credits as a legal grey wall. Internal asset ids on the public page. Assets dumped instead of invoked by JD.
+
+**Harness:** P0 `r2-profile-showreel-picture`, `r2-profile-credits-not-legal`, `r2-profile-no-internal-ids`, `r2-profile-invocation`. Fixtures: `fail-text-showreel-card`, `fail-legal-credits-profile`, `fail-internal-asset-ids`, `fail-p-led-58node`, `fail-p-led-indev-wall`, `fail-o-led-58node`, `fail-a-led-tools-first`. Invocation matrix named in `harness/README.md` (do not copy HyperAgent files). `--self-test` PASS.
+
+### Exam page (not the deliverable)
+
+Only after those hops REJECT the current `/giant-spoon/` failure modes, the page was rebuilt so it would ACCEPT them:
+
+- Klein Blue `#0033A0` as a wordmark/field on a white canvas. Palette is primary + black + white. Sora. Usage notes in `vi.json`.
+- Showreel as a *picture* on the card (still + in-card Vimeo).
+- Brand marks as a mark row (COACH / Nike / BMW), not a legal paragraph.
+- No visible `A-*` ids.
+- Six-stage silent strip. Prompt Builder last, one card. No 58-node. No in-dev tool wall.
+
+Existing B-layer REJECTS from PR #19 stay encoded and still FAIL their fixtures.
+
+---
+
+## Loop 9 — 2026-08-18 (closed-debate cards, fixtures first)
+
+Two debates closed. Compiled as R2 / R-VI fixtures, not a Giant Spoon restyle.
+
+**P-led REJECT:** text showreel card; legal-paragraph credits; empty white work cards; 58-node / 7-stage on Senior Producer; in-dev tool wall before/taller than the trad reel; visible internal asset ids; Klein Blue only as 10px labels.
+
+**P-led MUST:** reel poster 21:9 + play; brand stills, not wordmarks; `A-WORKFLOW-6STAGE` as one reskinned PNG/SVG + locked footnote; Prompt Builder last, one card.
+
+**A-led (Wonder exam)** may use films-first + tools strip + 58-node — different fixture (`pass-a-led-wonder` ACCEPT).
+
+### 1) Harness first
+
+New checks: `r2-profile-empty-work-cards`, `r2-profile-brand-stills`, `r2-profile-six-stage`. Showreel picture now requires 21:9 + play.
+
+Fixtures: `fail-empty-white-cards`, `fail-showreel-not-21x9`, `fail-brand-wordmarks`, `fail-p-led-7stage`, `fail-p-led-6stage-text`, `fail-indev-before-reel`, `pass-a-led-wonder`. `--self-test` PASS (`test-closed-debate-cards-rejected`).
+
+### 2) Current `/giant-spoon/` vs those fixtures (before exam rebuild)
+
+The previous exam still **FAILED** the new gates: 16:9 reel without play; COACH/Nike/BMW typeset wordmarks (empty white brand cards); 6-cell text strip instead of one PNG/SVG + footnote. That is why this page was rebuilt *after* the fixtures, not instead of them.
+
+### 3) Exam page (secondary)
+
+Only after those hops REJECT the text cards:
+
+- Reel poster `21:9` + play. In-card Vimeo kept.
+- Brand wordmark row **omitted** (no real brand stills in `stills/`; do not invent photos).
+- One `stills/workflow-6stage.svg` (Klein Blue / black / white) + locked footnote.
+- Prompt Builder last, one card. No 58-node. No in-dev wall. Klein Blue remains a wordmark/field.
+
+Ruleset 1.10.0. Claim-locks unchanged.
+
+---
+
+## Loop 10 — 2026-08-18 (asset librarian, fixtures first)
+
+Third debate closed. Compiled as harness law, not a page restyle.
+
+**ANY company page:**
+
+- Outward image requires `assets.json` `external_ready:true` AND drs-source INDEX `public:true`. Text may cite a READY-but-private asset; the file cannot hang.
+- `A-WORKFLOW-58NODE` file only legal on `/wonder/` until a generic public version is READY + DRS `public:true`.
+- `A-TOOLS-DEV4` screenshots (`ai-film-studio-ui-01`, `coda-ui-01`, `martini-ui-01`, `ttl-breakdown-ui-01`) are `public:false`. Hanging them is REJECT. In-development does not waive INDEX. `prompt-builder-ui-01` is the only public:true product shot today.
+- `A-WORKFLOW-6STAGE` is READY on Drive (`1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5`, sha `0cb95ffb…`) but not in DRS INDEX. Non-Wonder pages must reskin. Never mix 6 vs 7/58 in captions. P-led: not the lead; method slot only if JD has process/gates as must-or-should and the strip is a picture. O-led: required (DOC-6/R8). A-led: supporting only.
+- Visible internal ids = REJECT.
+
+**P-led exam (this page):** lead `A-SHOWREEL-TRAD` as a picture. No 58-node file. No DEV4 suite. No Prompt Builder gallery. Brand stills omitted — no cleared brand frames in `stills/` (do not invent).
+
+### 1) Harness first
+
+Catalog: `harness/rules/asset-clearance.json`. New checks: `r2-profile-asset-clearance`, `r2-profile-58node-route`, `r2-profile-dev4-private`, `r2-profile-p-led-pb-gallery`. Fixtures: `fail-private-asset-hung`, `fail-dev4-indev-label`, `fail-58node-off-wonder`, `fail-6stage-drive-original`, `fail-6stage-caption-mix`, `fail-o-led-missing-6stage`, `fail-p-led-pb-gallery`, `pass-wonder-58node`. `--self-test` PASS (`test-asset-librarian-rejected`).
+
+### 2) Current `/giant-spoon/` vs those fixtures (before exam)
+
+`fail-p-led-pb-gallery` **REJECTED** the previous tools section (`prompt-builder-ui-01` hung). No DEV4. No 58-node file. 6-stage was already a reskin + footnote.
+
+### 3) Exam page (secondary)
+
+Removed the Prompt Builder gallery / tools section. Reel stays 21:9 + play. Reskinned `workflow-6stage.svg` stays in the method slot. No invented brand photos.
+
+---
+
+## Loop 11 — 2026-08-18 (R-VI official audit, fixtures first)
+
+Official Giant Spoon distill (giantspoon.com, 2026-08-18). Compiled as hop fixtures. **Page HTML not restyled.**
+
+Chrome-only distill = REJECT even if hex/font match. Home hero type-only white is chrome, not the brand. Distill must include work/case pages (full-bleed autoplay video + duotone scrims, named gradients, Yeti #D26403, HBO oxblood/black, 6 videos + 29 images, zero illustration). A black/white/navy résumé page = R-VI FAIL.
+
+### 1) Harness first
+
+New P0 `vi-not-chrome-only`. Fixtures: `fail-vi-chrome-only`, `fail-vi-home-hero-brand`, `fail-vi-bw-navy-resume`, `pass-vi-gs-content-distill`. `--self-test` PASS (`test-vi-chrome-only-rejected`).
+
+### 2) Current exam `vi.json` vs those fixtures
+
+The previous exam record (white / Klein Blue / black + “do not invent extra colors”) **FAILED** `vi-not-chrome-only`.
+
+### 3) Exam record (secondary; not a page restyle)
+
+`public/giant-spoon/vi.json` now holds the audit chrome + work/case content. The page remains the exam, not the deliverable.
+
+---
+
+## Revert — page restyle not shipped
+
+`index.html` restored to `main`. Homemade `stills/workflow-6stage.svg` removed — invented frame, not `A-WORKFLOW-6STAGE` (Drive PNG `1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5`, not in DRS INDEX). P-led exam must not hang an invented diagram. Deliverable is hops / fixtures / rules. `vi.json` exam record kept.

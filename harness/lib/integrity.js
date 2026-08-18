@@ -23,6 +23,20 @@ const REQUIRED_RULE_IDS = [
   "r2-profile-vimeo-in-card",
   "r2-profile-not-old-shell",
   "r2-profile-not-homepage-skin",
+  "vi-usage",
+  "vi-not-chrome-only",
+  "vi-primary-as-field",
+  "r2-profile-showreel-picture",
+  "r2-profile-credits-not-legal",
+  "r2-profile-no-internal-ids",
+  "r2-profile-invocation",
+  "r2-profile-empty-work-cards",
+  "r2-profile-brand-stills",
+  "r2-profile-six-stage",
+  "r2-profile-asset-clearance",
+  "r2-profile-58node-route",
+  "r2-profile-dev4-private",
+  "r2-profile-p-led-pb-gallery",
   "r3-three-live-pieces",
   "portfolio-url-matches-profile",
   "slop-lexicon",
@@ -39,6 +53,7 @@ function pinInputPaths() {
   const parts = [
     path.join(root, "rules", "rules.json"),
     path.join(root, "rules", "contracts.json"),
+    path.join(root, "rules", "asset-clearance.json"),
   ];
   const libDir = path.join(root, "lib");
   const libFiles = fs

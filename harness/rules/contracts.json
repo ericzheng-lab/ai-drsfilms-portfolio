@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0",
+  "version": "1.11.0",
   "algebra": {
     "P0_FAIL": "REJECT",
     "P1_FAIL_without_P0": "REPAIR",
@@ -31,7 +31,8 @@
       ],
       "required_inputs": [
         "vi"
-      ]
+      ],
+      "notes": "VI distill needs source URL + date + exact hex/font/radius AND usage notes (how primary is a wordmark/field on the canvas). Token-only hex/font is REJECT. Chrome-only Giant Spoon distill is REJECT even if hex/font match — work/case content (video cards, duotone scrims, real gradients) must be in the record. Home hero type-only white is chrome, not the brand. When profile HTML is present, primary must be applied as a real field/wordmark; a black/white/navy résumé is REJECT."
     },
     {
       "id": "R1",
@@ -68,7 +69,7 @@
       "required_inputs": [
         "profile"
       ],
-      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. Profile HTML (local and live) must contain real work stills; text-only / empty / placeholder <img> is REJECT. Images are not optional."
+      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. Profile HTML (local and live) must contain real work stills; text-only / empty / placeholder <img> is REJECT. Images are not optional. Hung files require assets.json external_ready:true AND INDEX public:true. 58-node file only on /wonder/ until generic public. DEV4 UIs are public:false. Visible A-* ids REJECT. Also REJECT token-only VI, text-only showreel cards, legal-paragraph credits, and JD-archetype invocation misses."
     },
     {
       "id": "R3",

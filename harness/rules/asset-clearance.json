@@ -1,0 +1,67 @@
+{
+  "version": "1.0.0",
+  "notes": "Named from assets.json + drs-source INDEX. Do not copy HyperAgent files. Text may cite a READY-but-private asset; the file cannot hang. In-development labels do not waive INDEX public:true.",
+  "generic_58node_public": false,
+  "assets": [
+    {
+      "id": "prompt-builder-ui-01",
+      "token": "A-TOOL-PROMPTBUILDER",
+      "external_ready": true,
+      "drs_public": true,
+      "src_patterns": ["prompt-builder-ui-01"]
+    },
+    {
+      "id": "ai-film-studio-ui-01",
+      "token": "A-TOOLS-DEV4",
+      "external_ready": false,
+      "drs_public": false,
+      "suite": "DEV4",
+      "src_patterns": ["ai-film-studio-ui-01", "ai-film-studio-ui"]
+    },
+    {
+      "id": "coda-ui-01",
+      "token": "A-TOOLS-DEV4",
+      "external_ready": false,
+      "drs_public": false,
+      "suite": "DEV4",
+      "src_patterns": ["coda-ui-01", "coda-ui"]
+    },
+    {
+      "id": "martini-ui-01",
+      "token": "A-TOOLS-DEV4",
+      "external_ready": false,
+      "drs_public": false,
+      "suite": "DEV4",
+      "src_patterns": ["martini-ui-01", "martini-ui"]
+    },
+    {
+      "id": "ttl-breakdown-ui-01",
+      "token": "A-TOOLS-DEV4",
+      "external_ready": false,
+      "drs_public": false,
+      "suite": "DEV4",
+      "src_patterns": ["ttl-breakdown-ui-01", "ttl-breakdown-ui"]
+    },
+    {
+      "id": "workflow-6stage-drive-original",
+      "token": "A-WORKFLOW-6STAGE",
+      "external_ready": true,
+      "drs_public": false,
+      "drive_id": "1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5",
+      "sha256_prefix": "0cb95ffb",
+      "must_reskin_off_wonder": true,
+      "src_patterns": [
+        "1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5",
+        "0cb95ffb"
+      ]
+    },
+    {
+      "id": "workflow-58node",
+      "token": "A-WORKFLOW-58NODE",
+      "external_ready": false,
+      "drs_public": false,
+      "wonder_only_until_generic_public": true,
+      "src_patterns": ["workflow-58node", "workflow-58", "58-node", "58node"]
+    }
+  ]
+}

@@ -43,6 +43,27 @@ const {
   isRoleProfileNotHomepage,
 } = require("./profile-images");
 const {
+  viHasUsage,
+  primaryAppliedAsField,
+  primaryHexFromVi,
+  viNotChromeOnly,
+} = require("./vi-apply");
+const {
+  showreelIsPicture,
+  creditsNotLegalParagraph,
+  noInternalAssetIds,
+  invocationOk,
+  noEmptyWhiteWorkCards,
+  brandStillsNotWordmarks,
+  sixStageOneGraphic,
+} = require("./profile-cards");
+const {
+  outwardImagesCleared,
+  fiftyEightNodeRouteOk,
+  dev4NotHung,
+  pLedNoPbGallery,
+} = require("./asset-clearance");
+const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
   pinInputPaths,
@@ -88,7 +109,7 @@ function qualifyingFetchResult(company = "Acme", slug = "acme") {
     status: 200,
     timedOut: false,
     error: null,
-    body: `<!DOCTYPE html><html><head><title>${company} Senior Producer</title></head><body>${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article></body></html>`,
+    body: `<!DOCTYPE html><html><head><title>${company} Senior Producer</title><style>.wordmark{background:#1A2B3C;color:#fff;padding:20px 24px;font-size:22px}.reel-poster{aspect-ratio:21/9;width:100%}</style></head><body><header class="wordmark">${company}</header>${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><img class="reel-poster" src="https://ai.drsfilms.com/${slug}/work-still.png" alt="Traditional showreel still" width="840" height="360"><span class="play">Play</span><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article><figure><img src="https://ai.drsfilms.com/${slug}/workflow-6stage.svg" alt="Six-stage production method"><figcaption class="footnote">Locked six-stage method.</figcaption></figure></body></html>`,
   };
 }
 
@@ -546,7 +567,8 @@ async function testR3RerunsViProvenance() {
       hasFail(result.last, "r3-vi-hex") ||
       hasFail(result.last, "r3-vi-date") ||
       hasFail(result.last, "r3-vi-font") ||
-      hasFail(result.last, "r3-vi-radius"),
+      hasFail(result.last, "r3-vi-radius") ||
+      hasFail(result.last, "r3-vi-usage"),
     `R3 must independently re-verify VI provenance, got ${failuresOf(result.last)}`
   );
   return "REJECT";
@@ -1003,6 +1025,397 @@ async function testTextOnlyProfileRejected() {
       '<img src="https://ai.drsfilms.com/acme/work-still.png" alt="Acme still">'
     ).ok === true,
     "http still must count"
+  );
+  return "REJECT";
+}
+
+async function testViTokenOnlyRejected() {
+  const rvi = await runHops({
+    packageDir: fixture("fail-vi-token-only"),
+    hops: ["R-VI"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(rvi.last.verdict === "REJECT", "Giant Spoon-like tokens without usage must REJECT R-VI");
+  assert(
+    hasFail(rvi.last, "vi-usage"),
+    `token-only VI must fail vi-usage, got ${failuresOf(rvi.last)}`
+  );
+
+  const rec = JSON.parse(
+    fs.readFileSync(path.join(fixture("fail-vi-token-only"), "vi.json"), "utf8")
+  );
+  assert(viHasUsage(rec).ok === false, "hex/font without usage notes is token-only");
+  return "REJECT";
+}
+
+async function testViChromeOnlyRejected() {
+  const cases = [
+    ["fail-vi-chrome-only", "vi-not-chrome-only", "chrome-only GS distill"],
+    ["fail-vi-home-hero-brand", "vi-not-chrome-only", "home hero treated as the brand"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const rvi = await runHops({
+      packageDir: fixture(name),
+      hops: ["R-VI"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+    });
+    assert(rvi.last.verdict === "REJECT", `${label} must REJECT R-VI`);
+    assert(
+      hasFail(rvi.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(rvi.last)}`
+    );
+    assert(
+      !hasFail(rvi.last, "vi-usage"),
+      `${label} has chrome usage; fail must not be missing usage`
+    );
+    assert(
+      !hasFail(rvi.last, "vi-hex") && !hasFail(rvi.last, "vi-font"),
+      `${label} hex/font match; chrome-only is still REJECT`
+    );
+  }
+
+  const resume = await runHops({
+    packageDir: fixture("fail-vi-bw-navy-resume"),
+    hops: ["R-VI"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(resume.last.verdict === "REJECT", "B/W/navy résumé must REJECT R-VI");
+  assert(
+    hasFail(resume.last, "vi-primary-as-field"),
+    `B/W/navy résumé must fail vi-primary-as-field, got ${failuresOf(resume.last)}`
+  );
+  assert(
+    !hasFail(resume.last, "vi-not-chrome-only"),
+    "full content distill + résumé HTML fails application, not the record"
+  );
+
+  const pass = await runHops({
+    packageDir: fixture("pass-vi-gs-content-distill"),
+    hops: ["R0", "R-VI"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(
+    pass.last.verdict === "ACCEPT",
+    `complete GS work/case distill must ACCEPT R-VI, got ${failuresOf(pass.last)}`
+  );
+
+  const chromeRec = JSON.parse(
+    fs.readFileSync(path.join(fixture("fail-vi-chrome-only"), "vi.json"), "utf8")
+  );
+  assert(viNotChromeOnly(chromeRec).ok === false, "chrome-only record unit");
+  const examRec = JSON.parse(
+    fs.readFileSync(path.join(fixture("pass-vi-gs-content-distill"), "vi.json"), "utf8")
+  );
+  assert(viNotChromeOnly(examRec).ok === true, "content distill unit");
+  return "REJECT";
+}
+
+async function testViTinyLabelsRejected() {
+  const rvi = await runHops({
+    packageDir: fixture("fail-vi-tiny-labels"),
+    hops: ["R-VI"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(rvi.last.verdict === "REJECT", "usage + B/W résumé with 10px blue labels must REJECT R-VI");
+  assert(
+    hasFail(rvi.last, "vi-primary-as-field"),
+    `tiny-label résumé must fail vi-primary-as-field, got ${failuresOf(rvi.last)}`
+  );
+  assert(
+    !hasFail(rvi.last, "vi-usage"),
+    "tiny-labels fixture has usage notes; fail must be application, not missing usage"
+  );
+
+  const r2 = await runHops({
+    packageDir: fixture("fail-vi-tiny-labels"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(r2.last.verdict === "REJECT", "tiny-label résumé must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-vi-field"),
+    `tiny-label résumé must fail r2-profile-vi-field, got ${failuresOf(r2.last)}`
+  );
+
+  const gsTokens = {
+    hex: { primary: "#0033A0" },
+  };
+  const bw = fs.readFileSync(
+    path.join(fixture("fail-vi-tiny-labels"), "profile.html"),
+    "utf8"
+  );
+  assert(
+    primaryAppliedAsField(bw, primaryHexFromVi(gsTokens)).ok === false,
+    "Giant Spoon-like tokens + B/W résumé HTML must fail primary-as-field"
+  );
+  const applied = `<style>.wordmark{background:#0033A0;color:#fff;padding:24px 28px;font-size:28px}</style><header class="wordmark">Giant Spoon</header>`;
+  assert(
+    primaryAppliedAsField(applied, "#0033A0").ok === true,
+    "token+usage + applied chrome must pass primary-as-field"
+  );
+  return "REJECT";
+}
+
+async function testTextCardAndCreditsRejected() {
+  const cases = [
+    ["fail-text-showreel-card", "r2-profile-showreel-picture", "text-only showreel card"],
+    ["fail-legal-credits-profile", "r2-profile-credits-not-legal", "legal-paragraph credits"],
+    ["fail-internal-asset-ids", "r2-profile-no-internal-ids", "visible internal asset ids"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+
+  const textCard = `<article class="work-card"><h3>Traditional showreel</h3><p>A-SHOWREEL-TRAD · IN-CARD. Described, not pictured.</p></article>`;
+  assert(showreelIsPicture(textCard).ok === false, "text-card showreel pattern must fail");
+  const legal =
+    '<p class="credits">Traditional brand credits on this page, from the production-company side — not Giant Spoon clients: COACH, Nike, BMW. Tencent package was production-company EP after the first film, not an in-house agency producer. $8M+ is an aggregate across earlier brand work, not a single job.</p>';
+  assert(creditsNotLegalParagraph(legal).ok === false, "legal grey wall must fail");
+  assert(
+    noInternalAssetIds("<p>A-SHOWREEL-TRAD · IN-CARD</p>").ok === false,
+    "visible A-SHOWREEL-TRAD must fail"
+  );
+  return "REJECT";
+}
+
+async function testInvocationMatrixRejected() {
+  const cases = [
+    ["fail-p-led-58node", "r2-profile-invocation", "P-led 58-node"],
+    ["fail-p-led-indev-wall", "r2-profile-invocation", "P-led in-dev tool wall"],
+    ["fail-o-led-58node", "r2-profile-invocation", "O-led 58-node without process depth"],
+    ["fail-a-led-tools-first", "r2-profile-invocation", "A-led tools before films"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+
+  const pLedPkg = {
+    manifest: { role: "Senior Producer" },
+    brief: { value: "Archetype: p-led." },
+    briefAttrs: {},
+  };
+  assert(
+    invocationOk("<p>58-node workflow graph</p><p>Brief History showreel</p>", pLedPkg).ok ===
+      false,
+    "P-led + 58-node must fail"
+  );
+  const oLedPkg = {
+    manifest: { role: "Operations Lead" },
+    brief: { value: "Archetype: o-led. No process-depth ask." },
+    briefAttrs: {},
+  };
+  assert(
+    invocationOk("<p>58-node</p>", oLedPkg).ok === false,
+    "O-led 58-node without JD depth must fail"
+  );
+  return "REJECT";
+}
+
+async function testClosedDebateCardsRejected() {
+  const cases = [
+    ["fail-empty-white-cards", "r2-profile-empty-work-cards", "empty white work cards"],
+    ["fail-showreel-not-21x9", "r2-profile-showreel-picture", "showreel not 21:9 + play"],
+    ["fail-brand-wordmarks", "r2-profile-brand-stills", "brand wordmarks not stills"],
+    ["fail-p-led-7stage", "r2-profile-invocation", "P-led 7-stage"],
+    ["fail-p-led-6stage-text", "r2-profile-six-stage", "P-led 6-stage text grid"],
+    ["fail-indev-before-reel", "r2-profile-invocation", "P-led in-dev before reel"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+
+  const wonder = await runHops({
+    packageDir: fixture("pass-a-led-wonder"),
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    wonder.last.verdict === "ACCEPT",
+    `A-led Wonder exam (films first + tools + 58-node) must ACCEPT R2, got ${failuresOf(wonder.last)}`
+  );
+
+  const pLedPkg = {
+    manifest: { role: "Senior Producer" },
+    brief: { value: "Archetype: p-led." },
+    briefAttrs: {},
+  };
+  const aLedPkg = {
+    manifest: { role: "Wonder Creative Technologist" },
+    brief: { value: "Archetype: a-led. Wonder is the exam." },
+    briefAttrs: {},
+  };
+  assert(
+    invocationOk("<p>7-stage</p><p>Traditional showreel</p>", pLedPkg).ok === false,
+    "P-led + 7-stage must fail"
+  );
+  assert(
+    invocationOk(
+      "<p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><p>Prompt Builder. In development. 58-node</p>",
+      aLedPkg
+    ).ok === true,
+    "A-led films-first + tools strip + 58-node must pass"
+  );
+  assert(
+    showreelIsPicture(
+      '<style>.poster{aspect-ratio:16/9}</style><article><img class="poster" src="work-still.png" alt="Traditional showreel still"></article>'
+    ).ok === false,
+    "16:9 showreel without play must fail"
+  );
+  assert(
+    noEmptyWhiteWorkCards(
+      '<article class="work-card"><h3>Empty</h3></article>'
+    ).ok === false,
+    "empty work-card must fail"
+  );
+  assert(
+    brandStillsNotWordmarks("<p>COACH. Nike. BMW.</p>").ok === false,
+    "typeset brand wordmarks must fail"
+  );
+  assert(
+    sixStageOneGraphic(
+      '<div class="strip"><div>01 Intake</div><div>02 Route</div></div><p>6-stage</p>',
+      pLedPkg
+    ).ok === false,
+    "P-led 6-stage text grid must fail"
+  );
+  return "REJECT";
+}
+
+async function testAssetLibrarianRejected() {
+  const cases = [
+    ["fail-private-asset-hung", "r2-profile-asset-clearance", "private asset hung"],
+    ["fail-dev4-indev-label", "r2-profile-dev4-private", "DEV4 hung with in-dev label"],
+    ["fail-58node-off-wonder", "r2-profile-58node-route", "58-node file off /wonder/"],
+    ["fail-6stage-drive-original", "r2-profile-asset-clearance", "6-stage Drive original hung"],
+    ["fail-6stage-caption-mix", "r2-profile-six-stage", "6 vs 7/58 caption mix"],
+    ["fail-o-led-missing-6stage", "r2-profile-six-stage", "O-led missing 6-stage picture"],
+    ["fail-p-led-pb-gallery", "r2-profile-p-led-pb-gallery", "P-led Prompt Builder gallery"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+
+  const wonder = await runHops({
+    packageDir: fixture("pass-wonder-58node"),
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult("Wonder", "wonder"),
+  });
+  assert(
+    wonder.last.verdict === "ACCEPT",
+    `Wonder may hang 58-node until generic public:true, got ${failuresOf(wonder.last)}`
+  );
+
+  const acmePkg = {
+    manifest: { company: "Acme", profile_url: "https://ai.drsfilms.com/acme/", role: "Senior Producer" },
+    brief: { value: "p-led" },
+    briefAttrs: {},
+  };
+  const wonderPkg = {
+    manifest: { company: "Wonder", profile_url: "https://ai.drsfilms.com/wonder/", role: "Creative Technologist" },
+    brief: { value: "a-led" },
+    briefAttrs: {},
+  };
+  assert(
+    outwardImagesCleared('<img src="coda-ui-01.jpg">', acmePkg).ok === false,
+    "coda-ui-01 cannot hang"
+  );
+  assert(
+    outwardImagesCleared('<p>coda-ui-01 is READY-but-private; cited in text only.</p>', acmePkg)
+      .ok === true,
+    "text cite of private asset is OK"
+  );
+  assert(
+    fiftyEightNodeRouteOk('<img src="workflow-58node.png">', acmePkg).ok === false,
+    "58-node file off wonder must fail"
+  );
+  assert(
+    fiftyEightNodeRouteOk('<img src="workflow-58node.png">', wonderPkg).ok === true,
+    "58-node file on /wonder/ must pass"
+  );
+  assert(
+    dev4NotHung('<p>In development.</p><img src="ai-film-studio-ui-01.jpg">').ok === false,
+    "in-dev label does not waive DEV4"
+  );
+  assert(
+    pLedNoPbGallery(
+      '<section id="tools"><img src="prompt-builder-ui-01.jpg"></section>',
+      acmePkg
+    ).ok === false,
+    "P-led PB gallery must fail"
+  );
+  return "REJECT";
+}
+
+async function testGs18HtmlStillRejected() {
+  const gs18 = `<style>:root{--blue:#0033a0}.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}.hero .header-line{font-size:14px;color:var(--blue)}.stat span{font-size:11px;color:var(--blue)}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
+  assert(
+    firstViewportHasStill(gs18).ok === false,
+    "Giant Spoon #18 spacer pattern must still fail first-viewport still"
+  );
+  assert(
+    primaryAppliedAsField(gs18, "#0033A0").ok === false,
+    "Giant Spoon #18 B/W résumé with 10px blue labels must fail primary-as-field"
+  );
+  assert(
+    showreelIsPicture(
+      "<p>A-SHOWREEL-TRAD · IN-CARD. Traditional showreel lives in this paragraph.</p>"
+    ).ok === false,
+    "text-card showreel pattern must fail"
   );
   return "REJECT";
 }
@@ -1610,6 +2023,112 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         ).ok === false,
         "homepage skin"
       ),
+    "vi-usage": () =>
+      assert(
+        viHasUsage({
+          hex: { primary: "#0033A0" },
+          font: { family: "Sora" },
+        }).ok === false,
+        "token-only VI"
+      ),
+    "vi-not-chrome-only": () =>
+      assert(
+        viNotChromeOnly({
+          source_url: "https://giantspoon.com/",
+          hex: { primary: "#0033A0", black: "#000000", white: "#FFFFFF" },
+          font: { family: "Sora" },
+          usage: {
+            canvas: "white",
+            primary: "Klein Blue as wordmark/field on the canvas",
+          },
+        }).ok === false,
+        "chrome-only GS distill"
+      ),
+    "vi-primary-as-field": () =>
+      assert(
+        primaryAppliedAsField(
+          '<style>.kicker{font-size:10px;color:#0033a0}</style><p class="kicker">label</p>',
+          "#0033A0"
+        ).ok === false,
+        "tiny-label primary"
+      ),
+    "r2-profile-showreel-picture": () =>
+      assert(
+        showreelIsPicture(
+          "<p>Traditional showreel described in this paragraph. No picture.</p>"
+        ).ok === false,
+        "text-card showreel"
+      ),
+    "r2-profile-credits-not-legal": () =>
+      assert(
+        creditsNotLegalParagraph(
+          '<p class="credits">Traditional brand credits on this page, from the production-company side — not Giant Spoon clients: COACH, Nike, BMW. Tencent package was production-company EP after the first film, not an in-house agency producer. $8M+ is an aggregate across earlier brand work, not a single job.</p>'
+        ).ok === false,
+        "legal-paragraph credits"
+      ),
+    "r2-profile-no-internal-ids": () =>
+      assert(
+        noInternalAssetIds("<span>A-SHOWREEL-TRAD · IN-CARD</span>").ok === false,
+        "visible internal ids"
+      ),
+    "r2-profile-invocation": () =>
+      assert(
+        invocationOk("<p>58-node</p>", {
+          manifest: { role: "Senior Producer" },
+          brief: { value: "p-led" },
+          briefAttrs: {},
+        }).ok === false,
+        "P-led 58-node"
+      ),
+    "r2-profile-empty-work-cards": () =>
+      assert(
+        noEmptyWhiteWorkCards(
+          '<article class="work-card"><h3>Empty white card</h3><p>No still.</p></article>'
+        ).ok === false,
+        "empty white work card"
+      ),
+    "r2-profile-brand-stills": () =>
+      assert(
+        brandStillsNotWordmarks("<p>COACH. Nike. BMW.</p>").ok === false,
+        "brand wordmarks"
+      ),
+    "r2-profile-six-stage": () =>
+      assert(
+        sixStageOneGraphic('<div class="strip">6-stage text grid</div>', {
+          manifest: { role: "Senior Producer" },
+          brief: { value: "p-led" },
+          briefAttrs: {},
+        }).ok === false,
+        "P-led text 6-stage"
+      ),
+    "r2-profile-asset-clearance": () =>
+      assert(
+        outwardImagesCleared('<img src="coda-ui-01.jpg" alt="Coda">', {
+          manifest: { company: "Acme", profile_url: "https://ai.drsfilms.com/acme/" },
+        }).ok === false,
+        "private asset hung"
+      ),
+    "r2-profile-58node-route": () =>
+      assert(
+        fiftyEightNodeRouteOk('<img src="workflow-58node.png" alt="graph">', {
+          manifest: { company: "Acme", profile_url: "https://ai.drsfilms.com/acme/" },
+        }).ok === false,
+        "58-node off wonder"
+      ),
+    "r2-profile-dev4-private": () =>
+      assert(
+        dev4NotHung('<p>In development.</p><img src="martini-ui-01.jpg" alt="Martini">').ok ===
+          false,
+        "DEV4 hung"
+      ),
+    "r2-profile-p-led-pb-gallery": () =>
+      assert(
+        pLedNoPbGallery(
+          '<section id="tools"><img src="prompt-builder-ui-01.jpg" alt="Prompt Builder"></section>',
+          { manifest: { role: "Senior Producer" }, brief: { value: "p-led" }, briefAttrs: {} }
+        ).ok === false,
+        "P-led PB gallery"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -1917,6 +2436,14 @@ async function runSelfTest() {
     "test-patched-shell-and-homepage-skin-rejected":
       await testPatchedShellAndHomepageSkinRejected(),
     "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
+    "test-vi-token-only-rejected": await testViTokenOnlyRejected(),
+    "test-vi-chrome-only-rejected": await testViChromeOnlyRejected(),
+    "test-vi-tiny-labels-rejected": await testViTinyLabelsRejected(),
+    "test-text-card-and-credits-rejected": await testTextCardAndCreditsRejected(),
+    "test-invocation-matrix-rejected": await testInvocationMatrixRejected(),
+    "test-closed-debate-cards-rejected": await testClosedDebateCardsRejected(),
+    "test-asset-librarian-rejected": await testAssetLibrarianRejected(),
+    "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
     "test-live-fetch-rejects-spa-fallback": await testLiveFetchRejectsSpaFallback(),
@@ -1950,6 +2477,34 @@ async function runSelfTest() {
       "fail-folded-vimeo-profile": "REJECT",
       "fail-patched-shell-profile": "REJECT",
       "fail-homepage-skin-profile": "REJECT",
+      "fail-vi-token-only": "REJECT",
+      "fail-vi-chrome-only": "REJECT",
+      "fail-vi-home-hero-brand": "REJECT",
+      "fail-vi-bw-navy-resume": "REJECT",
+      "fail-vi-tiny-labels": "REJECT",
+      "pass-vi-gs-content-distill": "ACCEPT",
+      "fail-text-showreel-card": "REJECT",
+      "fail-legal-credits-profile": "REJECT",
+      "fail-internal-asset-ids": "REJECT",
+      "fail-p-led-58node": "REJECT",
+      "fail-p-led-indev-wall": "REJECT",
+      "fail-o-led-58node": "REJECT",
+      "fail-a-led-tools-first": "REJECT",
+      "fail-empty-white-cards": "REJECT",
+      "fail-showreel-not-21x9": "REJECT",
+      "fail-brand-wordmarks": "REJECT",
+      "fail-p-led-7stage": "REJECT",
+      "fail-p-led-6stage-text": "REJECT",
+      "fail-indev-before-reel": "REJECT",
+      "fail-private-asset-hung": "REJECT",
+      "fail-dev4-indev-label": "REJECT",
+      "fail-58node-off-wonder": "REJECT",
+      "fail-6stage-drive-original": "REJECT",
+      "fail-6stage-caption-mix": "REJECT",
+      "fail-o-led-missing-6stage": "REJECT",
+      "fail-p-led-pb-gallery": "REJECT",
+      "pass-a-led-wonder": "ACCEPT",
+      "pass-wonder-58node": "ACCEPT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

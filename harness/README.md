@@ -84,7 +84,17 @@ Hop order:
    slug, not a homepage); selected work ids; no skip/omit/waive language
    for Profile or CL.
 2. **R-VI** — VI distill record has source URL + date + exact hex / font /
-   radius. Empty or “similar to” = REJECT. Missing provenance = REJECT.
+   radius **and usage notes** (how the primary is a wordmark/field on the
+   canvas). Empty or “similar to” = REJECT. Missing provenance = REJECT.
+   Hex/font without USAGE = token-only = REJECT. A **chrome-only**
+   Giant Spoon distill is REJECT even if hex/font match (official
+   giantspoon.com audit, 2026-08-18). Home hero type-only white is
+   chrome, not the brand; the record must include work/case pages
+   (full-bleed autoplay video cards, per-project duotone scrims, real
+   gradients, Yeti #D26403, HBO oxblood/black, 6 videos + 29 images,
+   zero illustration). When profile HTML is present, the primary hex
+   must be applied as a real field/wordmark — a black/white/navy
+   résumé page is R-VI FAIL even when tokens match.
 3. **R1 CV** — file exists; claim-lock + slop lexicons; header/contact
    cannot use a generic homepage as the portfolio URL.
 4. **R1b CL** — file exists; same slop / claim-lock checks. Cannot be waived.
@@ -104,11 +114,31 @@ Hop order:
    hero is `REJECT` even if a thumb appears later (B-C6 blank first
    viewport; Giant Spoon #18). A type-only open with stills after 80
    words of body copy is `REJECT` (Wonder/Kalshi class; B-C6 / B-WKS4).
-   Fewer than 4 real work images is `REJECT` (B-WKS4). A leftover
+   Fewer than 4 real work images is `REJECT` (B-WKS4). A    leftover
    70vh+ `.hero` shell is `REJECT` even with an image inside (B-C5
    patch-on-old-shell). A company homepage skin without a role and
-   work-sample titles is `REJECT` (B-EL1). Images are not optional;
-   there is no waiver.
+   work-sample titles is `REJECT` (B-EL1). Token-only VI application
+   (primary only in tiny labels) is `REJECT`. A showreel described in a
+   paragraph (`A-SHOWREEL-TRAD · IN-CARD`) is `REJECT` — the reel must
+   be a *21:9 poster + play*. Brand credits as a legal grey wall or as
+   typeset wordmarks are `REJECT`. Empty white work cards are `REJECT`.
+   Visible internal asset ids (`A-SHOWREEL-TRAD`, `A-WORKFLOW-6STAGE`,
+   `A-WORKFLOW-58NODE`, `A-TOOL-PROMPTBUILDER`, `A-TOOLS-DEV4`,
+   `A-FILM-*`) on the public page are `REJECT`. An outward image
+   requires `assets.json` `external_ready:true` **and** drs-source
+   INDEX `public:true` (catalog: `rules/asset-clearance.json`). Text
+   may cite a READY-but-private asset; the file cannot hang.
+   `A-WORKFLOW-58NODE` may be hung only on `/wonder/` until a generic
+   public version exists. `A-TOOLS-DEV4` screenshots are all
+   `public:false`; an In-development label does not waive INDEX.
+   `prompt-builder-ui-01` is the only public:true product shot today.
+   `A-WORKFLOW-6STAGE` is READY on Drive but not in DRS INDEX:
+   non-Wonder pages must reskin; never mix 6 vs 7/58 in captions.
+   P-led: not the lead; method slot only if the JD has process/gates
+   as must-or-should and the strip is a picture. O-led: required
+   (DOC-6/R8). A-led: supporting only. P-led pages may not hang a
+   Prompt Builder gallery. Invocation must match the JD archetype
+   (see matrix below). Images are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
@@ -116,10 +146,11 @@ Hop order:
    Profile exist and match **this** package *now* (qualifying live
    evidence, bound, fresh). Prior hop reports must be harness-generated,
    bound to this `package_dir` + current file hashes, and reproduce a
-   live hop re-run (id+PASS stubs are REJECT). Disk `ACCEPT` reports
+   live hop re-run (id+PASS stubs are REJECT).    Disk `ACCEPT` reports
    **cannot** waive content gates: R3 independently re-runs claim-lock,
    slop, skip-language, waiver, and R-VI provenance (source URL, date,
-   exact hex/font/radius, no "similar to") on current files. CV/CL must
+   exact hex/font/radius, usage notes, no "similar to", primary applied
+   as field/wordmark) on current files. CV/CL must
    cite that Profile URL. Missing any piece = REJECT.
 
 ## Supervisor contract — exact commands
@@ -252,7 +283,45 @@ Paths are relative to the package directory.
 | `fixtures/fail-folded-vimeo-profile` | R2 `REJECT` (traditional Vimeo only in a modal) |
 | `fixtures/fail-patched-shell-profile` | R2 `REJECT` (78vh hero shell kept; image stuffed in) |
 | `fixtures/fail-homepage-skin-profile` | R2 `REJECT` (company homepage skin, no role/work titles) |
+| `fixtures/fail-vi-token-only` | R-VI `REJECT` (Giant Spoon-like hex/font, no usage notes) |
+| `fixtures/fail-vi-chrome-only` | R-VI `REJECT` (hex/font/usage match chrome; work/case content missing) |
+| `fixtures/fail-vi-home-hero-brand` | R-VI `REJECT` (type-only white home hero treated as the brand) |
+| `fixtures/fail-vi-bw-navy-resume` | R-VI `REJECT` (complete distill + black/white/navy résumé HTML) |
+| `fixtures/fail-vi-tiny-labels` | R-VI / R2 `REJECT` (usage present; primary only in 10px labels on a B/W résumé) |
+| `fixtures/pass-vi-gs-content-distill` | R-VI `ACCEPT` (chrome + work/case content from the 2026-08-18 audit) |
+| `fixtures/fail-text-showreel-card` | R2 `REJECT` (showreel described in a paragraph / iframe-only) |
+| `fixtures/fail-legal-credits-profile` | R2 `REJECT` (brand marks as a legal grey wall) |
+| `fixtures/fail-internal-asset-ids` | R2 `REJECT` (visible `A-SHOWREEL-TRAD` / `A-WORKFLOW-6STAGE`) |
+| `fixtures/fail-p-led-58node` | R2 `REJECT` (P-led page invoked `A-WORKFLOW-58NODE`) |
+| `fixtures/fail-p-led-indev-wall` | R2 `REJECT` (P-led in-dev tool wall) |
+| `fixtures/fail-o-led-58node` | R2 `REJECT` (O-led `A-WORKFLOW-58NODE` without JD process depth) |
+| `fixtures/fail-a-led-tools-first` | R2 `REJECT` (A-led tools before `A-FILM-*`; Wonder exam) |
+| `fixtures/fail-empty-white-cards` | R2 `REJECT` (work-card / brand row with no still) |
+| `fixtures/fail-showreel-not-21x9` | R2 `REJECT` (showreel img is not 21:9 + play) |
+| `fixtures/fail-brand-wordmarks` | R2 `REJECT` (COACH/Nike/BMW as typeset wordmarks) |
+| `fixtures/fail-p-led-7stage` | R2 `REJECT` (7-stage on Senior Producer) |
+| `fixtures/fail-p-led-6stage-text` | R2 `REJECT` (P-led 6-stage as a text grid) |
+| `fixtures/fail-indev-before-reel` | R2 `REJECT` (in-dev tools before the trad reel) |
+| `fixtures/fail-private-asset-hung` | R2 `REJECT` (INDEX `public:false` file hung) |
+| `fixtures/fail-dev4-indev-label` | R2 `REJECT` (DEV4 hung; in-dev label does not waive) |
+| `fixtures/fail-58node-off-wonder` | R2 `REJECT` (58-node file hung off `/wonder/`) |
+| `fixtures/fail-6stage-drive-original` | R2 `REJECT` (Drive original hung; must reskin) |
+| `fixtures/fail-6stage-caption-mix` | R2 `REJECT` (6-stage caption mixed with 7/58) |
+| `fixtures/fail-o-led-missing-6stage` | R2 `REJECT` (O-led missing 6-stage picture) |
+| `fixtures/fail-p-led-pb-gallery` | R2 `REJECT` (P-led Prompt Builder gallery) |
+| `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip; 58-node *text* cite) |
+| `fixtures/pass-wonder-58node` | R2 `ACCEPT` (58-node *file* legal on `/wonder/`) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
+
+## Asset invocation matrix
+
+Do not copy HyperAgent files into this repo. Name the asset id and the rule.
+
+| Archetype | Invoke | Forbidden |
+|---|---|---|
+| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *21:9 poster + play* + brand stills; `A-WORKFLOW-6STAGE` in the method slot only if the JD has process/gates as must-or-should, as one reskin picture | text showreel; legal-paragraph credits; empty white cards; 58-node *file*; DEV4 suite; Prompt Builder gallery; 7-stage; in-dev wall before/taller than the reel; visible `A-*` ids; Drive original 6-stage; Klein Blue only as 10px labels |
+| **O-led** | `A-WORKFLOW-6STAGE` required (DOC-6/R8), one picture | `A-WORKFLOW-58NODE` file (unless `/wonder/` or generic public); 58-node without JD process depth |
+| **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip; 58-node *file* only on `/wonder/` until generic public:true; 6-stage supporting only | tools before films; 58-node file off `/wonder/`; DEV4 screenshots |
 
 All fixture people, emails, companies, and sentences are synthetic.
 
