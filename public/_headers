@@ -17,3 +17,27 @@
 /code-theory/*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
   Cache-Control: private, no-store
+
+/palo-alto-networks/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: private, no-store
+
+/kalshi/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: private, no-store
+
+/underdog/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: private, no-store
+
+/amgen/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: private, no-store
+
+/lionsgate/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: private, no-store
+
+/autodesk-flow-studio/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: private, no-store
