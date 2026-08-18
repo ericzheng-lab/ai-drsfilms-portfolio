@@ -143,6 +143,13 @@ function validatePrerequisiteReport(report, hopId, pkg, liveChecks) {
   if (report.verdict !== "ACCEPT") {
     return { ok: false, reason: `verdict=${report.verdict}` };
   }
+  const derived = decideVerdict(report.checks);
+  if (derived !== "ACCEPT") {
+    return {
+      ok: false,
+      reason: `derived verdict=${derived} (self-certified verdict is not trusted)`,
+    };
+  }
   const currentDir = canonicalPackageDir(pkg.packageDir);
   if (canonicalPackageDir(report.package_dir) !== currentDir) {
     return { ok: false, reason: "package_dir does not bind to this package" };
@@ -158,6 +165,13 @@ function validatePrerequisiteReport(report, hopId, pkg, liveChecks) {
   const evidence = checksHaveReproducibleEvidence(report, hopId, liveChecks);
   if (!evidence.ok) {
     return { ok: false, reason: evidence.reason };
+  }
+  const liveDerived = decideVerdict(liveChecks);
+  if (liveDerived !== "ACCEPT") {
+    return {
+      ok: false,
+      reason: `live hop derives ${liveDerived}, not ACCEPT`,
+    };
   }
   return { ok: true, reason: "harness-generated, bound, fresh, real hop checks" };
 }

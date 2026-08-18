@@ -137,6 +137,13 @@ function companyNameTokens(name) {
     .filter((t) => t && !LEGAL_NAME_STOPWORDS.has(t));
 }
 
+function isBoundaryPrefix(haystack, needle) {
+  if (!haystack || !needle || needle.length < 3) return false;
+  if (!haystack.startsWith(needle)) return false;
+  if (haystack.length === needle.length) return true;
+  return haystack[needle.length] === "-";
+}
+
 function isShorteningOfCompany(company, alias) {
   const aliasSlug = companySlug(alias);
   if (!aliasSlug || aliasSlug.length < 2) return false;
@@ -148,9 +155,9 @@ function isShorteningOfCompany(company, alias) {
   const aliasCompact = aliasSlug.replace(/-/g, "");
   if (aliasSlug === joinedHyphen || aliasCompact === joined) return true;
   const first = tokens[0];
-  if (aliasSlug.length >= 3 && first.startsWith(aliasSlug)) return true;
-  if (aliasSlug.length >= 3 && joinedHyphen.startsWith(aliasSlug)) return true;
-  if (aliasSlug.length >= 3 && joined.startsWith(aliasCompact)) return true;
+  if (isBoundaryPrefix(first, aliasSlug)) return true;
+  if (isBoundaryPrefix(joinedHyphen, aliasSlug)) return true;
+  if (isBoundaryPrefix(joined, aliasCompact)) return true;
   return false;
 }
 
@@ -198,8 +205,6 @@ function escapeRe(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-const TINY_GENERIC_MARKER = 4;
-
 function bodyHasProfileMarker(body, pkg) {
   const src = String(body || "");
   if (!src.trim()) return { ok: false, marker: null };
@@ -215,12 +220,6 @@ function bodyHasProfileMarker(body, pkg) {
     if (lower.includes(hostPath) || pathRe.test(src)) {
       return { ok: true, marker: `/${slug}/` };
     }
-  }
-  for (const marker of profileContentMarkers(pkg)) {
-    const token = String(marker || "").trim();
-    if (!token || token.length <= TINY_GENERIC_MARKER) continue;
-    const re = new RegExp(`\\b${escapeRe(token)}\\b`, "i");
-    if (re.test(src)) return { ok: true, marker: token };
   }
   return { ok: false, marker: null };
 }

@@ -6,7 +6,7 @@
     "all_green": "ACCEPT",
     "repair_is_not_accept": true,
     "recover": "Re-run the same hop after fix. Never waive and proceed.",
-    "reports": "Harness-generated only. Bound to this package_dir + input file hashes. Prerequisite reports need non-empty checks that match a live hop re-run (id+PASS stubs are REJECT). Forged, grafted, empty-check, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML and independently re-verifies VI provenance; disk ACCEPT cannot waive those gates."
+    "reports": "Harness-generated only. Bound to this package_dir + input file hashes. Prerequisite reports need non-empty checks that match a live hop re-run (id+PASS stubs are REJECT). Prerequisite ACCEPT is decideVerdict(checks); the self-certified verdict field is not trusted. Any P0 FAIL in checks is prereq REJECT. Forged, grafted, empty-check, or stale reports are REJECT. R3 re-scans current CV/CL/Brief/Profile HTML and independently re-verifies VI provenance; disk ACCEPT cannot waive those gates."
   },
   "exit_codes": {
     "ACCEPT": 0,
@@ -68,7 +68,7 @@
       "required_inputs": [
         "profile"
       ],
-      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains company/slug marker. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult."
+      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult."
     },
     {
       "id": "R3",
@@ -99,6 +99,6 @@
     "host": "ai.drsfilms.com",
     "form": "https://ai.drsfilms.com/{company}/",
     "trailing_slash": "normalized-on",
-    "evidence": "qualifying live HTTP 2xx whose body contains the company name and/or slug; local HTML alone is not enough; SPA 200 empty shell is FAIL"
+    "evidence": "qualifying live HTTP 2xx whose body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}); company-word mention alone is not enough; local HTML alone is not enough; SPA 200 empty shell is FAIL"
   }
 }

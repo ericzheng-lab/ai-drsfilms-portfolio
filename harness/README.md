@@ -201,7 +201,7 @@ See `schema/package-manifest.schema.json`. Required fields:
 | `cl` | Path to cover letter |
 | `profile_url` | Company Profile URL |
 | `profile_html` | Optional local HTML (not sufficient for R2/R3 ACCEPT) |
-| `company_aliases` | Trusted shortenings only (token/prefix of `company`, or built-in map). Foreign slugs are ignored. |
+| `company_aliases` | Trusted shortenings only (whole token or hyphen-boundary prefix of `company`, or built-in map). Prefix collisions inside a longer token (Metaphor + meta) and foreign slugs are ignored. |
 | `vi` | VI distill record (required for R-VI) |
 | `waivers` | **Forbidden** for Profile / CL. Presence is P0 REJECT. Novel skip/omit/optional/defer keys are also REJECT. |
 

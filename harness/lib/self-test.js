@@ -16,11 +16,20 @@ const { loadPackage } = require("./manifest");
 const {
   decideVerdict,
   GENERATOR,
+  HASH_KEYS,
   buildReport,
   writeReport,
   inputHashesFromPkg,
+  computeBinding,
+  canonicalPackageDir,
+  validatePrerequisiteReport,
 } = require("./reports");
-const { REQUIRED_HOP_CHECKS, companySlug, bodyHasProfileMarker } = require("./hops");
+const {
+  REQUIRED_HOP_CHECKS,
+  HOP_RUNNERS,
+  companySlug,
+  bodyHasProfileMarker,
+} = require("./hops");
 const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
@@ -103,6 +112,309 @@ function writeBoundReports(dir, hops, checksForHop) {
     );
   }
   return reportsDir;
+}
+
+function forgeAcceptReport({ hop, name, ruleset, packageDir, checks, inputHashes }) {
+  const package_dir = canonicalPackageDir(packageDir);
+  const input_hashes = {};
+  for (const key of HASH_KEYS) {
+    input_hashes[key] = (inputHashes && inputHashes[key]) || null;
+  }
+  const report = {
+    generator: GENERATOR,
+    hop,
+    name: name || hop,
+    verdict: "ACCEPT",
+    ruleset,
+    generated_at: new Date().toISOString(),
+    package_dir,
+    input_hashes,
+    checks,
+    failures: (checks || [])
+      .filter((c) => c.status === "FAIL")
+      .map((c) => `${c.id}: ${c.detail}`),
+  };
+  report.binding = computeBinding(report);
+  return report;
+}
+
+function writeLiveHopReports(dir, hops, { forgeAcceptHops = [], fetchResult } = {}) {
+  const pkg = loadPackage({ packageDir: dir });
+  const hashes = inputHashesFromPkg(pkg);
+  const reportsDir = path.join(dir, "reports");
+  fs.mkdirSync(reportsDir, { recursive: true });
+  const { rules, version } = loadRuleset();
+  for (const hop of hops) {
+    const checks = HOP_RUNNERS[hop](pkg, rules, { fetchResult });
+    if (forgeAcceptHops.includes(hop)) {
+      writeReport(
+        reportsDir,
+        forgeAcceptReport({
+          hop,
+          name: hop,
+          ruleset: version,
+          packageDir: dir,
+          checks,
+          inputHashes: hashes,
+        })
+      );
+    } else {
+      writeReport(
+        reportsDir,
+        buildReport({
+          hop,
+          name: hop,
+          ruleset: version,
+          packageDir: dir,
+          checks,
+          inputHashes: hashes,
+        })
+      );
+    }
+  }
+  return reportsDir;
+}
+
+function emptyBriefSelectedWorkIds(dir) {
+  const briefPath = path.join(dir, "brief.md");
+  let text = fs.readFileSync(briefPath, "utf8");
+  text = text.replace(/selected_work_ids:\s*\n(?:\s+-\s+.+\n)*/m, "selected_work_ids: []\n");
+  text = text.replace(/\bwork-[A-Za-z0-9._-]+/g, "item-synth");
+  fs.writeFileSync(briefPath, text, "utf8");
+}
+
+async function testVerdictMustBeDerivedFromChecks() {
+  const dir = copyFixtureToTmp("pass-minimal-three");
+  emptyBriefSelectedWorkIds(dir);
+  const pkg = loadPackage({ packageDir: dir });
+  const { rules, version } = loadRuleset();
+  const live = HOP_RUNNERS.R0(pkg, rules, {});
+  assert(decideVerdict(live) !== "ACCEPT", "broken brief live R0 must not ACCEPT");
+  assert(
+    live.some((c) => c.id === "brief-selected-work-ids" && c.status === "FAIL"),
+    "broken brief must FAIL brief-selected-work-ids"
+  );
+  const forged = forgeAcceptReport({
+    hop: "R0",
+    name: "Brief",
+    ruleset: version,
+    packageDir: dir,
+    checks: live,
+    inputHashes: inputHashesFromPkg(pkg),
+  });
+  assert(forged.verdict === "ACCEPT", "forged report self-certifies ACCEPT");
+  assert(forged.binding === computeBinding(forged), "forged report has recomputed public binding");
+  assert(decideVerdict(forged.checks) !== "ACCEPT", "copied live checks must not derive ACCEPT");
+  const validation = validatePrerequisiteReport(forged, "R0", pkg, live);
+  assert(!validation.ok, "prereq must reject when derived verdict is not ACCEPT");
+  assert(
+    /derived verdict/i.test(validation.reason),
+    `prereq reason must cite derived verdict, got ${validation.reason}`
+  );
+  return "REJECT";
+}
+
+async function testForgedPrereqWithReproducedFailRejected() {
+  const dir = copyFixtureToTmp("pass-minimal-three");
+  emptyBriefSelectedWorkIds(dir);
+  const fetchResult = qualifyingFetchResult();
+  const reportsDir = writeLiveHopReports(dir, ["R0", "R-VI", "R1", "R1b", "R2"], {
+    forgeAcceptHops: ["R0"],
+    fetchResult,
+  });
+  const r0 = JSON.parse(fs.readFileSync(path.join(reportsDir, "R0.json"), "utf8"));
+  assert(r0.verdict === "ACCEPT", "forged R0 self-certifies ACCEPT");
+  assert(
+    (r0.checks || []).some((c) => c.id === "brief-selected-work-ids" && c.status === "FAIL"),
+    "forged R0 must reproduce the live brief-selected-work-ids FAIL"
+  );
+  const result = await runHops({
+    packageDir: dir,
+    hops: ["R3"],
+    reportsDir,
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(
+    result.last.verdict === "REJECT",
+    "forged prereq that copies live FAILs + ACCEPT + binding must REJECT R3"
+  );
+  assert(
+    (result.last.checks || []).some(
+      (c) =>
+        c.id === "prerequisite-R0" &&
+        c.status === "FAIL" &&
+        /derived verdict|live hop derives/i.test(c.detail)
+    ),
+    `forged reproduced-fail R0 must fail prerequisite-R0, got ${JSON.stringify(
+      (result.last.checks || []).filter((c) => c.id.startsWith("prerequisite-"))
+    )}`
+  );
+  return "REJECT";
+}
+
+async function testR0R1R2OnlyGatesSurviveForgedPrereq() {
+  const fetchResult = qualifyingFetchResult();
+
+  const briefDir = copyFixtureToTmp("pass-minimal-three");
+  emptyBriefSelectedWorkIds(briefDir);
+  const briefReports = writeLiveHopReports(briefDir, ["R0", "R-VI", "R1", "R1b", "R2"], {
+    forgeAcceptHops: ["R0"],
+    fetchResult,
+  });
+  const briefR3 = await runHops({
+    packageDir: briefDir,
+    hops: ["R3"],
+    reportsDir: briefReports,
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(
+    briefR3.last.verdict === "REJECT",
+    "broken brief + forged R0 ACCEPT must still REJECT closeout"
+  );
+  assert(
+    (briefR3.last.checks || []).some(
+      (c) => c.id === "prerequisite-R0" && c.status === "FAIL"
+    ),
+    `broken brief closeout must fail prerequisite-R0, got ${failuresOf(briefR3.last)}`
+  );
+
+  const cvDir = copyFixtureToTmp("pass-minimal-three");
+  const cvPath = path.join(cvDir, "cv.md");
+  let cv = fs.readFileSync(cvPath, "utf8");
+  cv = cv.replace("https://ai.drsfilms.com/acme/", "https://ai.drsfilms.com/");
+  cv += "\nAlso see https://ai.drsfilms.com/acme/\n";
+  fs.writeFileSync(cvPath, cv, "utf8");
+  const cvReports = writeLiveHopReports(cvDir, ["R0", "R-VI", "R1", "R1b", "R2"], {
+    forgeAcceptHops: ["R1"],
+    fetchResult,
+  });
+  const liveR1 = HOP_RUNNERS.R1(
+    loadPackage({ packageDir: cvDir }),
+    loadRuleset().rules,
+    {}
+  );
+  assert(
+    liveR1.some((c) => c.id === "cv-header-not-homepage" && c.status === "FAIL"),
+    "homepage CV header must FAIL cv-header-not-homepage"
+  );
+  const cvR3 = await runHops({
+    packageDir: cvDir,
+    hops: ["R3"],
+    reportsDir: cvReports,
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(
+    cvR3.last.verdict === "REJECT",
+    "homepage CV header + forged R1 ACCEPT must still REJECT closeout"
+  );
+  assert(
+    (cvR3.last.checks || []).some(
+      (c) => c.id === "prerequisite-R1" && c.status === "FAIL"
+    ),
+    `homepage CV header closeout must fail prerequisite-R1, got ${failuresOf(cvR3.last)}`
+  );
+
+  const htmlDir = copyFixtureToTmp("pass-minimal-three");
+  const htmlPath = path.join(htmlDir, "profile.html");
+  let html = fs.readFileSync(htmlPath, "utf8");
+  html = html.replace(/\s*<meta name="robots" content="noindex" \/>\s*/i, "\n");
+  fs.writeFileSync(htmlPath, html, "utf8");
+  const htmlReports = writeLiveHopReports(htmlDir, ["R0", "R-VI", "R1", "R1b", "R2"], {
+    forgeAcceptHops: ["R2"],
+    fetchResult,
+  });
+  const liveR2 = HOP_RUNNERS.R2(
+    loadPackage({ packageDir: htmlDir }),
+    loadRuleset().rules,
+    { fetchResult }
+  );
+  assert(
+    liveR2.some((c) => c.id === "r2-html-noindex" && c.status === "FAIL"),
+    "missing noindex must FAIL r2-html-noindex"
+  );
+  assert(
+    decideVerdict(liveR2) !== "ACCEPT",
+    "missing noindex live R2 must not derive ACCEPT"
+  );
+  const htmlR3 = await runHops({
+    packageDir: htmlDir,
+    hops: ["R3"],
+    reportsDir: htmlReports,
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(
+    htmlR3.last.verdict === "REJECT",
+    "R2 HTML missing noindex + forged R2 ACCEPT must still REJECT closeout"
+  );
+  assert(
+    (htmlR3.last.checks || []).some(
+      (c) => c.id === "prerequisite-R2" && c.status === "FAIL"
+    ),
+    `missing noindex closeout must fail prerequisite-R2, got ${failuresOf(htmlR3.last)}`
+  );
+  return "REJECT";
+}
+
+async function testAliasPrefixCollision() {
+  const dir = copyFixtureToTmp("pass-minimal-three");
+  await rewritePackCompany(dir, {
+    company: "Metaphor Inc",
+    slug: "meta",
+    aliases: ["meta"],
+    profileUrl: "https://ai.drsfilms.com/meta/",
+  });
+  const stolen = await runHops({
+    packageDir: dir,
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult("Metaphor Inc", "meta"),
+  });
+  assert(
+    stolen.last.verdict === "REJECT",
+    "Metaphor Inc + aliases meta + /meta/ must REJECT"
+  );
+  assert(
+    hasFail(stolen.last, "profile-slug-matches-company"),
+    `alias prefix collision must fail profile-slug-matches-company, got ${failuresOf(stolen.last)}`
+  );
+  return "REJECT";
+}
+
+async function testLiveMarkerMustBeDedicatedRoute() {
+  const pkg = loadPackage({ packageDir: fixture("pass-minimal-three") });
+  const wordOnly = {
+    status: 200,
+    timedOut: false,
+    error: null,
+    body: "<!DOCTYPE html><html><head><title>Home</title></head><body><h1>Welcome</h1><p>We sometimes mention Acme on this same-host page.</p></body></html>",
+  };
+  assert(
+    bodyHasProfileMarker(wordOnly.body, pkg).ok === false,
+    "same-host page that only mentions the company word is not a dedicated profile"
+  );
+  const withPath = qualifyingFetchResult();
+  assert(
+    bodyHasProfileMarker(withPath.body, pkg).ok === true,
+    "dedicated /acme/ path identity remains a profile marker"
+  );
+  const r2 = await runHops({
+    packageDir: fixture("pass-minimal-three"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: wordOnly,
+  });
+  assert(r2.last.verdict === "REJECT", "company-word-only live page must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-live-fetch") || hasFail(r2.last, "r2-profile-present"),
+    `company-word-only live page must fail live evidence, got ${failuresOf(r2.last)}`
+  );
+  return "REJECT";
 }
 
 async function testReportForgeryRejected() {
@@ -1192,6 +1504,15 @@ async function runSelfTest() {
       await testForgedReportWithRecomputedBindingRejected(),
     "test-forged-report-with-fullshaped-checks-rejected":
       await testForgedReportWithFullshapedChecksRejected(),
+    "test-verdict-must-be-derived-from-checks":
+      await testVerdictMustBeDerivedFromChecks(),
+    "test-forged-prereq-with-reproduced-fail-rejected":
+      await testForgedPrereqWithReproducedFailRejected(),
+    "test-r0-r1-r2-only-gates-survive-forged-prereq":
+      await testR0R1R2OnlyGatesSurviveForgedPrereq(),
+    "test-alias-prefix-collision": await testAliasPrefixCollision(),
+    "test-live-marker-must-be-dedicated-route":
+      await testLiveMarkerMustBeDedicatedRoute(),
     "test-r3-reruns-vi-provenance": await testR3RerunsViProvenance(),
     "test-r3-rescans-claimlock-slop-on-cv-cl": await testR3RescansClaimlockSlopOnCvCl(),
     "test-report-binds-to-package-and-inputs": await testReportBindsToPackageAndInputs(),
