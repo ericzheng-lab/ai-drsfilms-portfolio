@@ -2,8 +2,9 @@
 
 /**
  * Moving visual bar: a new company Profile is judged against the newest
- * shipped public/{company}/index.html pages, not a frozen pair
- * (not ElevenLabs/Luma forever, not Wonder/Kalshi forever).
+ * still-first shipped public/{company}/index.html pages, not a timestamp-only
+ * type-wall / Thread B set, and not a frozen pair (not ElevenLabs/Luma
+ * forever, not Wonder/Kalshi forever).
  *
  * Record lives on the package manifest as compared_to (existing package
  * field pattern). One checker. No sidecar.
@@ -12,7 +13,11 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
-const { htmlHasWorkImages, firstViewportHasStill } = require("./profile-images");
+const {
+  htmlHasWorkImages,
+  firstViewportHasStill,
+  isStillFirstPage,
+} = require("./profile-images");
 
 const BAR_SIZE = 3;
 
@@ -158,6 +163,10 @@ function hasFirstViewportStill(html) {
   return htmlHasWorkImages(src).ok && firstViewportHasStill(src).ok;
 }
 
+function peerIsStillFirst(html) {
+  return isStillFirstPage(html);
+}
+
 function discoverPeers(pkg, opts = {}) {
   const publicRoot = resolvePublicRoot(pkg, opts);
   const self = packageCompanySlug(pkg);
@@ -176,7 +185,10 @@ function discoverPeers(pkg, opts = {}) {
     if (b.ts !== a.ts) return b.ts - a.ts;
     return a.slug.localeCompare(b.slug);
   });
-  const bar = peers.slice(0, BAR_SIZE);
+  const timestampBar = peers.slice(0, BAR_SIZE);
+  const stillFirst = peers.filter((p) => peerIsStillFirst(p.html));
+  const bar =
+    stillFirst.length > 0 ? stillFirst.slice(0, BAR_SIZE) : timestampBar;
   const usedMtime = peers.some((p) => p.source === "mtime");
   const usedGit = peers.some((p) => p.source === "git");
   let clock = "git";
@@ -185,9 +197,13 @@ function discoverPeers(pkg, opts = {}) {
   return {
     publicRoot,
     peers,
+    stillFirst,
+    timestampBar,
     bar,
     compared_to: bar.map((p) => p.slug),
+    timestamp_compared_to: timestampBar.map((p) => p.slug),
     clock,
+    stillFirstFilter: stillFirst.length > 0,
   };
 }
 
@@ -200,6 +216,9 @@ function profileHtmlSides(pkg, opts = {}) {
     opts.fetchResult && opts.fetchResult.body
       ? String(opts.fetchResult.body || "").trim()
       : "";
+  if (opts.preferLiveHtml && liveHtml) {
+    return { localHtml: "", liveHtml };
+  }
   return { localHtml, liveHtml };
 }
 
@@ -212,9 +231,17 @@ function recentBarOk(pkg, opts = {}) {
   const compared_to = discovered.compared_to;
   const recorded = recordedComparedTo(pkg);
   const clockNote = discovered.clock;
-  const comparedPhrase = `compared_to: ${formatComparedTo(compared_to)} (${clockNote})`;
+  const filterNote = discovered.stillFirstFilter
+    ? "still-first newest 3; type-wall / Thread B skipped"
+    : "no still-first peer; timestamp newest 3";
+  const comparedPhrase = `compared_to: ${formatComparedTo(compared_to)} (${clockNote}; ${filterNote})`;
 
   if (!sameSlugSet(recorded, compared_to)) {
+    const timestampSet = discovered.timestamp_compared_to || [];
+    const typewallAsBar =
+      discovered.stillFirstFilter &&
+      sameSlugSet(recorded, timestampSet) &&
+      timestampSet.some((s) => !compared_to.includes(s));
     const stalePair =
       recorded.length === 2 &&
       ((sameSlugSet(recorded, ["elevenlabs", "luma"]) &&
@@ -226,9 +253,15 @@ function recentBarOk(pkg, opts = {}) {
       compared_to,
       recorded,
       clock: clockNote,
-      reason: stalePair
-        ? `stale fixed pair ${formatComparedTo(recorded)}; ${comparedPhrase}`
-        : `recorded ${formatComparedTo(recorded)}; ${comparedPhrase}`,
+      reason: typewallAsBar
+        ? `timestamp-only newest 3 are type-wall / Thread B (${formatComparedTo(
+            timestampSet
+          )}) while a still-first peer exists; still-first bar is ${formatComparedTo(
+            compared_to
+          )} (${clockNote})`
+        : stalePair
+          ? `stale fixed pair ${formatComparedTo(recorded)}; ${comparedPhrase}`
+          : `recorded ${formatComparedTo(recorded)}; ${comparedPhrase}`,
     };
   }
 
@@ -280,6 +313,7 @@ module.exports = {
   discoverPeers,
   isResumePage,
   hasFirstViewportStill,
+  peerIsStillFirst,
   recentBarOk,
   profileRecentBarGate,
 };

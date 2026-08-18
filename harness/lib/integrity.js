@@ -42,6 +42,7 @@ const REQUIRED_RULE_IDS = [
   "r2-profile-dev4-private",
   "r2-profile-p-led-pb-gallery",
   "r2-profile-recent-bar",
+  "r2-profile-max-width",
   "r3-three-live-pieces",
   "portfolio-url-matches-profile",
   "slop-lexicon",

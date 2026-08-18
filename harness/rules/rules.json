@@ -1,5 +1,5 @@
 {
-  "version": "1.14.0",
+  "version": "1.15.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -103,7 +103,7 @@
         "R2",
         "R3"
       ],
-      "note": "A .hero / header with min-height >= 70vh and no <img> is REJECT (the Giant Spoon #18 78vh fail). A later thumb does not save an empty first viewport. No waiver. _CAREER B-C6 / B-C4 / B-P3."
+      "note": "A .hero / header with min-height >= 70vh and no <img> is REJECT (the Giant Spoon #18 78vh fail). A later thumb does not save an empty first viewport. Cheap HTML heuristic: first 800px of body text/images must be still-led. First-viewport screenshot compare is a supervisor check (Career Manager / Mac), not CI Playwright. No waiver. _CAREER B-C6 / B-C4 / B-P3."
     },
     {
       "id": "r2-profile-still-early",
@@ -282,9 +282,9 @@
     {
       "id": "brief-lead-assets-clearable",
       "severity": "P1",
-      "failure": "Brief lead id has no dual-gate still; later hops must not substitute another category",
+      "failure": "Brief lead id has no dual-gate still and is not an allowed Vimeo embed; later hops must not substitute another category",
       "hops": ["R0"],
-      "note": "If a lead id cannot be hung (assets.json external_ready:true AND INDEX public:true), R0 is REPAIR. Do not allow R2 to hang whatever else is public. Uncatalogued fixture ids are N/A."
+      "note": "If a lead id cannot be hung (assets.json external_ready:true AND INDEX public:true) and is not an allowed Vimeo embed (Coach 190660903, trad reel 1174467043), R0 is REPAIR. Do not allow later hops to substitute another category (film for ads). Uncatalogued fixture ids are N/A."
     },
     {
       "id": "r2-profile-follows-brief-slots",
@@ -296,9 +296,16 @@
     {
       "id": "r2-profile-recent-bar",
       "severity": "P0",
-      "failure": "new Profile judged against a frozen pair / stale compared_to, or a résumé page while the current bar has a first-viewport still",
+      "failure": "new Profile judged against a frozen pair / timestamp-only type-wall bar / stale compared_to, or a résumé page while the current still-first bar has a first-viewport still",
       "hops": ["R2", "R3"],
-      "note": "Every NEW company Profile is built and judged against the most recently shipped public/*/index.html pages, not a fixed pair (not ElevenLabs/Luma forever, not Wonder/Kalshi forever). Discover peers: every public/*/index.html except the package company. Sort by last git commit timestamp that touched that file (git log -1 --format=%ct -- path); if git is unavailable, fall back to mtime and say so on the check. Newest 3 routes = the bar; write them on the check as compared_to. ACCEPT only if the package records those same 3 on manifest compared_to. A stale fixed pair while newer pages exist is REJECT. Also REJECT if the new local/live HTML is a text/résumé page (0 work images / empty first viewport) while any of the newest 3 have a first-viewport still. Reuses r2-profile-work-images / r2-profile-first-viewport-still gates. No waiver."
+      "note": "Every NEW company Profile is built and judged against the newest 3 still-first public/*/index.html pages (first viewport is a still/reel poster), not a timestamp-only newest 3 and not a fixed pair (not ElevenLabs/Luma forever, not Wonder/Kalshi forever). Discover peers except the package company. Sort by last git commit timestamp (mtime if git is unavailable). Skip type-wall / Thread B pages. ACCEPT only if manifest compared_to records that still-first set. Timestamp-only newest 3 that are type-first while a still-first peer exists is REJECT. A stale fixed pair while newer pages exist is REJECT. Also REJECT if the new HTML is a text/résumé page while any of the newest 3 have a first-viewport still. Reuses still gates plus the first-800px still-led heuristic. No waiver."
+    },
+    {
+      "id": "r2-profile-max-width",
+      "severity": "P0",
+      "failure": "full-bleed 100vw work column / work img/iframe/video",
+      "hops": ["R2", "R3"],
+      "note": "Work column capped min(1120px, calc(100% - 40px)) (1080–1240 band). 100vw on work img/iframe/video is REJECT. Wordmark/nav may be a full row. No waiver."
     },
     {
       "id": "profile-not-homepage",
