@@ -39,6 +39,12 @@ const {
   brandStillsNotWordmarks,
   sixStageOneGraphic,
 } = require("./profile-cards");
+const {
+  outwardImagesCleared,
+  fiftyEightNodeRouteOk,
+  dev4NotHung,
+  pLedNoPbGallery,
+} = require("./asset-clearance");
 
 function check(id, severity, ok, detail) {
   return {
@@ -909,6 +915,31 @@ const profileBrandStillsGate = profileGateFrom(
   "brand credits are wordmarks, not stills"
 );
 
+function profileGateFromPkg(fn, emptyDetail, failPrefix) {
+  return function profileGate(pkg, opts = {}) {
+    const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
+    const parts = [];
+    let ok = true;
+    if (localHtml) {
+      const ev = fn(localHtml, pkg);
+      parts.push(`local HTML: ${ev.reason}`);
+      if (!ev.ok) ok = false;
+    }
+    if (liveHtml) {
+      const ev = fn(liveHtml, pkg);
+      parts.push(`live HTML: ${ev.reason}`);
+      if (!ev.ok) ok = false;
+    }
+    if (!localHtml && !liveHtml) {
+      return { ok: false, detail: emptyDetail };
+    }
+    return {
+      ok,
+      detail: ok ? parts.join("; ") : `${failPrefix}: ${parts.join("; ")}`,
+    };
+  };
+}
+
 function profileSixStageGate(pkg, opts = {}) {
   const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
   const parts = [];
@@ -928,9 +959,33 @@ function profileSixStageGate(pkg, opts = {}) {
   }
   return {
     ok,
-    detail: ok ? parts.join("; ") : `P-led 6-stage graphic: ${parts.join("; ")}`,
+    detail: ok ? parts.join("; ") : `6-stage graphic: ${parts.join("; ")}`,
   };
 }
+
+const profileAssetClearanceGate = profileGateFromPkg(
+  outwardImagesCleared,
+  "no Profile HTML to inspect for asset clearance",
+  "outward image is not external_ready + INDEX public:true"
+);
+
+const profile58NodeRouteGate = profileGateFromPkg(
+  fiftyEightNodeRouteOk,
+  "no Profile HTML to inspect for 58-node route",
+  "58-node file hung off /wonder/"
+);
+
+const profileDev4PrivateGate = profileGateFrom(
+  dev4NotHung,
+  "no Profile HTML to inspect for DEV4 screenshots",
+  "A-TOOLS-DEV4 screenshot hung"
+);
+
+const profilePLedPbGalleryGate = profileGateFromPkg(
+  pLedNoPbGallery,
+  "no Profile HTML to inspect for Prompt Builder gallery",
+  "P-led Prompt Builder gallery"
+);
 
 function profileViFieldGate(pkg, opts = {}) {
   const rec =
@@ -1034,6 +1089,18 @@ function hopR2(pkg, rules, opts = {}) {
   );
   const six = profileSixStageGate(pkg, opts);
   checks.push(check("r2-profile-six-stage", "P0", six.ok, six.detail));
+  const clearance = profileAssetClearanceGate(pkg, opts);
+  checks.push(
+    check("r2-profile-asset-clearance", "P0", clearance.ok, clearance.detail)
+  );
+  const node58 = profile58NodeRouteGate(pkg, opts);
+  checks.push(check("r2-profile-58node-route", "P0", node58.ok, node58.detail));
+  const dev4 = profileDev4PrivateGate(pkg, opts);
+  checks.push(check("r2-profile-dev4-private", "P0", dev4.ok, dev4.detail));
+  const pbGal = profilePLedPbGalleryGate(pkg, opts);
+  checks.push(
+    check("r2-profile-p-led-pb-gallery", "P0", pbGal.ok, pbGal.detail)
+  );
   checks.push(
     check(
       "profile-not-homepage",
@@ -1192,6 +1259,18 @@ function hopR3(pkg, rules, opts = {}) {
   );
   const six = profileSixStageGate(pkg, opts);
   checks.push(check("r3-profile-six-stage", "P0", six.ok, six.detail));
+  const clearance = profileAssetClearanceGate(pkg, opts);
+  checks.push(
+    check("r3-profile-asset-clearance", "P0", clearance.ok, clearance.detail)
+  );
+  const node58 = profile58NodeRouteGate(pkg, opts);
+  checks.push(check("r3-profile-58node-route", "P0", node58.ok, node58.detail));
+  const dev4 = profileDev4PrivateGate(pkg, opts);
+  checks.push(check("r3-profile-dev4-private", "P0", dev4.ok, dev4.detail));
+  const pbGal = profilePLedPbGalleryGate(pkg, opts);
+  checks.push(
+    check("r3-profile-p-led-pb-gallery", "P0", pbGal.ok, pbGal.detail)
+  );
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1343,6 +1422,10 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-empty-work-cards",
     "r2-profile-brand-stills",
     "r2-profile-six-stage",
+    "r2-profile-asset-clearance",
+    "r2-profile-58node-route",
+    "r2-profile-dev4-private",
+    "r2-profile-p-led-pb-gallery",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1371,6 +1454,10 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-empty-work-cards",
     "r3-profile-brand-stills",
     "r3-profile-six-stage",
+    "r3-profile-asset-clearance",
+    "r3-profile-58node-route",
+    "r3-profile-dev4-private",
+    "r3-profile-p-led-pb-gallery",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

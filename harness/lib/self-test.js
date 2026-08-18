@@ -57,6 +57,12 @@ const {
   sixStageOneGraphic,
 } = require("./profile-cards");
 const {
+  outwardImagesCleared,
+  fiftyEightNodeRouteOk,
+  dev4NotHung,
+  pLedNoPbGallery,
+} = require("./asset-clearance");
+const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
   pinInputPaths,
@@ -1251,6 +1257,84 @@ async function testClosedDebateCardsRejected() {
   return "REJECT";
 }
 
+async function testAssetLibrarianRejected() {
+  const cases = [
+    ["fail-private-asset-hung", "r2-profile-asset-clearance", "private asset hung"],
+    ["fail-dev4-indev-label", "r2-profile-dev4-private", "DEV4 hung with in-dev label"],
+    ["fail-58node-off-wonder", "r2-profile-58node-route", "58-node file off /wonder/"],
+    ["fail-6stage-drive-original", "r2-profile-asset-clearance", "6-stage Drive original hung"],
+    ["fail-6stage-caption-mix", "r2-profile-six-stage", "6 vs 7/58 caption mix"],
+    ["fail-o-led-missing-6stage", "r2-profile-six-stage", "O-led missing 6-stage picture"],
+    ["fail-p-led-pb-gallery", "r2-profile-p-led-pb-gallery", "P-led Prompt Builder gallery"],
+  ];
+  for (const [name, checkId, label] of cases) {
+    const r2 = await runHops({
+      packageDir: fixture(name),
+      hops: ["R2"],
+      reportsDir: tmpReports(),
+      stopOnFail: false,
+      fetchResult: qualifyingFetchResult(),
+    });
+    assert(r2.last.verdict === "REJECT", `${label} must REJECT R2`);
+    assert(
+      hasFail(r2.last, checkId),
+      `${label} must fail ${checkId}, got ${failuresOf(r2.last)}`
+    );
+  }
+
+  const wonder = await runHops({
+    packageDir: fixture("pass-wonder-58node"),
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: qualifyingFetchResult("Wonder", "wonder"),
+  });
+  assert(
+    wonder.last.verdict === "ACCEPT",
+    `Wonder may hang 58-node until generic public:true, got ${failuresOf(wonder.last)}`
+  );
+
+  const acmePkg = {
+    manifest: { company: "Acme", profile_url: "https://ai.drsfilms.com/acme/", role: "Senior Producer" },
+    brief: { value: "p-led" },
+    briefAttrs: {},
+  };
+  const wonderPkg = {
+    manifest: { company: "Wonder", profile_url: "https://ai.drsfilms.com/wonder/", role: "Creative Technologist" },
+    brief: { value: "a-led" },
+    briefAttrs: {},
+  };
+  assert(
+    outwardImagesCleared('<img src="coda-ui-01.jpg">', acmePkg).ok === false,
+    "coda-ui-01 cannot hang"
+  );
+  assert(
+    outwardImagesCleared('<p>coda-ui-01 is READY-but-private; cited in text only.</p>', acmePkg)
+      .ok === true,
+    "text cite of private asset is OK"
+  );
+  assert(
+    fiftyEightNodeRouteOk('<img src="workflow-58node.png">', acmePkg).ok === false,
+    "58-node file off wonder must fail"
+  );
+  assert(
+    fiftyEightNodeRouteOk('<img src="workflow-58node.png">', wonderPkg).ok === true,
+    "58-node file on /wonder/ must pass"
+  );
+  assert(
+    dev4NotHung('<p>In development.</p><img src="ai-film-studio-ui-01.jpg">').ok === false,
+    "in-dev label does not waive DEV4"
+  );
+  assert(
+    pLedNoPbGallery(
+      '<section id="tools"><img src="prompt-builder-ui-01.jpg"></section>',
+      acmePkg
+    ).ok === false,
+    "P-led PB gallery must fail"
+  );
+  return "REJECT";
+}
+
 async function testGs18HtmlStillRejected() {
   const gs18 = `<style>:root{--blue:#0033a0}.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}.hero .header-line{font-size:14px;color:var(--blue)}.stat span{font-size:11px;color:var(--blue)}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
   assert(
@@ -1938,6 +2022,34 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         }).ok === false,
         "P-led text 6-stage"
       ),
+    "r2-profile-asset-clearance": () =>
+      assert(
+        outwardImagesCleared('<img src="coda-ui-01.jpg" alt="Coda">', {
+          manifest: { company: "Acme", profile_url: "https://ai.drsfilms.com/acme/" },
+        }).ok === false,
+        "private asset hung"
+      ),
+    "r2-profile-58node-route": () =>
+      assert(
+        fiftyEightNodeRouteOk('<img src="workflow-58node.png" alt="graph">', {
+          manifest: { company: "Acme", profile_url: "https://ai.drsfilms.com/acme/" },
+        }).ok === false,
+        "58-node off wonder"
+      ),
+    "r2-profile-dev4-private": () =>
+      assert(
+        dev4NotHung('<p>In development.</p><img src="martini-ui-01.jpg" alt="Martini">').ok ===
+          false,
+        "DEV4 hung"
+      ),
+    "r2-profile-p-led-pb-gallery": () =>
+      assert(
+        pLedNoPbGallery(
+          '<section id="tools"><img src="prompt-builder-ui-01.jpg" alt="Prompt Builder"></section>',
+          { manifest: { role: "Senior Producer" }, brief: { value: "p-led" }, briefAttrs: {} }
+        ).ok === false,
+        "P-led PB gallery"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -2250,6 +2362,7 @@ async function runSelfTest() {
     "test-text-card-and-credits-rejected": await testTextCardAndCreditsRejected(),
     "test-invocation-matrix-rejected": await testInvocationMatrixRejected(),
     "test-closed-debate-cards-rejected": await testClosedDebateCardsRejected(),
+    "test-asset-librarian-rejected": await testAssetLibrarianRejected(),
     "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -2299,7 +2412,15 @@ async function runSelfTest() {
       "fail-p-led-7stage": "REJECT",
       "fail-p-led-6stage-text": "REJECT",
       "fail-indev-before-reel": "REJECT",
+      "fail-private-asset-hung": "REJECT",
+      "fail-dev4-indev-label": "REJECT",
+      "fail-58node-off-wonder": "REJECT",
+      "fail-6stage-drive-original": "REJECT",
+      "fail-6stage-caption-mix": "REJECT",
+      "fail-o-led-missing-6stage": "REJECT",
+      "fail-p-led-pb-gallery": "REJECT",
       "pass-a-led-wonder": "ACCEPT",
+      "pass-wonder-58node": "ACCEPT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

@@ -153,34 +153,138 @@ function brandStillsNotWordmarks(html) {
   return { ok: true, reason: "brand credits are stills, not wordmarks" };
 }
 
-function sixStageOneGraphic(html, pkg) {
-  if (archetypeOf(pkg) !== "P") {
-    return { ok: true, reason: "6-stage graphic N/A off P-led" };
-  }
-  const src = String(html || "");
-  if (SEVEN_STAGE_RE.test(src)) {
-    return { ok: false, reason: "P-led page invoked 7-stage (forbidden)" };
-  }
-  const stageImgs = [...src.matchAll(/<img\b[^>]*>/gi)].filter((m) => {
+function jdAsksProcessGates(pkg) {
+  const brief = `${(pkg && pkg.brief && pkg.brief.value) || ""}\n${JSON.stringify(
+    (pkg && pkg.briefAttrs) || {}
+  )}`;
+  return (
+    /\b(must|should)\b[\s\S]{0,80}\b(process|gates)\b/i.test(brief) ||
+    /\b(process|gates)\b[\s\S]{0,80}\b(must|should)\b/i.test(brief) ||
+    /\bDOC-6\b|\bR8\b/.test(brief)
+  );
+}
+
+function sixStageImgs(html) {
+  return [...String(html || "").matchAll(/<img\b[^>]*>/gi)].filter((m) => {
     const tag = m[0];
     return (
-      /6[- ]?stage|workflow|method-strip|six-stage/i.test(tag) &&
+      /6[- ]?stage|workflow-6stage|method-strip|six-stage/i.test(tag) &&
       /\.(png|svg)(\?|"|'|\s|>)/i.test(tag)
     );
   });
-  if (stageImgs.length !== 1) {
+}
+
+function sixVs58CaptionMix(html) {
+  const src = String(html || "");
+  const blocks = [
+    ...src.matchAll(/<(figcaption|p|h[1-6]|span)[^>]*>([\s\S]*?)<\/\1>/gi),
+  ];
+  for (const b of blocks) {
+    const t = String(b[2] || "").replace(/<[^>]+>/g, " ");
+    const has6 = /6[- ]?stage|six[- ]stage/i.test(t);
+    const has758 = /7[- ]stage|seven[- ]stage|58[- ]node/i.test(t);
+    if (
+      has6 &&
+      has758 &&
+      !/distinct|must not be mixed|not the same|do not mix|numbers must not/i.test(t)
+    ) {
+      return true;
+    }
+  }
+  for (const img of src.matchAll(/<img\b[^>]*>/gi)) {
+    const t = img[0];
+    if (
+      /6[- ]?stage|six[- ]stage/i.test(t) &&
+      /7[- ]stage|58[- ]node/i.test(t)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function sixStageOneGraphic(html, pkg) {
+  const arch = archetypeOf(pkg);
+  const src = String(html || "");
+  if (sixVs58CaptionMix(src)) {
     return {
       ok: false,
-      reason: "P-led A-WORKFLOW-6STAGE must be one reskinned PNG/SVG, not a text grid",
+      reason: "6-stage caption mixed with 7-stage/58-node (numbers must not be mixed)",
     };
   }
-  if (!/footnote|figcaption|locked six[- ]stage|locked method/i.test(src)) {
+
+  const stageImgs = sixStageImgs(src);
+  const textGrid =
+    /6[- ]stage|six[- ]stage/i.test(src) &&
+    stageImgs.length === 0 &&
+    (/<div\b[^>]*class=["'][^"']*\bstrip\b/i.test(src) ||
+      (src.match(/<(p|div)[^>]*>\s*0[1-6]\b/gi) || []).length >= 6);
+
+  if (arch === "O") {
+    if (stageImgs.length !== 1 || textGrid) {
+      return {
+        ok: false,
+        reason: "O-led A-WORKFLOW-6STAGE is required (DOC-6/R8) as one picture, not six <p> boxes",
+      };
+    }
+    return { ok: true, reason: "O-led 6-stage is one graphic (DOC-6/R8)" };
+  }
+
+  if (arch === "A") {
+    if (!stageImgs.length && !textGrid) {
+      return { ok: true, reason: "A-led 6-stage supporting N/A (not invoked)" };
+    }
+    const film = /one\s*click\s*mute|manga\s*cut|doombrush|brief\s*history|showreel/i.exec(
+      src
+    );
+    const stage = /6[- ]stage|six[- ]stage|workflow-6stage|from first brief/i.exec(src);
+    if (stage && film && stage.index < film.index) {
+      return { ok: false, reason: "A-led 6-stage must be supporting only, not the lead" };
+    }
+    if (textGrid) {
+      return { ok: false, reason: "A-led 6-stage must be a picture, not six <p> boxes" };
+    }
+    return { ok: true, reason: "A-led 6-stage is supporting only" };
+  }
+
+  if (arch !== "P") {
+    return { ok: true, reason: "6-stage graphic N/A off P/O/A" };
+  }
+
+  if (SEVEN_STAGE_RE.test(src) && /6[- ]stage|six[- ]stage/i.test(src)) {
+    return { ok: false, reason: "P-led page mixed 6-stage with 7-stage" };
+  }
+  if (SEVEN_STAGE_RE.test(src) && !/6[- ]stage|six[- ]stage/i.test(src)) {
+    return { ok: false, reason: "P-led page invoked 7-stage (forbidden)" };
+  }
+
+  const work = /brief\s*history|showreel|one\s*click\s*mute/i.exec(src);
+  const stageHit = /6[- ]stage|six[- ]stage|workflow-6stage|from first brief/i.exec(src);
+  if (stageHit && work && stageHit.index < work.index) {
+    return { ok: false, reason: "P-led 6-stage is the lead (method slot only)" };
+  }
+
+  if (textGrid || ( /6[- ]stage|six[- ]stage/i.test(src) && stageImgs.length !== 1 )) {
     return {
       ok: false,
-      reason: "P-led 6-stage missing locked footnote",
+      reason: "P-led A-WORKFLOW-6STAGE must be one reskinned PNG/SVG, not a text grid / six <p> boxes",
     };
   }
-  return { ok: true, reason: "P-led 6-stage is one graphic + locked footnote" };
+
+  if (stageImgs.length === 1) {
+    if (!/footnote|figcaption|locked six[- ]stage|locked method/i.test(src)) {
+      return { ok: false, reason: "P-led 6-stage missing locked footnote" };
+    }
+    return { ok: true, reason: "P-led 6-stage is one graphic + locked footnote in the method slot" };
+  }
+
+  if (jdAsksProcessGates(pkg)) {
+    return {
+      ok: false,
+      reason: "P-led JD asks process/gates as must-or-should; 6-stage picture required in the method slot",
+    };
+  }
+  return { ok: true, reason: "P-led 6-stage not required (JD has no process/gates must-or-should)" };
 }
 
 function creditsNotLegalParagraph(html) {
@@ -322,5 +426,6 @@ module.exports = {
   noEmptyWhiteWorkCards,
   brandStillsNotWordmarks,
   sixStageOneGraphic,
+  jdAsksProcessGates,
   INTERNAL_ASSET_IDS,
 };

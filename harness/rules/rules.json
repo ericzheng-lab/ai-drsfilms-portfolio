@@ -1,5 +1,5 @@
 {
-  "version": "1.9.0",
+  "version": "1.10.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -200,7 +200,7 @@
       "severity": "P0",
       "failure": "assets dumped instead of invoked by JD archetype",
       "hops": ["R2", "R3"],
-      "note": "P-led (agency Senior Producer): reel poster 21:9 + play; brand stills not wordmarks; A-WORKFLOW-6STAGE one reskinned PNG/SVG + locked footnote; Prompt Builder last, one card. REJECT: text showreel card; legal-paragraph credits; empty white work cards; 58-node/7-stage; in-dev tool wall before/taller than trad reel; visible A-* ids; Klein Blue only as 10px labels. O-led: 6-stage first; 58-node only if JD wants process depth. A-led (Wonder exam): films first + tools strip; 58-node allowed (different fixture). Do not copy HyperAgent files. No waiver."
+      "note": "P-led: reel as picture + brand stills; no 58-node file; no DEV4 suite; no Prompt Builder gallery; 6-stage only in the method slot when JD has process/gates as must-or-should, as one reskin picture. O-led: 6-stage required (DOC-6/R8). A-led (Wonder exam): films first; 58-node file legal only on /wonder/ until generic public:true. Visible A-* ids REJECT. Do not copy HyperAgent files. No waiver."
     },
     {
       "id": "r2-profile-empty-work-cards",
@@ -221,7 +221,35 @@
       "severity": "P0",
       "failure": "P-led 6-stage dumped as a text grid / 7-stage / missing locked footnote",
       "hops": ["R2", "R3"],
-      "note": "P-led must invoke A-WORKFLOW-6STAGE as one reskinned PNG/SVG plus a locked footnote. A 6-cell text strip or 7-stage is REJECT. Off P-led this check is N/A. No waiver."
+      "note": "A-WORKFLOW-6STAGE is READY in assets.json (Drive PNG 1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5, sha 0cb95ffb…) but not yet in DRS INDEX. Non-Wonder pages must reskin; never mix 6 vs 7/58 in captions. P-led: not the lead; method slot only if JD has process/gates as must-or-should and the strip is a picture, not six <p> boxes. O-led: required (DOC-6/R8). A-led: supporting only. No waiver."
+    },
+    {
+      "id": "r2-profile-asset-clearance",
+      "severity": "P0",
+      "failure": "outward image hung without assets.json external_ready:true AND INDEX public:true",
+      "hops": ["R2", "R3"],
+      "note": "A hung file requires both bits. Text may cite a READY-but-private asset. In-development labels do not waive INDEX. Catalog: harness/rules/asset-clearance.json. No waiver."
+    },
+    {
+      "id": "r2-profile-58node-route",
+      "severity": "P0",
+      "failure": "A-WORKFLOW-58NODE file hung off /wonder/",
+      "hops": ["R2", "R3"],
+      "note": "58-node graphic is only legal on /wonder/ until a generic public version is READY + DRS public:true. Other routes hanging the file = REJECT. Text cite is not a hang. No waiver."
+    },
+    {
+      "id": "r2-profile-dev4-private",
+      "severity": "P0",
+      "failure": "A-TOOLS-DEV4 screenshot hung (public:false)",
+      "hops": ["R2", "R3"],
+      "note": "ai-film-studio-ui-01, coda-ui-01, martini-ui-01, ttl-breakdown-ui-01 are INDEX public:false. Hanging them is REJECT. In-development label does not waive INDEX. prompt-builder-ui-01 is the only public:true product shot today. No waiver."
+    },
+    {
+      "id": "r2-profile-p-led-pb-gallery",
+      "severity": "P0",
+      "failure": "P-led Prompt Builder gallery / product-UI suite",
+      "hops": ["R2", "R3"],
+      "note": "P-led exam leads the reel + brand stills. No DEV4 suite. No Prompt Builder gallery. Off P-led this check is N/A. No waiver."
     },
     {
       "id": "r2-profile-not-homepage-skin",

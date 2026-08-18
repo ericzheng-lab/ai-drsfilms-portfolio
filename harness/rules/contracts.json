@@ -1,5 +1,5 @@
 {
-  "version": "1.9.0",
+  "version": "1.10.0",
   "algebra": {
     "P0_FAIL": "REJECT",
     "P1_FAIL_without_P0": "REPAIR",
@@ -69,7 +69,7 @@
       "required_inputs": [
         "profile"
       ],
-      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. Profile HTML (local and live) must contain real work stills; text-only / empty / placeholder <img> is REJECT. Images are not optional. Also REJECT: token-only VI application, text-only showreel cards, legal-paragraph credits, visible A-* asset ids, and JD-archetype invocation misses (P-led 58-node / in-dev wall; O-led 58-node without process depth; A-led tools-before-films)."
+      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. Profile HTML (local and live) must contain real work stills; text-only / empty / placeholder <img> is REJECT. Images are not optional. Hung files require assets.json external_ready:true AND INDEX public:true. 58-node file only on /wonder/ until generic public. DEV4 UIs are public:false. Visible A-* ids REJECT. Also REJECT token-only VI, text-only showreel cards, legal-paragraph credits, and JD-archetype invocation misses."
     },
     {
       "id": "R3",

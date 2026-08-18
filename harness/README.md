@@ -119,10 +119,21 @@ Hop order:
    typeset wordmarks are `REJECT`. Empty white work cards are `REJECT`.
    Visible internal asset ids (`A-SHOWREEL-TRAD`, `A-WORKFLOW-6STAGE`,
    `A-WORKFLOW-58NODE`, `A-TOOL-PROMPTBUILDER`, `A-TOOLS-DEV4`,
-   `A-FILM-*`) on the public page are `REJECT`. P-led `A-WORKFLOW-6STAGE`
-   must be one PNG/SVG + locked footnote (not a text grid / 7-stage).
-   Invocation must match the JD archetype (see matrix below). Images
-   are not optional; there is no waiver.
+   `A-FILM-*`) on the public page are `REJECT`. An outward image
+   requires `assets.json` `external_ready:true` **and** drs-source
+   INDEX `public:true` (catalog: `rules/asset-clearance.json`). Text
+   may cite a READY-but-private asset; the file cannot hang.
+   `A-WORKFLOW-58NODE` may be hung only on `/wonder/` until a generic
+   public version exists. `A-TOOLS-DEV4` screenshots are all
+   `public:false`; an In-development label does not waive INDEX.
+   `prompt-builder-ui-01` is the only public:true product shot today.
+   `A-WORKFLOW-6STAGE` is READY on Drive but not in DRS INDEX:
+   non-Wonder pages must reskin; never mix 6 vs 7/58 in captions.
+   P-led: not the lead; method slot only if the JD has process/gates
+   as must-or-should and the strip is a picture. O-led: required
+   (DOC-6/R8). A-led: supporting only. P-led pages may not hang a
+   Prompt Builder gallery. Invocation must match the JD archetype
+   (see matrix below). Images are not optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
@@ -282,7 +293,15 @@ Paths are relative to the package directory.
 | `fixtures/fail-p-led-7stage` | R2 `REJECT` (7-stage on Senior Producer) |
 | `fixtures/fail-p-led-6stage-text` | R2 `REJECT` (P-led 6-stage as a text grid) |
 | `fixtures/fail-indev-before-reel` | R2 `REJECT` (in-dev tools before the trad reel) |
-| `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip + 58-node) |
+| `fixtures/fail-private-asset-hung` | R2 `REJECT` (INDEX `public:false` file hung) |
+| `fixtures/fail-dev4-indev-label` | R2 `REJECT` (DEV4 hung; in-dev label does not waive) |
+| `fixtures/fail-58node-off-wonder` | R2 `REJECT` (58-node file hung off `/wonder/`) |
+| `fixtures/fail-6stage-drive-original` | R2 `REJECT` (Drive original hung; must reskin) |
+| `fixtures/fail-6stage-caption-mix` | R2 `REJECT` (6-stage caption mixed with 7/58) |
+| `fixtures/fail-o-led-missing-6stage` | R2 `REJECT` (O-led missing 6-stage picture) |
+| `fixtures/fail-p-led-pb-gallery` | R2 `REJECT` (P-led Prompt Builder gallery) |
+| `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip; 58-node *text* cite) |
+| `fixtures/pass-wonder-58node` | R2 `ACCEPT` (58-node *file* legal on `/wonder/`) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 ## Asset invocation matrix
@@ -291,9 +310,9 @@ Do not copy HyperAgent files into this repo. Name the asset id and the rule.
 
 | Archetype | Invoke | Forbidden |
 |---|---|---|
-| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *21:9 poster + play*; brand *stills*, not wordmarks; `A-WORKFLOW-6STAGE` as one reskinned PNG/SVG + locked footnote; `A-TOOL-PROMPTBUILDER` last, one card | text showreel card; legal-paragraph credits; empty white work cards; `A-WORKFLOW-58NODE` / 7-stage; in-dev tool wall before/taller than the trad reel; visible `A-*` ids; Klein Blue only as 10px labels |
-| **O-led** | `A-WORKFLOW-6STAGE` first | `A-WORKFLOW-58NODE` unless the JD asks for process depth |
-| **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip with *In development* labels; `A-WORKFLOW-58NODE` **allowed** | tools before films |
+| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *21:9 poster + play* + brand stills; `A-WORKFLOW-6STAGE` in the method slot only if the JD has process/gates as must-or-should, as one reskin picture | text showreel; legal-paragraph credits; empty white cards; 58-node *file*; DEV4 suite; Prompt Builder gallery; 7-stage; in-dev wall before/taller than the reel; visible `A-*` ids; Drive original 6-stage; Klein Blue only as 10px labels |
+| **O-led** | `A-WORKFLOW-6STAGE` required (DOC-6/R8), one picture | `A-WORKFLOW-58NODE` file (unless `/wonder/` or generic public); 58-node without JD process depth |
+| **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip; 58-node *file* only on `/wonder/` until generic public:true; 6-stage supporting only | tools before films; 58-node file off `/wonder/`; DEV4 screenshots |
 
 All fixture people, emails, companies, and sentences are synthetic.
 
