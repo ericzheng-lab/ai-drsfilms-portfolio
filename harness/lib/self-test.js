@@ -30,7 +30,12 @@ const {
   companySlug,
   bodyHasProfileMarker,
 } = require("./hops");
-const { htmlHasWorkImages, firstViewportHasStill } = require("./profile-images");
+const {
+  htmlHasWorkImages,
+  firstViewportHasStill,
+  firstStillIsEarly,
+  htmlHasEnoughStills,
+} = require("./profile-images");
 const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
@@ -72,11 +77,12 @@ function hasFail(report, idPrefix) {
 }
 
 function qualifyingFetchResult(company = "Acme", slug = "acme") {
+  const img = `<img src="https://ai.drsfilms.com/${slug}/work-still.png" alt="${company} selected work still" width="640" height="360">`;
   return {
     status: 200,
     timedOut: false,
     error: null,
-    body: `<!DOCTYPE html><html><head><title>${company}</title></head><body><h1>${company}</h1><p>https://ai.drsfilms.com/${slug}/</p><img src="https://ai.drsfilms.com/${slug}/work-still.png" alt="${company} selected work still" width="640" height="360"></body></html>`,
+    body: `<!DOCTYPE html><html><head><title>${company} Senior Producer</title></head><body>${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article></body></html>`,
   };
 }
 
@@ -840,6 +846,52 @@ async function testEmptyHeroProfileRejected() {
   return "REJECT";
 }
 
+async function testLateStillsProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-late-stills-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "type-only open with later stills must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-still-early"),
+    `late stills must fail r2-profile-still-early, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-work-images"),
+    "late-stills fixture has four real images; fail must be timing, not zero stills"
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-first-viewport-still"),
+    "late-stills fixture has no 78vh hero spacer"
+  );
+  return "REJECT";
+}
+
+async function testThinStackProfileRejected() {
+  const fetchResult = qualifyingFetchResult();
+  const r2 = await runHops({
+    packageDir: fixture("fail-thin-stack-profile"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult,
+  });
+  assert(r2.last.verdict === "REJECT", "two-film stack must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-still-count"),
+    `thin stack must fail r2-profile-still-count, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    !hasFail(r2.last, "r2-profile-work-images"),
+    "thin-stack fixture has real images; fail must be count, not zero stills"
+  );
+  return "REJECT";
+}
+
 async function testTextOnlyProfileRejected() {
   const fetchResult = qualifyingFetchResult();
   const r2 = await runHops({
@@ -1441,6 +1493,20 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         ).ok === false,
         "78vh hero without still"
       ),
+    "r2-profile-still-early": () =>
+      assert(
+        firstStillIsEarly(
+          `<body><h1>x</h1><p>${"word ".repeat(90)}</p><img src="later.jpg"></body>`
+        ).ok === false,
+        "stills below a long type hero"
+      ),
+    "r2-profile-still-count": () =>
+      assert(
+        htmlHasEnoughStills(
+          '<img src="a.jpg"><img src="b.jpg">'
+        ).ok === false,
+        "two stills do not carry a page"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -1742,6 +1808,8 @@ async function runSelfTest() {
     "test-ghost-profile-url-without-live-page-rejected":
       await testGhostProfileUrlWithoutLivePageRejected(),
     "test-empty-hero-profile-rejected": await testEmptyHeroProfileRejected(),
+    "test-late-stills-profile-rejected": await testLateStillsProfileRejected(),
+    "test-thin-stack-profile-rejected": await testThinStackProfileRejected(),
     "test-text-only-profile-rejected": await testTextOnlyProfileRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -1768,6 +1836,8 @@ async function runSelfTest() {
       "fail-missing-cl": missCl.last.verdict,
       "fail-text-only-profile": "REJECT",
       "fail-empty-hero-profile": "REJECT",
+      "fail-late-stills-profile": "REJECT",
+      "fail-thin-stack-profile": "REJECT",
       "pass-minimal-three": pass.last.verdict,
     },
     named,

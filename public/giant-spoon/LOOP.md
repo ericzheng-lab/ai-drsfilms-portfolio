@@ -200,3 +200,36 @@ Eric’s hard fail was the void. A supervisor could ACCEPT R2 on live #18 becaus
 ### Page change
 
 No return to a text hero. First viewport remains a catalog still (Loop 4 must move the lead to live-action / A-SHOWREEL-TRAD per B-WKS5 / B-WKS6).
+
+---
+
+## Loop 3 — 2026-08-18
+
+**Closed B-ids:** B-C6 (type-only open without 78vh), B-WKS4 (两个片子撑不起一页), B-P3 (long text then stills = 没核过 first screen).
+
+### 1) 调研
+
+`_CAREER` B-C6 is not only the 78vh spacer. Wonder **597 words** and Kalshi **407 words** before the first still are the same unfinished first screen. Cloudflare is 80 words — the cutoff. B-WKS4: ASCAP 0, #18 = 1, BPI/Compass/Mercury/Perplexity/WPP = 3. Two films do not carry a page.
+
+### 2) 自检
+
+- After Loop 2, a Kalshi-clone with four data-URI posters *below* a type hero ACCEPTs (no 70vh spacer). **FAIL** vs B-C6 算对的标准.
+- A page with two early stills ACCEPTs work-images + viewport + still-early. **FAIL** vs B-WKS4.
+- This branch’s Giant Spoon: 12 words then a still, 9 catalog imgs. PASS on these two gates. Still FAIL B-WKS6 (AI lead) and B-WKS7 (Vimeo in modal only).
+
+### 3) 辩论
+
+If I only encode 78vh, Wonder/Kalshi remain the legal high-water mark — Eric already said that open is wrong. If I only encode “has an `<img>` early,” a two-thumb BPI page still ACCEPT. Both holes are in the book. Encode both.
+
+**Next hole (Loop 4):** page can pass density and still lead with three AI/3D posters, hide traditional credits, and fold Vimeo into a modal. B-WKS3 / B-WKS5 / B-WKS6 / B-WKS7 / P-led method (showreel lead, AI ≤25%).
+
+### 4) 加固 harness
+
+- P0 `r2-profile-still-early`: first real `<img>` within 80 words of visible body text.
+- P0 `r2-profile-still-count`: ≥4 real work images.
+- Fixtures `fail-late-stills-profile` (140 words then 4 stills; viewport PASS) and `fail-thin-stack-profile` (2 stills first; early PASS).
+- `pass-minimal-three` / live fetch body now ship 4 stills at the top of `<body>`.
+
+### Page change
+
+No Giant Spoon HTML change this loop. Density and still-early already hold. Loop 4 rebuilds the lead to traditional / A-SHOWREEL-TRAD.

@@ -15,6 +15,8 @@ const REQUIRED_RULE_IDS = [
   "profile-not-homepage",
   "r2-profile-work-images",
   "r2-profile-first-viewport-still",
+  "r2-profile-still-early",
+  "r2-profile-still-count",
   "r3-three-live-pieces",
   "portfolio-url-matches-profile",
   "slop-lexicon",

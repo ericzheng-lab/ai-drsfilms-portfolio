@@ -13,7 +13,12 @@ const {
   findForbiddenWaivers,
 } = require("./text-scan");
 const { workIdsFrom } = require("./manifest");
-const { htmlHasWorkImages, firstViewportHasStill } = require("./profile-images");
+const {
+  htmlHasWorkImages,
+  firstViewportHasStill,
+  firstStillIsEarly,
+  htmlHasEnoughStills,
+} = require("./profile-images");
 
 function check(id, severity, ok, detail) {
   return {
@@ -738,6 +743,55 @@ function profileFirstViewportGate(pkg, opts = {}) {
   };
 }
 
+function profileHtmlSides(pkg, opts = {}) {
+  const localHtml =
+    pkg.paths.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  return { localHtml, liveHtml };
+}
+
+function profileGateFrom(fn, emptyDetail, failPrefix) {
+  return function profileGate(pkg, opts = {}) {
+    const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
+    const parts = [];
+    let ok = true;
+    if (localHtml) {
+      const ev = fn(localHtml);
+      parts.push(`local HTML: ${ev.reason}`);
+      if (!ev.ok) ok = false;
+    }
+    if (liveHtml) {
+      const ev = fn(liveHtml);
+      parts.push(`live HTML: ${ev.reason}`);
+      if (!ev.ok) ok = false;
+    }
+    if (!localHtml && !liveHtml) {
+      return { ok: false, detail: emptyDetail };
+    }
+    return {
+      ok,
+      detail: ok ? parts.join("; ") : `${failPrefix}: ${parts.join("; ")}`,
+    };
+  };
+}
+
+const profileStillEarlyGate = profileGateFrom(
+  firstStillIsEarly,
+  "no Profile HTML to inspect for still-early (B-C6)",
+  "first still is too late (B-C6 / B-WKS4 / B-P3)"
+);
+
+const profileStillCountGate = profileGateFrom(
+  htmlHasEnoughStills,
+  "no Profile HTML to inspect for still count (B-WKS4)",
+  "too few work stills (B-WKS4)"
+);
+
 function hopR2(pkg, rules, opts = {}) {
   const checks = [];
   const classified = profileUrlFromPkg(pkg);
@@ -756,6 +810,10 @@ function hopR2(pkg, rules, opts = {}) {
   checks.push(
     check("r2-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
   );
+  const early = profileStillEarlyGate(pkg, opts);
+  checks.push(check("r2-profile-still-early", "P0", early.ok, early.detail));
+  const count = profileStillCountGate(pkg, opts);
+  checks.push(check("r2-profile-still-count", "P0", count.ok, count.detail));
   checks.push(
     check(
       "profile-not-homepage",
@@ -868,6 +926,10 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(
     check("r3-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
   );
+  const early = profileStillEarlyGate(pkg, opts);
+  checks.push(check("r3-profile-still-early", "P0", early.ok, early.detail));
+  const count = profileStillCountGate(pkg, opts);
+  checks.push(check("r3-profile-still-count", "P0", count.ok, count.detail));
   const slug = slugMatchesCompany(pkg, classified);
   checks.push(check("profile-slug-matches-company", "P0", slug.ok, slug.detail));
   checks.push(...waiverChecks(pkg, ["profile", "cl"]));
@@ -1001,6 +1063,8 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-present",
     "r2-profile-work-images",
     "r2-profile-first-viewport-still",
+    "r2-profile-still-early",
+    "r2-profile-still-count",
     "profile-not-homepage",
     "profile-slug-matches-company",
     "no-profile-waiver",
@@ -1013,6 +1077,8 @@ const REQUIRED_HOP_CHECKS = {
     "r3-three-live-pieces",
     "r3-profile-work-images",
     "r3-profile-first-viewport-still",
+    "r3-profile-still-early",
+    "r3-profile-still-count",
     "profile-slug-matches-company",
     "cv-cites-profile-url",
     "cl-cites-profile-url",

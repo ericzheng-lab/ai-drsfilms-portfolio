@@ -102,7 +102,10 @@ Hop order:
    without stills are `REJECT` (`_CAREER` B-C6 / B-P3 / B-WKS4). A
    `.hero` / `header` with `min-height >= 70vh` and no still in that
    hero is `REJECT` even if a thumb appears later (B-C6 blank first
-   viewport; Giant Spoon #18). Images are not optional; there is no waiver.
+   viewport; Giant Spoon #18). A type-only open with stills after 80
+   words of body copy is `REJECT` (Wonder/Kalshi class; B-C6 / B-WKS4).
+   Fewer than 4 real work images is `REJECT` (B-WKS4). Images are not
+   optional; there is no waiver.
    `--fetch-profile` is how the CLI obtains live evidence; 4xx /
    5xx / timeout / error is `FAIL` (not PASS). Self-test may inject a
    qualifying `fetchResult` so fixtures do not need the public internet.
@@ -238,6 +241,8 @@ Paths are relative to the package directory.
 | `fixtures/fail-missing-cl` | `REJECT` (no cover letter file) |
 | `fixtures/fail-text-only-profile` | R2 `REJECT` (Profile HTML has no real work stills) |
 | `fixtures/fail-empty-hero-profile` | R2 `REJECT` (78vh / min-height hero spacer, no still in first viewport) |
+| `fixtures/fail-late-stills-profile` | R2 `REJECT` (type-only open; stills below 80 words) |
+| `fixtures/fail-thin-stack-profile` | R2 `REJECT` (fewer than 4 real work stills) |
 | `fixtures/pass-minimal-three` | mechanical `ACCEPT` on R3 (`https://ai.drsfilms.com/acme/`) |
 
 All fixture people, emails, companies, and sentences are synthetic.

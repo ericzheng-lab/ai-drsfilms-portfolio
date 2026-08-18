@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -103,7 +103,27 @@
         "R2",
         "R3"
       ],
-      "note": "A .hero / header with min-height >= 70vh and no <img> is REJECT (the Giant Spoon #18 78vh fail). A later thumb does not save an empty first viewport. No waiver."
+      "note": "A .hero / header with min-height >= 70vh and no <img> is REJECT (the Giant Spoon #18 78vh fail). A later thumb does not save an empty first viewport. No waiver. _CAREER B-C6 / B-C4 / B-P3."
+    },
+    {
+      "id": "r2-profile-still-early",
+      "severity": "P0",
+      "failure": "type-only open / stills below a long text hero (Wonder/Kalshi class)",
+      "hops": [
+        "R2",
+        "R3"
+      ],
+      "note": "First real <img> must appear within 80 words of visible body text. A Kalshi/Wonder type hero with posters below the fold is REJECT (B-C6 / B-WKS4 / B-P3). No waiver."
+    },
+    {
+      "id": "r2-profile-still-count",
+      "severity": "P0",
+      "failure": "two films / thin thumb strip standing in for a work page",
+      "hops": [
+        "R2",
+        "R3"
+      ],
+      "note": "At least 4 real work images. B-WKS4: 作品多、话少、没照片。两个片子撑不起一页. BPI 3-thumb and #18 1-thumb classes REJECT. No waiver."
     },
     {
       "id": "profile-not-homepage",

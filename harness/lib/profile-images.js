@@ -119,6 +119,65 @@ function firstHeroMarkup(html) {
   return "";
 }
 
+const MIN_STILL_COUNT = 4;
+const MAX_WORDS_BEFORE_STILL = 80;
+
+function stripToWords(htmlChunk) {
+  const stripped = String(htmlChunk || "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return stripped ? stripped.split(/\s+/) : [];
+}
+
+function visibleTextBeforeFirstImage(html) {
+  const src = String(html || "");
+  const body = src.match(/<body\b[^>]*>([\s\S]*)<\/body>/i);
+  const chunk = body ? body[1] : src;
+  const img = /<img\b/i.exec(chunk);
+  const before = img ? chunk.slice(0, img.index) : chunk;
+  const words = stripToWords(before);
+  return { words: words.length, text: words.join(" ") };
+}
+
+function firstStillIsEarly(html) {
+  const images = workImagesInHtml(html);
+  const { words } = visibleTextBeforeFirstImage(html);
+  if (!images.length) {
+    return {
+      ok: false,
+      wordsBefore: words,
+      reason: "no real still; first viewport is text (B-C6 / B-P3)",
+    };
+  }
+  if (words > MAX_WORDS_BEFORE_STILL) {
+    return {
+      ok: false,
+      wordsBefore: words,
+      reason: `${words} words before first still (max ${MAX_WORDS_BEFORE_STILL}; B-C6 / B-WKS4)`,
+    };
+  }
+  return {
+    ok: true,
+    wordsBefore: words,
+    reason: `first still after ${words} words`,
+  };
+}
+
+function htmlHasEnoughStills(html, min = MIN_STILL_COUNT) {
+  const images = workImagesInHtml(html);
+  return {
+    ok: images.length >= min,
+    count: images.length,
+    reason: images.length >= min
+      ? `${images.length} real work image(s) (>=${min})`
+      : `${images.length} still(s); B-WKS4 two films do not carry a page (need >=${min})`,
+  };
+}
+
 function firstViewportHasStill(html) {
   const src = String(html || "");
   const spacers = heroMinHeightVh(src);
@@ -152,5 +211,10 @@ module.exports = {
   htmlHasWorkImages,
   isRealWorkSrc,
   firstViewportHasStill,
+  firstStillIsEarly,
+  htmlHasEnoughStills,
+  visibleTextBeforeFirstImage,
   heroMinHeightVh,
+  MIN_STILL_COUNT,
+  MAX_WORDS_BEFORE_STILL,
 };
