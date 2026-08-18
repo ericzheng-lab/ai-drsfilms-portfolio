@@ -399,3 +399,36 @@ Only after those hops REJECT the current `/giant-spoon/` failure modes, the page
 - Six-stage silent strip. Prompt Builder last, one card. No 58-node. No in-dev tool wall.
 
 Existing B-layer REJECTS from PR #19 stay encoded and still FAIL their fixtures.
+
+---
+
+## Loop 9 — 2026-08-18 (closed-debate cards, fixtures first)
+
+Two debates closed. Compiled as R2 / R-VI fixtures, not a Giant Spoon restyle.
+
+**P-led REJECT:** text showreel card; legal-paragraph credits; empty white work cards; 58-node / 7-stage on Senior Producer; in-dev tool wall before/taller than the trad reel; visible internal asset ids; Klein Blue only as 10px labels.
+
+**P-led MUST:** reel poster 21:9 + play; brand stills, not wordmarks; `A-WORKFLOW-6STAGE` as one reskinned PNG/SVG + locked footnote; Prompt Builder last, one card.
+
+**A-led (Wonder exam)** may use films-first + tools strip + 58-node — different fixture (`pass-a-led-wonder` ACCEPT).
+
+### 1) Harness first
+
+New checks: `r2-profile-empty-work-cards`, `r2-profile-brand-stills`, `r2-profile-six-stage`. Showreel picture now requires 21:9 + play.
+
+Fixtures: `fail-empty-white-cards`, `fail-showreel-not-21x9`, `fail-brand-wordmarks`, `fail-p-led-7stage`, `fail-p-led-6stage-text`, `fail-indev-before-reel`, `pass-a-led-wonder`. `--self-test` PASS (`test-closed-debate-cards-rejected`).
+
+### 2) Current `/giant-spoon/` vs those fixtures (before exam rebuild)
+
+The previous exam still **FAILED** the new gates: 16:9 reel without play; COACH/Nike/BMW typeset wordmarks (empty white brand cards); 6-cell text strip instead of one PNG/SVG + footnote. That is why this page was rebuilt *after* the fixtures, not instead of them.
+
+### 3) Exam page (secondary)
+
+Only after those hops REJECT the text cards:
+
+- Reel poster `21:9` + play. In-card Vimeo kept.
+- Brand wordmark row **omitted** (no real brand stills in `stills/`; do not invent photos).
+- One `stills/workflow-6stage.svg` (Klein Blue / black / white) + locked footnote.
+- Prompt Builder last, one card. No 58-node. No in-dev wall. Klein Blue remains a wordmark/field.
+
+Ruleset 1.9.0. Claim-locks unchanged.

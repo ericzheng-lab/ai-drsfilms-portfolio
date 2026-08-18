@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1260 220" role="img" aria-labelledby="title desc">
+  <title id="title">Six-stage production method</title>
+  <desc id="desc">One locked graphic: intake, route, gates, produce, deliver, next.</desc>
+  <rect width="1260" height="220" fill="#ffffff"/>
+  <rect x="0" y="0" width="1260" height="8" fill="#0033A0"/>
+  <g font-family="Sora, Helvetica, Arial, sans-serif">
+    <g transform="translate(20,28)">
+      <rect width="190" height="164" fill="#0033A0"/>
+      <text x="16" y="42" fill="#ffffff" font-size="28" font-weight="700">01</text>
+      <text x="16" y="88" fill="#ffffff" font-size="20" font-weight="600">INTAKE</text>
+    </g>
+    <g transform="translate(226,28)">
+      <rect width="190" height="164" fill="#000000"/>
+      <text x="16" y="42" fill="#ffffff" font-size="28" font-weight="700">02</text>
+      <text x="16" y="88" fill="#ffffff" font-size="20" font-weight="600">ROUTE</text>
+    </g>
+    <g transform="translate(432,28)">
+      <rect width="190" height="164" fill="#0033A0"/>
+      <text x="16" y="42" fill="#ffffff" font-size="28" font-weight="700">03</text>
+      <text x="16" y="88" fill="#ffffff" font-size="20" font-weight="600">GATES</text>
+    </g>
+    <g transform="translate(638,28)">
+      <rect width="190" height="164" fill="#000000"/>
+      <text x="16" y="42" fill="#ffffff" font-size="28" font-weight="700">04</text>
+      <text x="16" y="88" fill="#ffffff" font-size="20" font-weight="600">PRODUCE</text>
+    </g>
+    <g transform="translate(844,28)">
+      <rect width="190" height="164" fill="#0033A0"/>
+      <text x="16" y="42" fill="#ffffff" font-size="28" font-weight="700">05</text>
+      <text x="16" y="88" fill="#ffffff" font-size="20" font-weight="600">DELIVER</text>
+    </g>
+    <g transform="translate(1050,28)">
+      <rect width="190" height="164" fill="#000000"/>
+      <text x="16" y="42" fill="#ffffff" font-size="28" font-weight="700">06</text>
+      <text x="16" y="88" fill="#ffffff" font-size="20" font-weight="600">NEXT</text>
+    </g>
+  </g>
+</svg>

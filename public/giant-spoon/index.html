@@ -48,21 +48,17 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
 .trad-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
 .work-card{text-align:left;background:var(--white);border:1px solid var(--black);overflow:hidden;position:relative}
 .poster{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--black)}
+.reel-poster{width:100%;aspect-ratio:21/9;object-fit:cover;background:var(--black)}
 .work-copy{padding:16px}
 .work-copy h3{font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.05;text-transform:uppercase;margin-bottom:6px}
 .work-copy p{font-size:13px}
-.marks{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--black);margin-top:14px;list-style:none}
-.marks li{padding:18px 16px;font-size:22px;font-weight:700;letter-spacing:-.03em;text-transform:uppercase;border-right:1px solid var(--black)}
-.marks li:last-child{border-right:0}
+.method-graphic{margin-top:8px;border:1px solid var(--black)}
+.method-graphic img{width:100%;height:auto;background:var(--white)}
+.method-graphic .footnote{padding:12px 14px;font-size:13px;font-weight:500;border-top:1px solid var(--black)}
 .film-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
 .work-card.video-trigger{cursor:pointer}
 .work-card .play,.lead-still .play{display:inline-block;border:1px solid #fff;padding:8px 10px;font-size:12px;font-weight:600}
 .work-card .play{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.94);color:var(--black)}
-.strip{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--black)}
-.strip div{padding:16px;border-right:1px solid var(--black)}
-.strip div:last-child{border-right:0}
-.strip b{display:block;font-size:18px;font-weight:700}
-.strip span{display:block;margin-top:8px;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
 .leadership{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--black)}
 .leadership > div{padding:22px}
 .leadership > div + div{border-left:1px solid var(--black)}
@@ -87,8 +83,8 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
 .modal-title{font-weight:600;margin-bottom:10px;text-transform:uppercase}
 .modal-close{position:absolute;top:10px;right:10px;width:32px;height:32px;font-size:22px;border:1px solid var(--black)}
 @media(max-width:900px){
-  .identity,.film-grid,.trad-grid,.strip,.leadership,.tool,.section-head,.closing-inner,.footer,.marks{grid-template-columns:1fr;display:block}
-  .stat,.leadership > div + div,.marks li,.strip div{border-right:0;border-top:1px solid var(--black)}
+  .identity,.film-grid,.trad-grid,.leadership,.tool,.section-head,.closing-inner,.footer{grid-template-columns:1fr;display:block}
+  .stat,.leadership > div + div{border-right:0;border-top:1px solid var(--black)}
   .lead-ui{display:block}
   .lead-ui h1{margin-bottom:8px}
 }
@@ -108,7 +104,7 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
   <div class="lead-ui">
     <div>
       <h1>Brief History of A Family</h1>
-      <p>Live-action feature first. Showreel as a picture. Brand marks on the page.</p>
+      <p>Live-action feature first. Showreel as a 21:9 poster. Finished stills, not typeset marks.</p>
     </div>
   </div>
 </a>
@@ -141,11 +137,12 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
       </div>
       <div class="trad-grid">
         <article class="work-card">
-          <img class="poster" src="stills/brief-history-of-a-family-still-02.jpg" alt="Traditional showreel still"/>
+          <img class="reel-poster" src="stills/brief-history-of-a-family-still-02.jpg" alt="Traditional showreel still"/>
+          <span class="play">Play</span>
           <iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
           <div class="work-copy">
             <h3>Traditional showreel</h3>
-            <p>Live-action reel as a picture on this card. Vimeo stays on the card.</p>
+            <p>21:9 poster plus play. Vimeo stays on the card.</p>
           </div>
         </article>
         <article class="work-card">
@@ -157,12 +154,6 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
           </div>
         </article>
       </div>
-      <ul class="marks" aria-label="Brand marks">
-        <li>COACH</li>
-        <li>Nike</li>
-        <li>BMW</li>
-      </ul>
-
       <div class="section-head" style="margin-top:36px">
         <div class="idx">AI after the board</div>
         <div>
@@ -228,17 +219,13 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
         <div class="idx">02 / Method</div>
         <div>
           <h2>From first brief to last file.</h2>
-          <p>Six stages as a silent strip after the work. AI shows up here as time and money.</p>
+          <p>One locked method graphic after the work. AI shows up here as time and money.</p>
         </div>
       </div>
-      <div class="strip" aria-label="Six-stage method">
-        <div><b>01</b><span>Intake</span></div>
-        <div><b>02</b><span>Route</span></div>
-        <div><b>03</b><span>Gates</span></div>
-        <div><b>04</b><span>Produce</span></div>
-        <div><b>05</b><span>Deliver</span></div>
-        <div><b>06</b><span>Next</span></div>
-      </div>
+      <figure class="method-graphic">
+        <img src="stills/workflow-6stage.svg" alt="Six-stage production method"/>
+        <figcaption class="footnote">Locked six-stage method.</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -283,14 +270,14 @@ button{appearance:none;border:0;background:transparent;font:inherit;color:inheri
           <p>One card. Last. Evidence I can price and schedule a generated pass with a human gate.</p>
         </div>
       </div>
-      <div class="tool">
+      <article class="tool">
         <img src="stills/prompt-builder-ui-01.jpg" alt="Prompt Builder public landing"/>
         <div class="tool-copy">
           <h3>Prompt Builder</h3>
           <p>Turns creative intent into controllable, model-specific prompts with a human gate before output ships.</p>
           <a href="https://ai.drsfilms.com/prompt-builder/" target="_blank" rel="noopener noreferrer">Open Prompt Builder ↗</a>
         </div>
-      </div>
+      </article>
     </div>
   </section>
 </main>
