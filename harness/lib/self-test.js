@@ -65,6 +65,12 @@ const {
 } = require("./asset-clearance");
 const { recentBarOk, sameSlugSet } = require("./profile-recent-bar");
 const {
+  briefPageSlotsOk,
+  briefLeadMatchesArchetype,
+  briefLeadAssetsClearable,
+  profileFollowsBriefSlots,
+} = require("./brief-slots");
+const {
   PIN_PATH,
   REQUIRED_RULE_IDS,
   pinInputPaths,
@@ -1456,6 +1462,116 @@ async function testRecentBarFixtures() {
   return "REJECT";
 }
 
+async function testBriefPageSlotsRejected() {
+  const noSlots = await runHops({
+    packageDir: fixture("fail-brief-no-slots"),
+    hops: ["R0"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(noSlots.last.verdict === "REJECT", "fail-brief-no-slots R0 must REJECT");
+  assert(
+    hasFail(noSlots.last, "brief-page-slots"),
+    `fail-brief-no-slots must fail brief-page-slots, got ${failuresOf(noSlots.last)}`
+  );
+
+  const filmLead = await runHops({
+    packageDir: fixture("fail-p-led-film-lead"),
+    hops: ["R0"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(filmLead.last.verdict === "REJECT", "fail-p-led-film-lead R0 must REJECT");
+  assert(
+    hasFail(filmLead.last, "brief-lead-matches-archetype"),
+    `fail-p-led-film-lead must fail brief-lead-matches-archetype, got ${failuresOf(filmLead.last)}`
+  );
+  assert(
+    !hasFail(filmLead.last, "brief-page-slots"),
+    "P-led film-lead fixture must have slots so the archetype miss is the named fail"
+  );
+
+  const img =
+    '<img src="https://ai.drsfilms.com/acme/work-still.png" alt="Brief History of a Family still" width="640" height="360">';
+  const filmPage = await runHops({
+    packageDir: fixture("fail-page-ignores-brief-lead"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: {
+      status: 200,
+      timedOut: false,
+      error: null,
+      body: `<!DOCTYPE html><html><head><title>Acme Senior Producer</title><style>.wordmark{background:#1A2B3C;color:#fff;padding:20px 24px;font-size:22px}</style></head><body><header class="wordmark">Acme</header>${img}${img}${img}${img}<h1>Acme Senior Producer</h1><p>https://ai.drsfilms.com/acme/</p><article class="work-card">${img}<h3>Brief History of a Family</h3><iframe src="https://player.vimeo.com/video/1172739705" title="Brief History of a Family"></iframe></article><article class="work-card">${img}<h3>Brief History of a Family</h3></article><article class="work-card">${img}<h3>Brief History of a Family</h3></article><article class="work-card">${img}<h3>Brief History of a Family</h3></article><p>One Click Mute. Manga Cut. DoomBrush.</p><figure><img src="https://ai.drsfilms.com/acme/workflow-6stage.svg" alt="Six-stage production method"><figcaption class="footnote">Locked six-stage method.</figcaption></figure></body></html>`,
+    },
+  });
+  assert(filmPage.last.verdict === "REJECT", "fail-page-ignores-brief-lead R2 must REJECT");
+  assert(
+    hasFail(filmPage.last, "r2-profile-follows-brief-slots"),
+    `fail-page-ignores-brief-lead must fail r2-profile-follows-brief-slots, got ${failuresOf(filmPage.last)}`
+  );
+
+  const r3echo = await runHops({
+    packageDir: fixture("fail-page-ignores-brief-lead"),
+    hops: ["R3"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: {
+      status: 200,
+      timedOut: false,
+      error: null,
+      body: `<!DOCTYPE html><html><head><title>Acme Senior Producer</title></head><body><header class="wordmark">Acme</header>${img}${img}${img}${img}<h1>Acme Senior Producer</h1><p>https://ai.drsfilms.com/acme/</p><article class="work-card">${img}<h3>Brief History of a Family</h3></article></body></html>`,
+    },
+  });
+  assert(
+    hasFail(r3echo.last, "r3-profile-follows-brief-slots"),
+    `R3 must echo r3-profile-follows-brief-slots, got ${failuresOf(r3echo.last)}`
+  );
+
+  const passSlots = await runHops({
+    packageDir: fixture("pass-brief-slots-lead"),
+    hops: ["R0", "R-VI", "R1", "R1b", "R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: true,
+    fetchResult: qualifyingFetchResult(),
+  });
+  assert(
+    passSlots.reports.length === 5,
+    `pass-brief-slots-lead should finish 5 hops, got ${passSlots.reports.length}`
+  );
+  for (const r of passSlots.reports) {
+    assert(
+      r.verdict === "ACCEPT",
+      `${r.hop} should ACCEPT on pass-brief-slots-lead, got ${r.verdict}: ${r.failures.join("; ")}`
+    );
+  }
+
+  const unclearable = briefLeadAssetsClearable({
+    selected_work_ids: ["unclearable-lead-still"],
+    page_slots: {
+      archetype: "P-led",
+      lead: "unclearable-lead-still",
+      second: [],
+      supporting: [],
+      omit: [],
+    },
+  });
+  assert(unclearable.ok === false, "unclearable lead must fail brief-lead-assets-clearable");
+  assert(
+    decideVerdict([
+      {
+        id: "brief-lead-assets-clearable",
+        severity: "P1",
+        status: "FAIL",
+        detail: unclearable.reason,
+      },
+    ]) === "REPAIR",
+    "lead that cannot be hung is R0 REPAIR, not a later-hop category swap"
+  );
+
+  return "REJECT";
+}
+
 async function testGs18HtmlStillRejected() {
   const gs18 = `<style>:root{--blue:#0033a0}.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}.hero .header-line{font-size:14px;color:var(--blue)}.stat span{font-size:11px;color:var(--blue)}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
   assert(
@@ -2200,6 +2316,68 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         "résumé/text page vs bar first-viewport still"
       );
     },
+    "brief-page-slots": () =>
+      assert(
+        briefPageSlotsOk({ selected_work_ids: ["showreel-trad", "coach-spot"] }).ok === false,
+        "missing page_slots"
+      ),
+    "brief-lead-matches-archetype": () =>
+      assert(
+        briefLeadMatchesArchetype(
+          {
+            selected_work_ids: [
+              "brief-history-of-a-family",
+              "showreel-trad",
+              "coach-spot",
+            ],
+            page_slots: {
+              archetype: "P-led",
+              lead: "brief-history-of-a-family",
+              second: "showreel-trad",
+              supporting: ["coach-spot"],
+              omit: [],
+            },
+          },
+          {
+            manifest: { role: "Senior Producer" },
+            brief: { value: "Archetype: p-led. Agency integrated production." },
+            briefAttrs: { archetype: "P-led" },
+          }
+        ).ok === false,
+        "P-led film-only lead"
+      ),
+    "brief-lead-assets-clearable": () =>
+      assert(
+        briefLeadAssetsClearable({
+          selected_work_ids: ["unclearable-lead-still"],
+          page_slots: {
+            archetype: "P-led",
+            lead: "unclearable-lead-still",
+            second: [],
+            supporting: [],
+            omit: [],
+          },
+        }).ok === false,
+        "lead without dual-gate still"
+      ),
+    "r2-profile-follows-brief-slots": () =>
+      assert(
+        profileFollowsBriefSlots(
+          '<h1>Senior Producer</h1><article class="work-card"><img src="a.jpg" alt="Brief History of a Family"><h3>Brief History of a Family</h3></article>',
+          {
+            briefAttrs: {
+              page_slots: {
+                archetype: "P-led",
+                lead: ["showreel-trad", "coach-spot"],
+                second: "brief-history-of-a-family",
+                supporting: [],
+                omit: [],
+              },
+            },
+          }
+        ).ok === false,
+        "four-BHOAF page vs reel+coach lead"
+      ),
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -2515,6 +2693,7 @@ async function runSelfTest() {
     "test-closed-debate-cards-rejected": await testClosedDebateCardsRejected(),
     "test-asset-librarian-rejected": await testAssetLibrarianRejected(),
     "test-recent-bar-fixtures": await testRecentBarFixtures(),
+    "test-brief-page-slots-rejected": await testBriefPageSlotsRejected(),
     "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
@@ -2577,6 +2756,10 @@ async function runSelfTest() {
       "fail-p-led-pb-gallery": "REJECT",
       "fail-stale-classic-bar": "REJECT",
       "pass-recent-bar": "ACCEPT",
+      "fail-brief-no-slots": "REJECT",
+      "fail-p-led-film-lead": "REJECT",
+      "fail-page-ignores-brief-lead": "REJECT",
+      "pass-brief-slots-lead": "ACCEPT",
       "pass-a-led-wonder": "ACCEPT",
       "pass-wonder-58node": "ACCEPT",
       "pass-minimal-three": pass.last.verdict,

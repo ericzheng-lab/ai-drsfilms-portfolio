@@ -1,8 +1,14 @@
 ---
 profile_route: acme
 selected_work_ids:
-  - work-synth-1
-  - work-synth-2
+  - showreel-trad
+  - brief-history-of-a-family
+page_slots:
+  archetype: P-led
+  lead: trad reel
+  second: brief-history-of-a-family
+  supporting: []
+  omit: []
 artifacts:
   - cv
   - cover_letter
@@ -19,4 +25,4 @@ Required live artifacts:
 - Cover letter at `cl.md`
 - Company Profile at https://ai.drsfilms.com/acme/
 
-Selected work ids: `work-synth-1`, `work-synth-2`.
+Selected work ids: `showreel-trad`, `brief-history-of-a-family`.

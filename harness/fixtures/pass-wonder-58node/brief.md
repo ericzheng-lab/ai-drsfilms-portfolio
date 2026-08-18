@@ -1,8 +1,14 @@
 ---
 profile_route: wonder
 selected_work_ids:
-  - work-synth-1
+  - brief-history-of-a-family
   - work-synth-2
+page_slots:
+  archetype: A-led
+  lead: brief-history-of-a-family
+  second: work-synth-2
+  supporting: []
+  omit: []
 artifacts:
   - cv
   - cover_letter
@@ -22,4 +28,4 @@ Required live artifacts:
 - Cover letter at `cl.md`
 - Company Profile at https://ai.drsfilms.com/wonder/
 
-Selected work ids: `work-synth-1`, `work-synth-2`.
+Selected work ids: `brief-history-of-a-family`, `work-synth-2`.
