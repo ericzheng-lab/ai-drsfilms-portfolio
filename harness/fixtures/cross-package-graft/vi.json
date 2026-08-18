@@ -1,0 +1,16 @@
+{
+  "source_url": "https://www.example.test/graftco/brand",
+  "date": "2026-08-01",
+  "hex": {
+    "primary": "#1A2B3C",
+    "background": "#F4F1EA"
+  },
+  "font": {
+    "family": "Source Sans 3",
+    "fallback": "sans-serif"
+  },
+  "radius": {
+    "button": "4px",
+    "card": "8px"
+  }
+}
