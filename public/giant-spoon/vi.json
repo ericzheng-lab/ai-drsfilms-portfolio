@@ -1,0 +1,21 @@
+{
+  "source_url": "https://giantspoon.com/",
+  "date": "2026-08-18",
+  "hex": {
+    "primary": "#0033a0",
+    "black": "#000000",
+    "white": "#ffffff",
+    "selection_text": "#ebebe3",
+    "selection_bg": "#222222"
+  },
+  "font": {
+    "family": "Sora",
+    "fallback": "sans-serif",
+    "weights": [300, 500, 600, 700]
+  },
+  "radius": {
+    "button": "0px",
+    "input": "0px",
+    "popup": "10px"
+  }
+}
