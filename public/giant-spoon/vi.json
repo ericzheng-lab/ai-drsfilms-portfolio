@@ -2,11 +2,9 @@
   "source_url": "https://giantspoon.com/",
   "date": "2026-08-18",
   "hex": {
-    "primary": "#0033a0",
+    "primary": "#0033A0",
     "black": "#000000",
-    "white": "#ffffff",
-    "selection_text": "#ebebe3",
-    "selection_bg": "#222222"
+    "white": "#FFFFFF"
   },
   "font": {
     "family": "Sora",
@@ -15,7 +13,12 @@
   },
   "radius": {
     "button": "0px",
-    "input": "0px",
     "popup": "10px"
+  },
+  "usage": {
+    "canvas": "white",
+    "primary": "Klein Blue #0033A0/#0033A1 as wordmark and field on the white canvas — not 10px labels",
+    "palette": "primary + black + white only; do not invent extra colors",
+    "type": "Sora"
   }
 }

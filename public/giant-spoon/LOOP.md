@@ -363,3 +363,39 @@ self-test PASS
 Fixtures: fail-skip-profile, fail-generic-homepage, fail-missing-cl, fail-text-only-profile, fail-empty-hero-profile, fail-late-stills-profile, fail-thin-stack-profile, fail-ai-only-profile, fail-ai-lead-profile, fail-ai-order-profile, fail-folded-vimeo-profile, fail-patched-shell-profile, fail-homepage-skin-profile → **REJECT**. `pass-minimal-three` → **ACCEPT**.
 
 Named Career Profile tests: `test-text-only-profile-rejected`, `test-empty-hero-profile-rejected`, `test-late-stills-profile-rejected`, `test-thin-stack-profile-rejected`, `test-named-career-work-sample-rejected`, `test-patched-shell-and-homepage-skin-rejected` → **REJECT** as required. Pin + P0 loosening assertions → **PASS**.
+
+---
+
+## Loops 6–8 — 2026-08-18 (R-VI / R2 pipeline, then exam)
+
+These loops are harness first. A restyle-only loop does not count.
+
+### Loop 6 — R-VI token-only
+
+**Escaped failure:** `vi.json` listed `#0033A0` / Sora with no USAGE. Distill without usage is a fail.
+
+**Harness:** P0 `vi-usage`. Fixture `fail-vi-token-only` (Giant Spoon-like tokens, no usage notes). `--self-test` PASS.
+
+### Loop 7 — primary only in 10px labels
+
+**Escaped failure:** Official Klein Blue is a wordmark/field on a white canvas. Live page was a B/W résumé with 10px blue labels. Token+usage without applied chrome still ACCEPT.
+
+**Harness:** P0 `vi-primary-as-field` / `r2-profile-vi-field`. Fixture `fail-vi-tiny-labels`. #18 CSS+markup still FAIL. Token+usage + applied chrome is the pass path. `--self-test` PASS.
+
+### Loop 8 — text cards, legal credits, visible ids, invocation
+
+**Escaped failure:** Showreel described in a paragraph (`A-SHOWREEL-TRAD · IN-CARD`). Brand credits as a legal grey wall. Internal asset ids on the public page. Assets dumped instead of invoked by JD.
+
+**Harness:** P0 `r2-profile-showreel-picture`, `r2-profile-credits-not-legal`, `r2-profile-no-internal-ids`, `r2-profile-invocation`. Fixtures: `fail-text-showreel-card`, `fail-legal-credits-profile`, `fail-internal-asset-ids`, `fail-p-led-58node`, `fail-p-led-indev-wall`, `fail-o-led-58node`, `fail-a-led-tools-first`. Invocation matrix named in `harness/README.md` (do not copy HyperAgent files). `--self-test` PASS.
+
+### Exam page (not the deliverable)
+
+Only after those hops REJECT the current `/giant-spoon/` failure modes, the page was rebuilt so it would ACCEPT them:
+
+- Klein Blue `#0033A0` as a wordmark/field on a white canvas. Palette is primary + black + white. Sora. Usage notes in `vi.json`.
+- Showreel as a *picture* on the card (still + in-card Vimeo).
+- Brand marks as a mark row (COACH / Nike / BMW), not a legal paragraph.
+- No visible `A-*` ids.
+- Six-stage silent strip. Prompt Builder last, one card. No 58-node. No in-dev tool wall.
+
+Existing B-layer REJECTS from PR #19 stay encoded and still FAIL their fixtures.
