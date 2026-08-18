@@ -479,4 +479,10 @@ The previous exam record (white / Klein Blue / black + “do not invent extra co
 
 ### 3) Exam record (secondary; not a page restyle)
 
-`public/giant-spoon/vi.json` now holds the audit chrome + work/case content. `index.html` unchanged. The page remains the exam, not the deliverable.
+`public/giant-spoon/vi.json` now holds the audit chrome + work/case content. The page remains the exam, not the deliverable.
+
+---
+
+## Revert — page restyle not shipped
+
+`index.html` restored to `main`. Homemade `stills/workflow-6stage.svg` removed — invented frame, not `A-WORKFLOW-6STAGE` (Drive PNG `1hZxTsSjSSvLRkpFe4-8jDSKbWN_HPkz5`, not in DRS INDEX). P-led exam must not hang an invented diagram. Deliverable is hops / fixtures / rules. `vi.json` exam record kept.
