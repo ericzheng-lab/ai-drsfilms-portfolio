@@ -351,3 +351,15 @@ No further Giant Spoon HTML change. Loop 4 rebuild already clears the B-layer ta
 | 5 | B-C5, B-EL1, B-DEP1 (re-confirmed) |
 
 Canon cited every loop: `_CAREER/job-hunt-copilot/career-eric-zheng.md` Profile-lane cases, `assets.json` work-sample SoT, memory 6 VI + structure, `career-application-loop.method.md` P-led Giant Spoon closeout. Plus the full `public/*/index.html` survey.
+
+---
+
+## `node harness/cli.js --self-test` (2026-08-18)
+
+```
+self-test PASS
+```
+
+Fixtures: fail-skip-profile, fail-generic-homepage, fail-missing-cl, fail-text-only-profile, fail-empty-hero-profile, fail-late-stills-profile, fail-thin-stack-profile, fail-ai-only-profile, fail-ai-lead-profile, fail-ai-order-profile, fail-folded-vimeo-profile, fail-patched-shell-profile, fail-homepage-skin-profile → **REJECT**. `pass-minimal-three` → **ACCEPT**.
+
+Named Career Profile tests: `test-text-only-profile-rejected`, `test-empty-hero-profile-rejected`, `test-late-stills-profile-rejected`, `test-thin-stack-profile-rejected`, `test-named-career-work-sample-rejected`, `test-patched-shell-and-homepage-skin-rejected` → **REJECT** as required. Pin + P0 loosening assertions → **PASS**.
