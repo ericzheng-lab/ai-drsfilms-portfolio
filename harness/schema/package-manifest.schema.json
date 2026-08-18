@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai.drsfilms.com/harness/schema/package-manifest.schema.json",
+  "title": "Career hop apply package manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["company", "role", "brief", "cv", "cl", "profile_url"],
+  "properties": {
+    "company": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Company name. Fixtures use synthetic names only."
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "brief": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to Brief file, relative to the package directory."
+    },
+    "cv": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to role-specific CV file, relative to the package directory."
+    },
+    "cl": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to cover letter file. Cannot be omitted or waived."
+    },
+    "profile_url": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Live company Profile URL: https://ai.drsfilms.com/{company}/ — not a homepage."
+    },
+    "profile_html": {
+      "type": "string",
+      "description": "Optional local Profile HTML artifact."
+    },
+    "vi": {
+      "type": "string",
+      "description": "Optional path to VI distill record (required for hop R-VI)."
+    },
+    "waivers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "FORBIDDEN for profile and cover letter. Field exists so the harness can detect and REJECT it. Nobody may waive Profile or CL."
+    }
+  }
+}

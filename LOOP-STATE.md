@@ -1,31 +1,28 @@
-# LOOP-STATE — Thread B Profile Pages (6 roles)
+# LOOP-STATE — Career hop harness
 
-Tier: L2
-Reason: production deployment on ai.drsfilms.com, 6 new routes, cross-repo/multi-file.
+Tier: L1
+Reason: quality-gate CLI only. Does not touch `public/` routes or production deploy artifacts.
 
 ## Loop 0 snapshot
 - Repo: ericzheng-lab/ai-drsfilms-portfolio
-- Base: main
-- Static deployment convention: public/<route>/index.html
-- Standing rule confirmed (memory cms9jv2v401xp06adgsqaljww): every finalized application package requires a deployed role-specific ai.drsfilms.com profile before it counts complete.
-- Trigger: Thread B (cmsxg8jpe3lk607adenoofroz) built 6 ACCEPT-verdict resume packages (Palo Alto Networks, Kalshi, Underdog, Amgen, Lionsgate, Autodesk Flow Studio) without this gate; repairing now.
-- Target routes: /palo-alto-networks/ /kalshi/ /underdog/ /amgen/ /lionsgate/ /autodesk-flow-studio/ — confirmed no collision against existing route inventory.
-- VI distilled per company from live official sites 2026-08-18 (hex + font names sourced, see commit messages / Package Brief).
+- Base: origin/main at 13a21279890be53bddaeb1a4ea930d8118e42b28
+- Static convention: `public/<company>/index.html` → `https://ai.drsfilms.com/{company}/`
+- Prior completed L2 (historical): Alibaba Startup Deck, PR #10, `71a37122e12157c42c4c79164cd1834efdb8bce4`
 
 ## Guardrails
-- No BP, top sheet, financing material, private credentials, private contacts.
-- DoomBrush and One Click Mute covers are byte-locked (SHA256 3f320260...5cf5791d1 / dbc15ebd...e352edd9) — extracted verbatim from existing elevenlabs/luma/google pages, not regenerated.
-- Do not alter existing portfolio routes or their content.
-- noindex required on every new route (meta tag + _headers X-Robots-Tag).
+- Quality gate only. Do not apply to jobs. Do not restyle the public site.
+- Do not alter existing portfolio routes.
+- Fixtures synthetic only. No invented biography.
+- Nobody may waive Profile or cover letter.
+- career-ops PR #5 is scrap only; checker canon lives here.
 
 ## DoD
-- [x] D1: 6x public/<slug>/index.html built, VI-distilled per company (not one generic shared page), same structural skeleton as Nen/Cloudflare pattern.
-- [x] D2: L0 harness (rules-v1.3, surface=profile) run against all 6 — P0:0 P1:0 P2:0 after one fix (identity-word heading cleanup, L0-007).
-- [x] D3: _headers and _redirects updated with entries for all 6 new routes.
-- [ ] D4: Draft PR opened; Eric's batch merge approval; post-merge live/noindex/SHA verification for all 6.
+- [x] D1: `node harness/cli.js --self-test` exits 0
+- [x] D2: four fixtures behave (skip-profile REJECT / generic-homepage REJECT / missing-cl REJECT / pass-minimal-three ACCEPT)
+- [x] D3: `public/` and site source untouched vs origin/main
+- [ ] D4: Draft PR open; not merged
 
 ## Loop log
-- Loop 0: confirmed static routing convention and no slug collisions via existing route inventory.
-- Loop 1: built 6 profile pages (VI research -> HTML generation -> L0 fix -> visual screenshot check), committed to feat/thread-b-profile-pages-2026-08-17.
-- Loop 2: added _headers/_redirects entries for all 6 routes.
-- Loop 3 (pending): open Draft PR, request Eric batch deployment approval, verify post-merge.
+- Loop 0: read origin/main, existing Actions `deploy.yml`, career-ops PR #5 as scrap.
+- Loop 1: add `harness/` CLI, versioned rules, schema, fixtures, isolated Actions workflow.
+- Verify: `--self-test` green; fixture hops match named outcomes; `git diff origin/main -- public src` empty.

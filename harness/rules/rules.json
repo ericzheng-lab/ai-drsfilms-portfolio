@@ -1,0 +1,145 @@
+{
+  "version": "1.0.0",
+  "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
+  "rules": [
+    {
+      "id": "no-profile-waiver",
+      "severity": "P0",
+      "failure": "skip-Profile / builder-declared waiver",
+      "hops": ["R0", "R2", "R3"],
+      "note": "Nobody — harness, README, or Brief waivers[] — may waive Profile."
+    },
+    {
+      "id": "no-cl-waiver",
+      "severity": "P0",
+      "failure": "missing CL / builder-declared waiver",
+      "hops": ["R0", "R1b", "R3"],
+      "note": "Cover letter cannot be waived. If an ATS has no cover field, the CL still exists as a file."
+    },
+    {
+      "id": "brief-no-skip-language",
+      "severity": "P0",
+      "failure": "skip-Profile / skip-CL prose",
+      "hops": ["R0"],
+      "patterns": [
+        "skip(ping)? (the )?(role[- ]specific )?profile",
+        "omit(ting)? (the )?(role[- ]specific )?profile",
+        "no profile (needed|required|necessary)",
+        "(does not|doesn't|doesnt) need a profile",
+        "waive[rd]? (the )?profile",
+        "profile[:\\s]+(n/?a|none|skipped|waived|optional|not needed)",
+        "skip(ping)? (the )?(cover letter|cl)\\b",
+        "omit(ting)? (the )?(cover letter|cl)\\b",
+        "no cover letter (needed|required|necessary)",
+        "(does not|doesn't|doesnt) need a (cover letter|cl)\\b",
+        "waive[rd]? (the )?(cover letter|cl)\\b",
+        "(cover letter|cl)[:\\s]+(n/?a|none|skipped|waived|optional|not needed)"
+      ]
+    },
+    {
+      "id": "profile-not-homepage",
+      "severity": "P0",
+      "failure": "generic homepage substituted for role-specific Profile",
+      "hops": ["R1", "R2", "R3"],
+      "reject_hosts": [
+        "drsfilms.com",
+        "www.drsfilms.com",
+        "ai.drsfilms.com"
+      ],
+      "reject_when_host_ai_and_slug_in": [
+        "",
+        "www",
+        "prompt-builder",
+        "index",
+        "home",
+        "careerops",
+        "career-ops",
+        "login",
+        "about"
+      ],
+      "reject_linkedin": true,
+      "reject_bare_domain": true
+    },
+    {
+      "id": "r3-three-live-pieces",
+      "severity": "P0",
+      "failure": "skip-Profile at closeout (HyperAgent)",
+      "hops": ["R3"],
+      "note": "Apply package is always CV + cover letter + company Profile URL. Missing any piece = REJECT."
+    },
+    {
+      "id": "portfolio-url-matches-profile",
+      "severity": "P0",
+      "failure": "generic homepage / mismatched Profile URL in CV or CL",
+      "hops": ["R3"]
+    },
+    {
+      "id": "slop-lexicon",
+      "severity": "P1",
+      "failure": "anti-AI-slop treated as looks-fine",
+      "hops": ["R1", "R1b"],
+      "lexicon": [
+        "passionate about",
+        "results-oriented",
+        "proven track record",
+        "leveraged",
+        "spearheaded",
+        "facilitated",
+        "synergies",
+        "robust",
+        "seamless",
+        "cutting-edge",
+        "innovative",
+        "in today's fast-paced world",
+        "demonstrated ability to",
+        "best practices"
+      ],
+      "source": "Named apply-doc slop list (HyperAgent modes/_shared.md). Kept as the named failure, not a path in this repo."
+    },
+    {
+      "id": "claim-lock-sundance-win",
+      "severity": "P0",
+      "failure": "claim-lock leak",
+      "hops": ["R1", "R1b"],
+      "lock": "Sundance + won/winner/获奖"
+    },
+    {
+      "id": "claim-lock-berlinale-win",
+      "severity": "P0",
+      "failure": "claim-lock leak",
+      "hops": ["R1", "R1b"],
+      "lock": "Berlinale as a win"
+    },
+    {
+      "id": "claim-lock-dungeon-fighter",
+      "severity": "P0",
+      "failure": "claim-lock leak",
+      "hops": ["R1", "R1b"],
+      "lock": "Dungeon Fighter without &"
+    },
+    {
+      "id": "claim-lock-rmb-cny",
+      "severity": "P0",
+      "failure": "claim-lock leak",
+      "hops": ["R1", "R1b"],
+      "lock": "RMB/CNY money"
+    },
+    {
+      "id": "claim-lock-p007",
+      "severity": "P0",
+      "failure": "claim-lock leak",
+      "hops": ["R1", "R1b"],
+      "lock": "P007 as an external product name"
+    },
+    {
+      "id": "claim-lock-five-films-four-weeks",
+      "severity": "P0",
+      "failure": "claim-lock leak",
+      "hops": ["R1", "R1b"],
+      "lock": "five-films-in-four-weeks style claims"
+    }
+  ],
+  "TODO_additional_claim_locks": [
+    "Add further claim-lock strings only from a named real leak. Do not invent biography, metrics, emails, or project facts here."
+  ]
+}

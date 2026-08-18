@@ -1,0 +1,14 @@
+{
+  "source_url": "https://www.example.test/acme/brand",
+  "date": "2026-08-01",
+  "hex": {
+    "primary": "#1A2B3C",
+    "background": "#F4F1EA"
+  },
+  "font": {
+    "family": "Source Sans 3"
+  },
+  "radius": {
+    "button": "4px"
+  }
+}

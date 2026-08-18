@@ -1,0 +1,7 @@
+{
+  "name": "career-hop-harness",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "Quality-gate CLI for the apply chain. Does not apply to jobs or restyle the public site."
+}
