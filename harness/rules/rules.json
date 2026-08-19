@@ -314,7 +314,7 @@
       "severity": "P0",
       "failure": "Brief lead id has no real video and no INDEX public:true still",
       "hops": ["R0"],
-      "note": "If a lead id cannot be hung (assets.json external_ready:true AND INDEX public:true) and is not an allowed Vimeo embed (Coach 190660903, trad reel 1174467043), R0 is REJECT (STOP). Uncatalogued fixture files and invented frames are not lead assets. Do not allow later hops to substitute another category (film for ads). No waiver."
+      "note": "Inspect page_slots.lead ids only — not selected_work_ids, not second, not supporting. If a lead id cannot be hung (assets.json external_ready:true AND INDEX public:true) and is not an allowed Vimeo embed (Coach 190660903, trad reel 1174467043), R0 is REJECT (STOP). Uncatalogued fixture files and invented frames are not lead assets. A second-slot work with no still is not an R0 STOP; r2-profile-no-type-slab-work is the page exam. Do not allow later hops to substitute another category (film for ads). No waiver."
     },
     {
       "id": "r2-profile-follows-brief-slots",

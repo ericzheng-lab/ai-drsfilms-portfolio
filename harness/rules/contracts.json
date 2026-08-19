@@ -22,7 +22,7 @@
       "required_inputs": [
         "brief"
       ],
-      "notes": "Brief YAML locks page composition: selected_work_ids lead-first plus page_slots (archetype, lead, second, supporting, omit). Missing slots or a P-led agency film-only lead while ads/reel ids are listed is REJECT. First viewport is the lead work as a frame (real video or INDEX public:true still). A lead id with no real video (Vimeo ok) and no INDEX public:true still is REJECT (STOP) — uncatalogued fixture files and invented frames are not lead assets. Later hops may not substitute another category (film for ads)."
+      "notes": "Brief YAML locks page composition: selected_work_ids lead-first plus page_slots (archetype, lead, second, supporting, omit). Missing slots or a P-led agency film-only lead while ads/reel ids are listed is REJECT. First viewport is the lead work as a frame (real video or INDEX public:true still). brief-lead-assets-clearable inspects page_slots.lead only — not selected_work_ids, second, or supporting. A lead id with no real video (Vimeo ok) and no INDEX public:true still is REJECT (STOP) — uncatalogued fixture files and invented frames are not lead assets. A second-slot work with no still is not an R0 STOP; the type-slab hop is the page exam. Later hops may not substitute another category (film for ads)."
     },
     {
       "id": "R-VI",

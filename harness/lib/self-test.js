@@ -1682,6 +1682,30 @@ async function testBriefLeadNotClearableRepair() {
   return "REJECT";
 }
 
+async function testApplyGsLeadAssetsInspectLeadSlotsOnly() {
+  const pkgDir = path.join(__dirname, "..", "..", "apply", "giant-spoon-senior-producer");
+  const r0 = await runHops({
+    packageDir: pkgDir,
+    hops: ["R0"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(
+    r0.last.verdict === "ACCEPT",
+    `apply GS R0 must ACCEPT (Coach Vimeo is a legal lead); got ${r0.last.verdict}: ${failuresOf(r0.last).join("; ")}`
+  );
+  const check = (r0.last.checks || []).find((c) => c.id === "brief-lead-assets-clearable");
+  assert(
+    check && check.status === "PASS",
+    `brief-lead-assets-clearable must PASS on page_slots.lead, got ${check && check.status}: ${check && check.detail}`
+  );
+  assert(
+    !/tencent/i.test(check.detail || ""),
+    `lead clearance must not treat Tencent as lead: ${check.detail}`
+  );
+  return "ACCEPT";
+}
+
 async function testFullBleedProfileRejected() {
   const r2 = await runHops({
     packageDir: fixture("fail-full-bleed-profile"),
@@ -2741,6 +2765,39 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         }).ok === true,
         "Coach 190660903 / trad reel 1174467043 are allowed lead hangs"
       );
+      assert(
+        briefLeadAssetsClearable({
+          selected_work_ids: [
+            "coach-make-the-ground-shake",
+            "tencent-dungeon-and-fighter",
+            "brief-history-of-a-family",
+          ],
+          page_slots: {
+            archetype: "P-led",
+            lead: ["traditional advertising showreel", "Coach brand spot"],
+            second: ["Tencent Dungeon & Fighter"],
+            supporting: ["Brief History of A Family"],
+            omit: ["58-node"],
+          },
+        }).ok === true,
+        "second-slot Tencent with no still is not an R0 STOP; inspect page_slots.lead only"
+      );
+      assert(
+        briefLeadAssetsClearable({
+          selected_work_ids: [
+            "coach-make-the-ground-shake",
+            "tencent-dungeon-and-fighter",
+          ],
+          page_slots: {
+            archetype: "P-led",
+            lead: ["tencent-dungeon-and-fighter"],
+            second: ["Coach brand spot"],
+            supporting: [],
+            omit: [],
+          },
+        }).ok === false,
+        "Tencent as page_slots.lead is still an R0 STOP"
+      );
     },
     "r2-profile-follows-brief-slots": () => {
       assert(
@@ -3135,6 +3192,8 @@ async function runSelfTest() {
     "test-recent-bar-fixtures": await testRecentBarFixtures(),
     "test-typewall-as-recent-bar": await testTypewallAsRecentBarRejected(),
     "test-brief-lead-not-clearable": await testBriefLeadNotClearableRepair(),
+    "test-apply-gs-lead-assets-inspect-lead-slots-only":
+      await testApplyGsLeadAssetsInspectLeadSlotsOnly(),
     "test-full-bleed-profile": await testFullBleedProfileRejected(),
     "test-live-over-stale-local": await testLiveOverStaleLocalAccepted(),
     "test-live-gs-film-slate-and-ai-dominate":

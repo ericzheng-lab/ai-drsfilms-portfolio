@@ -88,11 +88,14 @@ Hop order:
    agency/producer Brief whose `lead` is indie-film-only while ads/reel
    ids are in the list is `REJECT` (`brief-lead-matches-archetype`).
    A lead id with no real video (Vimeo ok) and no INDEX `public:true`
-   still is `REJECT` / STOP (`brief-lead-assets-clearable`) — uncatalogued
-   fixture files and invented frames are not lead assets. Later hops
-   may not substitute another category (film for ads). Allowed Vimeo
-   embeds: Coach `190660903`, trad reel `1174467043`. Page composition
-   is locked here, not after the Profile exists.
+   still is `REJECT` / STOP (`brief-lead-assets-clearable`). That hop
+   inspects `page_slots.lead` only — not `selected_work_ids`, second, or
+   supporting. Uncatalogued fixture files and invented frames are not
+   lead assets. A second-slot work with no still is not an R0 STOP;
+   `r2-profile-no-type-slab-work` is the page exam. Later hops may not
+   substitute another category (film for ads). Allowed Vimeo embeds:
+   Coach `190660903`, trad reel `1174467043`. Page composition is locked
+   here, not after the Profile exists.
 2. **R-VI** — VI distill record has source URL + date + exact hex / font /
    radius **and usage notes** (how the primary is a wordmark/field on the
    canvas). Empty or “similar to” = REJECT. Missing provenance = REJECT.
@@ -369,7 +372,7 @@ Paths are relative to the package directory.
 | `fixtures/fail-stale-classic-bar` | R2 `REJECT` (`compared_to` is portfolio slugs, not official work/case URLs) |
 | `fixtures/fail-typewall-as-recent-bar` | R2 `REJECT` (`compared_to` is type-wall slugs, not official work/case URLs) |
 | `fixtures/pass-recent-bar` | `r2-profile-recent-bar` `ACCEPT` (`compared_to` is official work/case https URLs) |
-| `fixtures/fail-brief-lead-not-clearable` | R0 `REJECT` (`brief-lead-assets-clearable`; lead cannot hang dual-gate still or allowed Vimeo) |
+| `fixtures/fail-brief-lead-not-clearable` | R0 `REJECT` (`brief-lead-assets-clearable`; `page_slots.lead` cannot hang dual-gate still or allowed Vimeo). Second-slot / `selected_work_ids` entries are not this STOP. |
 | `fixtures/fail-full-bleed-profile` | R2 `REJECT` (`r2-profile-max-width`; work img/iframe/video is `100vw`) |
 | `fixtures/pass-still-first-live-over-stale` | R2 `ACCEPT` when fetch is on (official `compared_to` + capped wrap + live body wins over stale local 78vh exam HTML) |
 | `fixtures/fail-brief-no-slots` | R0 `REJECT` (no `page_slots` / slot order) |

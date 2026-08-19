@@ -349,14 +349,13 @@ function briefLeadAssetsClearable(attrs) {
   if (!slots.ok || !slots.lead.length) {
     return { ok: true, reason: "lead-asset clearance N/A until page_slots.lead exists" };
   }
-  const workIds = yamlSelectedWorkIds(attrs);
-  const leadItems = [
-    ...slots.lead,
-    ...workIds.slice(0, Math.max(slots.lead.length, 1)),
-  ];
+  // R0 STOP is page_slots.lead only. selected_work_ids, second, and supporting
+  // are not the lead slot. A second-slot work with no still is not an R0 STOP;
+  // r2-profile-no-type-slab-work is the page exam for that hang. Missing a
+  // reel id from selected_work_ids does not promote the next listed work to lead.
   const seen = new Set();
   const blocked = [];
-  for (const item of leadItems) {
+  for (const item of slots.lead) {
     const key = normalizeToken(item);
     if (!key || seen.has(key)) continue;
     seen.add(key);
