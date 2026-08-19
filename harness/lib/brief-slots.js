@@ -8,6 +8,7 @@
 
 const { workIdsFrom } = require("./manifest");
 const { loadCatalog } = require("./asset-clearance");
+const { workImagesInHtml } = require("./profile-images");
 
 const SLOT_KEYS = ["archetype", "lead", "second", "supporting", "omit"];
 
@@ -412,6 +413,169 @@ function firstViewportChunk(html) {
   return chunk.slice(0, 1600);
 }
 
+const FILM_SLATE_SRC_RE =
+  /traditional-showreel-poster|2135053992|film-producer-slate|film_producer[_-]slate/i;
+const FILM_SLATE_TEXT_RE =
+  /\bfilm\s+producer\b|roles:\s*executive\s+producer/i;
+const ADS_SHOWREEL_COPY_RE =
+  /advertising\s+showreel|traditional\s+advertising\s+(?:show)?reel/i;
+const AI_FILM_STILL_RE =
+  /one-click-mute|one\s*click\s*mute|home-smarthome-manga|manga\s*cut|doombrush/i;
+const ADS_LEAD_STILL_RE =
+  /showreel|reel-poster|coach|advertising|brand\s+spot|make-the-ground-shake|campaign\s+spot|190660903|1174467043/i;
+const ADS_VIMEO_RE =
+  /player\.vimeo\.com\/video\/(190660903|1174467043)/i;
+
+function firstImgTag(html) {
+  const imgs = workImagesInHtml(html);
+  return imgs.length ? imgs[0] : null;
+}
+
+function firstViewportSurface(html) {
+  const first = firstImgTag(html);
+  return `${firstViewportChunk(html)}\n${firstWorkRow(html)}\n${
+    first ? `${first.tag} ${first.src}` : ""
+  }`;
+}
+
+function filmSlateSignal(surface) {
+  const src = String(surface || "");
+  if (FILM_SLATE_SRC_RE.test(src)) {
+    return "film-producer slate poster (traditional-showreel-poster / Vimeo 2135053992 title card)";
+  }
+  if (FILM_SLATE_TEXT_RE.test(src.replace(/<[^>]+>/g, " "))) {
+    return "FILM PRODUCER / film-slate wordmark in the first viewport";
+  }
+  return null;
+}
+
+function pLedAdsBrief(pkg) {
+  const attrs = (pkg && pkg.briefAttrs) || {};
+  const slots = pageSlotsFrom(attrs);
+  if (!isPLedAgencyProducer(pkg, slots)) return false;
+  if (slots.lead.some(isAdsOrReel)) return true;
+  const blob = `${(pkg && pkg.brief && pkg.brief.value) || ""}\n${JSON.stringify(attrs)}`;
+  return ADS_SHOWREEL_COPY_RE.test(blob) || /coach/i.test(blob);
+}
+
+function pLedLeadNotFilmSlate(html, pkg) {
+  const attrs = (pkg && pkg.briefAttrs) || {};
+  const slots = pageSlotsFrom(attrs);
+  if (!isPLedAgencyProducer(pkg, slots)) {
+    return { ok: true, reason: "film-slate gate is for P-led agency/producer Briefs" };
+  }
+  const surface = firstViewportSurface(html);
+  const slate = filmSlateSignal(surface);
+  if (!slate) {
+    return { ok: true, reason: "first viewport is not a FILM PRODUCER / film-slate wordmark" };
+  }
+  const adsBrief = pLedAdsBrief(pkg) || ADS_SHOWREEL_COPY_RE.test(surface);
+  if (!adsBrief && !ADS_SHOWREEL_COPY_RE.test(String(html || ""))) {
+    return { ok: true, reason: "film-slate gate requires a P-led ads Brief or advertising-showreel copy" };
+  }
+  return {
+    ok: false,
+    reason: `P-led ads Brief first viewport shows ${slate} fighting advertising showreel (Giant Spoon live 1.15.0 miss)`,
+  };
+}
+
+function imgIndex(html, tag) {
+  const src = String(html || "");
+  const i = src.indexOf(tag);
+  return i >= 0 ? i : Infinity;
+}
+
+function adsLeadFrames(html) {
+  const src = String(html || "");
+  const frames = [];
+  for (const img of workImagesInHtml(src)) {
+    const blob = `${img.tag} ${img.src}`;
+    if (AI_FILM_STILL_RE.test(blob) && !ADS_LEAD_STILL_RE.test(blob)) continue;
+    if (ADS_LEAD_STILL_RE.test(blob) || FILM_SLATE_SRC_RE.test(blob)) {
+      frames.push({ kind: "img", index: imgIndex(src, img.tag), src: img.src, tag: img.tag });
+    }
+  }
+  const iframeRe = /<iframe\b[^>]*>/gi;
+  let m;
+  while ((m = iframeRe.exec(src))) {
+    if (ADS_VIMEO_RE.test(m[0])) {
+      frames.push({ kind: "vimeo", index: m.index, tag: m[0] });
+    }
+  }
+  frames.sort((a, b) => a.index - b.index);
+  return frames;
+}
+
+function aiFilmStills(html) {
+  const src = String(html || "");
+  const stills = [];
+  for (const img of workImagesInHtml(src)) {
+    const blob = `${img.tag} ${img.src}`;
+    if (!AI_FILM_STILL_RE.test(blob)) continue;
+    stills.push({ src: img.src, tag: img.tag, index: imgIndex(src, img.tag) });
+  }
+  stills.sort((a, b) => a.index - b.index);
+  return stills;
+}
+
+function aiThreeTileHero(html) {
+  const src = String(html || "");
+  const blocks = [
+    ...src.matchAll(
+      /<(div|section|article)([^>]*class=["'][^"']*\bai-strip\b[^"']*["'][^>]*)>([\s\S]*?)<\/\1>/gi
+    ),
+  ];
+  for (const b of blocks) {
+    if (aiFilmStills(b[3]).length >= 3) return true;
+  }
+  if (
+    /grid-template-columns\s*:\s*repeat\(\s*3/i.test(src) &&
+    aiFilmStills(src).length >= 3
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function pLedAiMustNotDominate(html, pkg) {
+  const attrs = (pkg && pkg.briefAttrs) || {};
+  const slots = pageSlotsFrom(attrs);
+  if (!isPLedAgencyProducer(pkg, slots)) {
+    return { ok: true, reason: "AI-dominate gate is for P-led agency/producer pages" };
+  }
+  const ai = aiFilmStills(html);
+  const ads = adsLeadFrames(html);
+  if (!ai.length) {
+    return { ok: true, reason: "no OCM/Manga/DoomBrush stills hung" };
+  }
+  if (aiThreeTileHero(html)) {
+    return {
+      ok: false,
+      reason:
+        "P-led page hangs AI film stills (OCM/Manga/DoomBrush) as a three-tile hero — larger/more numerous than ads lead frames",
+    };
+  }
+  const firstAi = ai[0] ? ai[0].index : Infinity;
+  const firstAds = ads[0] ? ads[0].index : Infinity;
+  if (firstAi < firstAds) {
+    return {
+      ok: false,
+      reason:
+        "P-led: AI film stills (OCM/Manga/DoomBrush) appear before ads lead frames",
+    };
+  }
+  if (ai.length > ads.length) {
+    return {
+      ok: false,
+      reason: `P-led: AI film stills (${ai.length}) are more numerous than ads lead frames (${ads.length}) (OCM/Manga/DoomBrush vs reel/Coach)`,
+    };
+  }
+  return {
+    ok: true,
+    reason: `AI film stills (${ai.length}) do not dominate ads lead frames (${ads.length})`,
+  };
+}
+
 function profileFollowsBriefSlots(html, pkg) {
   const attrs = (pkg && pkg.briefAttrs) || {};
   const slots = pageSlotsFrom(attrs);
@@ -467,9 +631,12 @@ module.exports = {
   briefLeadMatchesArchetype,
   briefLeadAssetsClearable,
   profileFollowsBriefSlots,
+  pLedLeadNotFilmSlate,
+  pLedAiMustNotDominate,
   isPLedAgencyProducer,
   firstWorkRow,
   firstViewportChunk,
+  firstViewportSurface,
   ALLOWED_LEAD_VIMEO,
   allowedLeadVimeo,
 };

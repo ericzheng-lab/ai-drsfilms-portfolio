@@ -11,6 +11,12 @@ function excerpt(slice) {
     .slice(0, 180);
 }
 
+function isForbidListContext(slice) {
+  return /禁止|forbid(?:den)?(?:\s+|-)list|claim-lock|must\s+(?:fail|reject)|only\s+sundance\s*\+\s*won|sundance\s*\+\s*won\s*\/\s*winner/i.test(
+    String(slice || "")
+  );
+}
+
 function findNearby(text, patternA, patternB, windowChars = 160) {
   const src = foldText(text);
   const a = new RegExp(patternA, "gi");
@@ -19,7 +25,7 @@ function findNearby(text, patternA, patternB, windowChars = 160) {
     const start = Math.max(0, m.index - windowChars);
     const end = Math.min(src.length, m.index + m[0].length + windowChars);
     const slice = src.slice(start, end);
-    if (new RegExp(patternB, "i").test(slice)) {
+    if (new RegExp(patternB, "i").test(slice) && !isForbidListContext(slice)) {
       return excerpt(slice);
     }
     if (m[0].length === 0) a.lastIndex += 1;
