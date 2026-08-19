@@ -41,6 +41,8 @@ const REQUIRED_RULE_IDS = [
   "r2-profile-58node-route",
   "r2-profile-dev4-private",
   "r2-profile-p-led-pb-gallery",
+  "r2-profile-lead-not-film-slate",
+  "r2-profile-ai-must-not-dominate",
   "r2-profile-recent-bar",
   "r2-profile-max-width",
   "r3-three-live-pieces",

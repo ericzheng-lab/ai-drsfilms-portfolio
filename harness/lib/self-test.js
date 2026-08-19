@@ -73,6 +73,8 @@ const {
   briefLeadAssetsClearable,
   profileFollowsBriefSlots,
   categorize,
+  pLedLeadNotFilmSlate,
+  pLedAiMustNotDominate,
 } = require("./brief-slots");
 const {
   PIN_PATH,
@@ -1747,6 +1749,81 @@ async function testLiveOverStaleLocalAccepted() {
   return "ACCEPT";
 }
 
+async function testLiveGiantSpoonFilmSlateAndAiDominateRejected() {
+  const live = fs.readFileSync(
+    path.join(fixture("fail-p-led-film-slate"), "profile.html"),
+    "utf8"
+  );
+  assert(
+    /traditional-showreel-poster/i.test(live),
+    "fail fixture must be the live page that hung traditional-showreel-poster"
+  );
+  assert(
+    !/FILM\s+PRODUCER/i.test(live),
+    "the 1.15.0 miss is the hung slate still, not typeset FILM PRODUCER copy"
+  );
+
+  const pLedPkg = loadPackage({ packageDir: fixture("fail-p-led-film-slate") });
+  assert(
+    pLedLeadNotFilmSlate(live, pLedPkg).ok === false,
+    "live Giant Spoon HTML must fail pLedLeadNotFilmSlate"
+  );
+  assert(
+    pLedAiMustNotDominate(live, pLedPkg).ok === false,
+    "live Giant Spoon HTML must fail pLedAiMustNotDominate"
+  );
+
+  const slate = await runHops({
+    packageDir: fixture("fail-p-led-film-slate"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: fixtureFetchResult("fail-p-led-film-slate"),
+  });
+  assert(slate.last.verdict === "REJECT", "fail-p-led-film-slate R2 must REJECT");
+  assert(
+    hasFail(slate.last, "r2-profile-lead-not-film-slate"),
+    `live film-slate page must fail r2-profile-lead-not-film-slate, got ${failuresOf(slate.last)}`
+  );
+
+  const ai = await runHops({
+    packageDir: fixture("fail-p-led-ai-dominate"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: fixtureFetchResult("fail-p-led-ai-dominate"),
+  });
+  assert(ai.last.verdict === "REJECT", "fail-p-led-ai-dominate R2 must REJECT");
+  assert(
+    hasFail(ai.last, "r2-profile-ai-must-not-dominate"),
+    `live three-tile AI strip must fail r2-profile-ai-must-not-dominate, got ${failuresOf(ai.last)}`
+  );
+
+  const r3 = await runHops({
+    packageDir: fixture("fail-p-led-film-slate"),
+    hops: ["R3"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: fixtureFetchResult("fail-p-led-film-slate"),
+  });
+  assert(
+    hasFail(r3.last, "r3-profile-lead-not-film-slate"),
+    `R3 must echo r3-profile-lead-not-film-slate, got ${failuresOf(r3.last)}`
+  );
+  const r3ai = await runHops({
+    packageDir: fixture("fail-p-led-ai-dominate"),
+    hops: ["R3"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: fixtureFetchResult("fail-p-led-ai-dominate"),
+  });
+  assert(
+    hasFail(r3ai.last, "r3-profile-ai-must-not-dominate"),
+    `R3 must echo r3-profile-ai-must-not-dominate, got ${failuresOf(r3ai.last)}`
+  );
+  return "REJECT";
+}
+
 async function testGs18HtmlStillRejected() {
   const gs18 = `<style>:root{--blue:#0033a0}.hero{min-height:78vh;display:flex;align-items:center;padding:72px 0 56px}.hero .header-line{font-size:14px;color:var(--blue)}.stat span{font-size:11px;color:var(--blue)}</style><header class="hero"><h1>Concept through delivery.</h1></header><img src="https://vumbnail.com/1172739705.jpg" alt="later">`;
   assert(
@@ -2627,6 +2704,20 @@ function testLooseningAnyP0RuleBreaksSelftest() {
         "wordmark may be full row when work wrap is capped"
       );
     },
+    "r2-profile-lead-not-film-slate": () => {
+      const pkg = loadPackage({ packageDir: fixture("fail-p-led-film-slate") });
+      assert(
+        pLedLeadNotFilmSlate(pkg.profileHtml.value, pkg).ok === false,
+        "live GS film-slate poster"
+      );
+    },
+    "r2-profile-ai-must-not-dominate": () => {
+      const pkg = loadPackage({ packageDir: fixture("fail-p-led-ai-dominate") });
+      assert(
+        pLedAiMustNotDominate(pkg.profileHtml.value, pkg).ok === false,
+        "live GS three-tile AI strip"
+      );
+    },
     "r3-three-live-pieces": () =>
       assert(
         (rules.rules || []).some((r) => r.id === "r3-three-live-pieces"),
@@ -2734,6 +2825,18 @@ async function runSelfTest() {
   );
   const sundanceOk = scanClaimLocks("Sundance Grand Jury nominee; Berlinale Panorama selection.");
   assert(sundanceOk.length === 0, "nominee / Panorama must not trip win locks");
+  assert(
+    scanClaimLocks("禁止：Sundance won / winner / 获奖").every(
+      (h) => h.id !== "claim-lock-sundance-win"
+    ),
+    "forbid-list context naming Sundance won must not trip the lock"
+  );
+  assert(
+    scanClaimLocks("Sundance nominee is allowed; only Sundance+won/winner fails.").every(
+      (h) => h.id !== "claim-lock-sundance-win"
+    ),
+    "lock explanation with Sundance+won must not trip"
+  );
 
   const berlinaleWin = scanClaimLocks("Berlinale winner in a sidebar.");
   assert(
@@ -2946,6 +3049,8 @@ async function runSelfTest() {
     "test-brief-lead-not-clearable": await testBriefLeadNotClearableRepair(),
     "test-full-bleed-profile": await testFullBleedProfileRejected(),
     "test-live-over-stale-local": await testLiveOverStaleLocalAccepted(),
+    "test-live-gs-film-slate-and-ai-dominate":
+      await testLiveGiantSpoonFilmSlateAndAiDominateRejected(),
     "test-brief-page-slots-rejected": await testBriefPageSlotsRejected(),
     "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
     "test-profile-requires-deployment-not-local-html":
@@ -3016,6 +3121,8 @@ async function runSelfTest() {
       "fail-brief-no-slots": "REJECT",
       "fail-p-led-film-lead": "REJECT",
       "fail-page-ignores-brief-lead": "REJECT",
+      "fail-p-led-film-slate": "REJECT",
+      "fail-p-led-ai-dominate": "REJECT",
       "pass-brief-slots-lead": "ACCEPT",
       "pass-a-led-wonder": "ACCEPT",
       "pass-wonder-58node": "ACCEPT",

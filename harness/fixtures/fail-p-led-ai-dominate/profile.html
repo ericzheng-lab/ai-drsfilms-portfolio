@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet"/>
+<title>Yue (Eric) Zheng · Giant Spoon Senior Producer · Role Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --canvas:#FFFFFF;
+  --blue:#0033A0;
+  --black:#000000;
+  --yeti:#D26403;
+  --oxblood:#4A0A16;
+  --scrim-a:#337789;
+  --scrim-a2:#2D434B;
+  --scrim-b:#BA2210;
+  --scrim-b2:#2D4654;
+  --scrim-c:#01388B;
+  --scrim-c2:#4E2652;
+  --scrim-d:#775714;
+  --scrim-d2:#665B3A;
+  --font:"Sora",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font:300 16px/1.4 var(--font);color:var(--black);background:var(--canvas);-webkit-font-smoothing:antialiased}
+img{display:block;width:100%;height:100%;object-fit:cover}
+a{color:inherit;text-decoration:none}
+a:hover,a:focus{color:var(--blue)}
+button{appearance:none;border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:0}
+.wordmark{
+  background:var(--blue);
+  color:var(--canvas);
+  padding:22px 24px;
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:-0.1px;
+  text-transform:uppercase;
+}
+.wordmark small{display:block;margin-top:6px;font-size:13px;font-weight:500}
+.reel-poster{aspect-ratio:21/9;width:100%;object-fit:cover;display:block}
+.work-card,.embed-card,.type-card{position:relative;overflow:hidden}
+.work-card{background:var(--black)}
+.work-card img{width:100%}
+.scrim{position:absolute;inset:auto 0 0 0;padding:22px 24px 24px;color:var(--canvas)}
+.scrim-a{background:linear-gradient(transparent,var(--scrim-a) 38%,var(--scrim-a2))}
+.scrim-ox{background:linear-gradient(transparent,var(--oxblood) 40%,var(--black))}
+.scrim-c{background:linear-gradient(transparent,var(--scrim-c) 38%,var(--scrim-c2))}
+.scrim-b{background:linear-gradient(transparent,var(--scrim-b) 38%,var(--scrim-b2))}
+.scrim-d{background:linear-gradient(transparent,var(--scrim-d) 38%,var(--scrim-d2))}
+.scrim h1,.scrim h2{font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;line-height:.95}
+.scrim h1{font-size:clamp(28px,4vw,52px);max-width:16ch}
+.scrim h2{font-size:clamp(22px,3vw,36px);max-width:18ch}
+.scrim p{margin-top:8px;max-width:36rem;font-size:14px;font-weight:300}
+.play{position:absolute;top:18px;right:18px;z-index:2;border:1px solid var(--canvas);color:var(--canvas);padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;border-radius:0}
+.reel-player{width:100%;aspect-ratio:21/9;border:0;display:none;background:var(--black)}
+.reel-player.on{display:block}
+.wide-player{aspect-ratio:16/9}
+.reel-stage.is-playing .reel-poster,
+.reel-stage.is-playing .wide,
+.reel-stage.is-playing .play,
+.reel-stage.is-playing .scrim{display:none}
+.embed-card{background:var(--black);color:var(--canvas)}
+.brand-player{width:100%;aspect-ratio:16/9;border:0;display:block;background:var(--black)}
+.embed-caption{padding:22px 24px 24px;background:linear-gradient(transparent,var(--scrim-b) 8%,var(--scrim-b2))}
+.embed-caption h2{font-size:clamp(22px,3vw,36px);font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;line-height:.95;max-width:18ch}
+.embed-caption p{margin-top:8px;max-width:36rem;font-size:14px;font-weight:300}
+.type-card{
+  background:var(--blue);
+  color:var(--canvas);
+  padding:48px 24px;
+}
+.type-card h2{font-size:clamp(26px,3.4vw,42px);font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;max-width:18ch;line-height:.95}
+.type-card p{margin-top:12px;max-width:40rem;font-size:14px;font-weight:300}
+.board{display:grid;grid-template-columns:1.2fr .8fr}
+.wide{aspect-ratio:16/9;object-fit:cover}
+.wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}
+.band{padding:40px 0;border-bottom:1px solid var(--black)}
+.band h2{font-size:clamp(26px,3.4vw,42px);font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;max-width:18ch}
+.band p{margin-top:12px;max-width:40rem}
+.yeti{background:var(--yeti);color:var(--canvas)}
+.yeti h2,.yeti p{color:var(--canvas)}
+.method{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--black)}
+.method article{padding:22px;border-right:1px solid var(--black)}
+.method article:last-child{border-right:0}
+.method b{display:block;font-size:13px;font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;margin-bottom:8px}
+.method p{font-size:14px}
+.ai-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:22px}
+.ai-strip .work-card{border-right:1px solid var(--black)}
+.ai-strip .work-card:last-child{border-right:0}
+.ai-strip .scrim h2{font-size:clamp(16px,2vw,22px)}
+.ai-strip .scrim p{font-size:12px}
+.fit{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--black)}
+.fit div{padding:22px}
+.fit div + div{border-left:1px solid var(--black)}
+.fit h3{font-size:22px;font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;margin-bottom:10px}
+.fit li{margin:8px 0 0 18px;font-size:14px}
+.cost{padding:28px 0 8px;font-size:14px;max-width:46rem}
+.brand-field{
+  background:var(--blue);
+  color:var(--canvas);
+  padding:48px 24px;
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:-0.1px;
+  text-transform:uppercase;
+}
+.brand-field p{margin-top:10px;font-size:14px;font-weight:300;max-width:40rem;text-transform:none;letter-spacing:0}
+.brand-field a{color:var(--canvas);font-weight:700;letter-spacing:-0.1px;text-transform:uppercase}
+.note{padding:18px 0 36px;font-size:12px;max-width:46rem}
+@media(max-width:900px){
+  .board,.fit,.method,.ai-strip{display:block}
+  .fit div + div,.method article,.ai-strip .work-card{border-left:0;border-top:1px solid var(--black);border-right:0}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wordmark">Giant Spoon<small>Yue Zheng · Senior Producer · NYC hybrid</small></div>
+
+<article class="work-card" id="showreel">
+  <div class="reel-stage" data-player>
+    <img class="reel-poster" src="stills/traditional-showreel-poster.webp" alt="Traditional advertising showreel — Eric Zheng, producer" width="1280" height="720"/>
+    <button class="play" type="button">Play</button>
+    <div class="scrim scrim-a">
+      <h1>Traditional advertising showreel</h1>
+      <p>Ads first. Picture, then play on this card. Concept through delivery for a Senior Producer seat.</p>
+    </div>
+    <iframe class="reel-player" title="Traditional showreel" src="https://player.vimeo.com/video/1174467043" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</article>
+
+<article class="embed-card" id="coach">
+  <iframe class="brand-player" title="COACH · Make the Ground Shake" src="https://player.vimeo.com/video/190660903" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
+  <div class="embed-caption">
+    <h2>COACH · Make the Ground Shake</h2>
+    <p>Brand spot, in-page play. The hang is the film itself.</p>
+  </div>
+</article>
+
+<article class="type-card" id="dnf">
+  <h2>Tencent Dungeon &amp; Fighter</h2>
+  <p>Second. After the first film, production-company EP on the client-requested three-film expansion.</p>
+</article>
+
+<article class="work-card" id="bhoaf">
+  <div class="reel-stage" data-player>
+    <img class="wide" src="stills/brief-history-of-a-family-still-01.jpg" alt="Brief History of A Family still" width="1600" height="900"/>
+    <button class="play" type="button">Play</button>
+    <div class="scrim scrim-ox">
+      <h2>Brief History of A Family</h2>
+      <p>One card. Producer. Sundance Grand Jury Prize nominee. Berlinale Panorama. Nominee, not a win.</p>
+    </div>
+    <iframe class="reel-player wide-player" title="Brief History of A Family" src="https://player.vimeo.com/video/1172739705" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</article>
+
+<section class="band" id="ai">
+  <div class="wrap">
+    <h2>Generated work is a schedule and a cost.</h2>
+    <p>When a generated pass is cheaper than a reshoot day, the priced line is One Click Mute, then Manga Cut, then DoomBrush — a named owner on the gate, not a tool wall.</p>
+    <div class="ai-strip">
+      <article class="work-card">
+        <img class="wide" src="stills/one-click-mute-key-frame-01.jpg" alt="One Click Mute key frame" width="1600" height="900"/>
+        <div class="scrim scrim-c">
+          <h2>One Click Mute</h2>
+          <p>First priced generate. Cover the mute pass before a reshoot day.</p>
+        </div>
+      </article>
+      <article class="work-card">
+        <img class="wide" src="stills/home-smarthome-manga-cut-01.jpg" alt="Manga Cut key frame" width="1600" height="900"/>
+        <div class="scrim scrim-d">
+          <h2>Manga Cut</h2>
+          <p>Second. HOME × SMARTHOME. Do not swap with DoomBrush.</p>
+        </div>
+      </article>
+      <article class="work-card">
+        <img class="wide" src="stills/doombrush-key-frame-01.jpg" alt="DoomBrush key frame" width="1600" height="900"/>
+        <div class="scrim scrim-b">
+          <h2>DoomBrush</h2>
+          <p>Third. Finish pass. AI share stays supporting.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<article class="work-card" id="prompt-builder">
+  <img class="wide" src="stills/prompt-builder-ui-01.jpg" alt="Prompt Builder one screenshot" width="1600" height="900"/>
+  <div class="scrim scrim-a">
+    <h2>Prompt Builder</h2>
+    <p>One screenshot. The workbench used to quote that generate line. Not a product gallery.</p>
+  </div>
+</article>
+
+<section class="band yeti">
+  <div class="wrap">
+    <h2>Budgets, vendors, several jobs at once.</h2>
+    <p>Giant Spoon Senior Producer is an integrated production seat. I bid the job, hold the vendor, and keep concurrent work honest — broadcast, digital, social, experiential, branded content. NYC hybrid. Tuesday through Thursday on site.</p>
+  </div>
+</section>
+
+<section class="band" id="method">
+  <div class="wrap">
+    <h2>How a job is held.</h2>
+    <p>Type only. No homemade diagram. A generated pass is a cost and a date, with a named owner on the gate.</p>
+    <div class="method" style="margin-top:22px">
+      <article>
+        <b>Bid</b>
+        <p>Deliverables, medium, decision-makers, and the first envelope before Creative hardens the idea.</p>
+      </article>
+      <article>
+        <b>Vendors</b>
+        <p>Director and house options, bid comparison, and the assumptions Account has to hear early.</p>
+      </article>
+      <article>
+        <b>Close</b>
+        <p>Named review dates, version control, and reconciliation — then a clean handoff to media.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="fit">
+  <div class="wrap">
+    <div class="fit">
+      <div>
+        <h3>On the job</h3>
+        <ul>
+          <li>Lead integrated productions from concept through delivery.</li>
+          <li>Partner with Creative on what is executable before the idea locks.</li>
+          <li>Work with Account on timing and with Business Affairs on talent, music, and contracts.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Commercial control</h3>
+        <ul>
+          <li>Build, track, and reconcile production budgets.</li>
+          <li>Bid and negotiate directors, editorial, VFX, and finish partners.</li>
+          <li>Keep several campaigns visible at once: owners, dates, and risk.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="cost">AI on this page is the cost strip above — One Click Mute, then Manga Cut, then DoomBrush — not the first viewport.</p>
+  </div>
+</section>
+
+<section class="brand-field" id="contact">
+  Yue (Eric) Zheng
+  <p>Giant Spoon Senior Producer · Greater New York · U.S. Permanent Resident · Executive MBA<br/>
+  <a href="mailto:eric.zheng@drsfilms.com">eric.zheng@drsfilms.com ↗</a></p>
+</section>
+<p class="note wrap">Applicant-prepared · private/noindex · route /giant-spoon/ · stills from ericzheng-lab/drs-source INDEX public:true · reel poster already in repo (Cloudflare showreel card) · Coach is Vimeo 190660903 · VI giantspoon.com 2026-08-18 · 18 Aug 2026</p>
+<script>
+(function(){
+  var stages=document.querySelectorAll("[data-player]");
+  for(var i=0;i<stages.length;i++){
+    (function(stage){
+      var play=stage.querySelector(".play");
+      var player=stage.querySelector("iframe");
+      if(!play||!player) return;
+      play.addEventListener("click",function(){
+        stage.classList.add("is-playing");
+        player.classList.add("on");
+        if(player.src.indexOf("autoplay")<0) player.src=player.src+(player.src.indexOf("?")>=0?"&":"?")+"autoplay=1";
+      });
+    })(stages[i]);
+  }
+})();
+</script>
+</body>
+</html>

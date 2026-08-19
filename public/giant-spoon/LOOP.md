@@ -519,3 +519,20 @@ Eric opened https://ai.drsfilms.com/giant-spoon/ and the live page was still fou
 
 Ruleset **1.14.0**: one public Prompt Builder screenshot is not a gallery; Coach Vimeo / Tencent type card count as brand hangs when INDEX has no still.
 
+---
+
+## Loop 14 — 2026-08-18 (film-slate + AI-dominate; page rebuilt from zero)
+
+Live https://ai.drsfilms.com/giant-spoon/ HTML-gated ACCEPT on 1.15.0. A recruiter said not-yet.
+
+**Escaped failures (encoded first, saved live HTML as fixtures, then the route was deleted):**
+
+1. First viewport hung `traditional-showreel-poster.webp` / Vimeo thumb `2135053992` — a FILM PRODUCER ERIC ZHENG title card — under “Traditional advertising showreel” copy. P0 `r2-profile-lead-not-film-slate`. Fixture `fail-p-led-film-slate` is a copy of that live `index.html`.
+2. Three-tile OCM / Manga Cut / DoomBrush strip was larger and more numerous than the ads lead frames. P0 `r2-profile-ai-must-not-dominate`. Fixture `fail-p-led-ai-dominate` is the same live page.
+
+**Page:** `public/giant-spoon/index.html` deleted and rewritten from a blank file. Failed stills removed (film-producer slate poster; extra BHOAF stills; unused AI remainder). `vi.json` kept. First `<img>` is the Coach campaign frame. Klein Blue field. Work in `width:min(1120px, calc(100% - 40px))`. AI is one small cost-line still. Prompt Builder one small screenshot. Tencent type card. BHOAF one card.
+
+**compared_to** (still-first peers excluding `/giant-spoon/`; none exist, so timestamp newest 3): `amgen`, `autodesk-flow-studio`, `kalshi`. Do not copy their type-wall open.
+
+Ruleset **1.16.0**. Claim-locks unchanged: Sundance nominee allowed; Sundance+won/winner/获奖 fails; 禁止-list context does not trip.
+

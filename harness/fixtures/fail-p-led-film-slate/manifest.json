@@ -1,0 +1,15 @@
+{
+  "company": "Giant Spoon",
+  "role": "Senior Producer",
+  "brief": "brief.md",
+  "cv": "cv.md",
+  "cl": "cl.md",
+  "profile_url": "https://ai.drsfilms.com/giant-spoon/",
+  "profile_html": "profile.html",
+  "vi": "vi.json",
+  "compared_to": [
+    "bar-alpha",
+    "bar-beta",
+    "bar-gamma"
+  ]
+}

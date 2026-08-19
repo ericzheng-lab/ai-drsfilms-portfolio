@@ -1,5 +1,5 @@
 {
-  "version": "1.15.0",
+  "version": "1.16.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -308,6 +308,20 @@
       "note": "Work column capped min(1120px, calc(100% - 40px)) (1080–1240 band). 100vw on work img/iframe/video is REJECT. Wordmark/nav may be a full row. No waiver."
     },
     {
+      "id": "r2-profile-lead-not-film-slate",
+      "severity": "P0",
+      "failure": "P-led ads Brief first viewport is a FILM PRODUCER / film-slate wordmark fighting advertising showreel",
+      "hops": ["R2", "R3"],
+      "note": "Named from live /giant-spoon/ on 1.15.0: HTML overlay said advertising showreel while the hung poster was the FILM PRODUCER ERIC ZHENG title card (traditional-showreel-poster / Vimeo thumb 2135053992). Recruiter said not-yet; HTML-gates ACCEPTed. P-led ads Brief + first viewport film-slate wordmark = REJECT. No waiver."
+    },
+    {
+      "id": "r2-profile-ai-must-not-dominate",
+      "severity": "P0",
+      "failure": "P-led page lets AI film stills (OCM/Manga/DoomBrush) dominate ads lead frames",
+      "hops": ["R2", "R3"],
+      "note": "P-led: if AI film stills (One Click Mute / Manga Cut / DoomBrush) are larger, earlier, or more numerous than ads lead frames (trad reel / Coach), REJECT. A three-tile AI hero is the Giant Spoon live miss. AI is a cost line, not the picture stack. No waiver."
+    },
+    {
       "id": "profile-not-homepage",
       "severity": "P0",
       "failure": "generic homepage substituted for role-specific Profile",
@@ -388,7 +402,7 @@
         "R1b",
         "R2"
       ],
-      "lock": "Sundance + won/winner/获奖"
+      "lock": "Sundance + won/winner/获奖. Nominee is allowed. Do not trip on 禁止/forbid-list context that names the lock (禁止：Sundance won). Require won/winner/获奖, not a bare win."
     },
     {
       "id": "claim-lock-berlinale-win",

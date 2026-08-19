@@ -159,8 +159,13 @@ Hop order:
    viewport / first work row must match Brief `page_slots.lead` (ids
    or named category: trad reel, brand spot). A page that is only film
    stills while Brief lead is ads/reel is `REJECT`
-   (`r2-profile-follows-brief-slots`). `/giant-spoon/` must follow
-   Brief `page_slots` (ads/reel first). A
+   (`r2-profile-follows-brief-slots`).    `/giant-spoon/` must follow
+   Brief `page_slots` (ads/reel first). A P-led ads Brief whose first
+   viewport is a FILM PRODUCER / film-slate wordmark fighting
+   “advertising showreel” is `REJECT` (`r2-profile-lead-not-film-slate`).
+   P-led AI film stills (OCM/Manga/DoomBrush) that are larger, earlier,
+   or more numerous than ads lead frames are `REJECT`
+   (`r2-profile-ai-must-not-dominate`). A
    text/résumé page (0 work images / empty first viewport) is `REJECT`
    when any of those 3 has a first-viewport still. Work column capped
    `min(1120px, calc(100% - 40px))` (1080–1240 band);
@@ -361,6 +366,8 @@ Paths are relative to the package directory.
 | `fixtures/fail-brief-no-slots` | R0 `REJECT` (no `page_slots` / slot order) |
 | `fixtures/fail-p-led-film-lead` | R0 `REJECT` (P-led agency producer, lead = BHOAF only while ads/reel ids are listed) |
 | `fixtures/fail-page-ignores-brief-lead` | R2 `REJECT` (Brief lead = reel+coach; HTML is four BHOAF cards) |
+| `fixtures/fail-p-led-film-slate` | R2 `REJECT` (`r2-profile-lead-not-film-slate`; saved copy of live `/giant-spoon/` — FILM PRODUCER title card hung as the ads reel poster) |
+| `fixtures/fail-p-led-ai-dominate` | R2 `REJECT` (`r2-profile-ai-must-not-dominate`; same live page — three-tile OCM/Manga/DoomBrush hero) |
 | `fixtures/pass-brief-slots-lead` | R2 `ACCEPT` (slots present; first work matches Brief lead) |
 | `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip; 58-node *text* cite) |
 | `fixtures/pass-wonder-58node` | R2 `ACCEPT` (58-node *file* legal on `/wonder/`) |
@@ -382,7 +389,8 @@ All fixture people, emails, companies, and sentences are synthetic.
 
 These strings must fail if they appear in CV or CL:
 
-- “Sundance” + won / winner / 获奖
+- “Sundance” + won / winner / 获奖 (nominee is allowed; 禁止 / forbid-list
+  lines that name the lock do not trip)
 - Berlinale as a win
 - “Dungeon Fighter” without `&` (`Dungeon & Fighter` is allowed)
 - RMB / CNY money

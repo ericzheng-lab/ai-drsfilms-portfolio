@@ -18,6 +18,8 @@ const {
   briefLeadMatchesArchetype,
   briefLeadAssetsClearable,
   profileFollowsBriefSlots,
+  pLedLeadNotFilmSlate,
+  pLedAiMustNotDominate,
 } = require("./brief-slots");
 const {
   htmlHasWorkImages,
@@ -1022,6 +1024,18 @@ const profilePLedPbGalleryGate = profileGateFromPkg(
   "P-led Prompt Builder gallery"
 );
 
+const profileLeadNotFilmSlateGate = profileGateFromPkg(
+  pLedLeadNotFilmSlate,
+  "no Profile HTML to inspect for film-slate first viewport",
+  "P-led ads Brief first viewport is a FILM PRODUCER / film-slate wordmark"
+);
+
+const profileAiMustNotDominateGate = profileGateFromPkg(
+  pLedAiMustNotDominate,
+  "no Profile HTML to inspect for AI-dominate stills",
+  "P-led AI film stills dominate ads lead frames"
+);
+
 function profileFollowsBriefSlotsGate(pkg, opts = {}) {
   const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
   const parts = [];
@@ -1164,6 +1178,14 @@ function hopR2(pkg, rules, opts = {}) {
   const pbGal = profilePLedPbGalleryGate(pkg, opts);
   checks.push(
     check("r2-profile-p-led-pb-gallery", "P0", pbGal.ok, pbGal.detail)
+  );
+  const filmSlate = profileLeadNotFilmSlateGate(pkg, opts);
+  checks.push(
+    check("r2-profile-lead-not-film-slate", "P0", filmSlate.ok, filmSlate.detail)
+  );
+  const aiDom = profileAiMustNotDominateGate(pkg, opts);
+  checks.push(
+    check("r2-profile-ai-must-not-dominate", "P0", aiDom.ok, aiDom.detail)
   );
   const recentBar = profileRecentBarGate(pkg, opts);
   checks.push({
@@ -1356,6 +1378,14 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(
     check("r3-profile-p-led-pb-gallery", "P0", pbGal.ok, pbGal.detail)
   );
+  const filmSlate = profileLeadNotFilmSlateGate(pkg, opts);
+  checks.push(
+    check("r3-profile-lead-not-film-slate", "P0", filmSlate.ok, filmSlate.detail)
+  );
+  const aiDom = profileAiMustNotDominateGate(pkg, opts);
+  checks.push(
+    check("r3-profile-ai-must-not-dominate", "P0", aiDom.ok, aiDom.detail)
+  );
   const recentBar = profileRecentBarGate(pkg, opts);
   checks.push({
     ...check("r3-profile-recent-bar", "P0", recentBar.ok, recentBar.detail),
@@ -1532,6 +1562,8 @@ const REQUIRED_HOP_CHECKS = {
     "r2-profile-58node-route",
     "r2-profile-dev4-private",
     "r2-profile-p-led-pb-gallery",
+    "r2-profile-lead-not-film-slate",
+    "r2-profile-ai-must-not-dominate",
     "r2-profile-recent-bar",
     "r2-profile-follows-brief-slots",
     "r2-profile-max-width",
@@ -1567,6 +1599,8 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-58node-route",
     "r3-profile-dev4-private",
     "r3-profile-p-led-pb-gallery",
+    "r3-profile-lead-not-film-slate",
+    "r3-profile-ai-must-not-dominate",
     "r3-profile-recent-bar",
     "r3-profile-follows-brief-slots",
     "r3-profile-max-width",
