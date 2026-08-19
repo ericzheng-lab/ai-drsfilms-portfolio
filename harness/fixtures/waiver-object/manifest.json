@@ -15,5 +15,9 @@
   ],
   "exemptions": {
     "cover_letter": true
-  }
+  },
+  "compared_to": [
+    "https://www.example.test/work/case-one",
+    "https://www.example.test/work/case-two"
+  ]
 }

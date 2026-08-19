@@ -5,5 +5,9 @@
   "cv": "cv.md",
   "cl": "cl.md",
   "profile_url": "https://ai.drsfilms.com/ghostco/",
-  "vi": "vi.json"
+  "vi": "vi.json",
+  "compared_to": [
+    "https://www.example.test/work/case-one",
+    "https://www.example.test/work/case-two"
+  ]
 }

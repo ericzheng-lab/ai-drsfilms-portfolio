@@ -71,7 +71,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "The current visual bar: the newest 3 still-first shipped public/{company}/index.html routes (excluding this package company), by last git commit timestamp (mtime if git is unavailable). Skip type-wall / Thread B. r2-profile-recent-bar ACCEPT only when this array matches that still-first set. Timestamp-only newest 3 that are type-first while a still-first peer exists is REJECT. A frozen pair (elevenlabs+luma, wonder+kalshi) is REJECT when newer pages exist."
+      "description": "This company's official work/case pages (external https URLs on the VI source_url host). Never our live portfolio (ai.drsfilms.com), never our /wonder/ route, never a timestamp type-wall bar. r2-profile-recent-bar ACCEPT only when every entry is an official work/case path (work, case, campaign, project, reel, film). Home / is chrome, not a work page."
     }
   }
 }

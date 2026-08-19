@@ -68,6 +68,12 @@ const {
 } = require("./asset-clearance");
 const { recentBarOk, sameSlugSet } = require("./profile-recent-bar");
 const {
+  firstViewportIsFrame,
+  noResumeMasthead,
+  noTypeSlabWorkSlot,
+  leadMediaCleared,
+} = require("./profile-frame");
+const {
   briefPageSlotsOk,
   briefLeadMatchesArchetype,
   briefLeadAssetsClearable,
@@ -117,12 +123,13 @@ function hasFail(report, idPrefix) {
 }
 
 function qualifyingFetchResult(company = "Acme", slug = "acme") {
-  const img = `<img src="https://ai.drsfilms.com/${slug}/work-still.png" alt="${company} selected work still" width="640" height="360">`;
+  const img = (alt) =>
+    `<img src="https://ai.drsfilms.com/${slug}/work-still.png" alt="${alt}" width="640" height="360">`;
   return {
     status: 200,
     timedOut: false,
     error: null,
-    body: `<!DOCTYPE html><html><head><meta name="robots" content="noindex"><title>${company} Senior Producer</title><style>.wordmark{background:#1A2B3C;color:#fff;padding:20px 24px;font-size:22px;width:100%}.wrap{width:min(1120px, calc(100% - 40px));margin:0 auto}.reel-poster{aspect-ratio:21/9;width:100%}</style></head><body><header class="wordmark">${company}</header><div class="wrap">${img}${img}${img}${img}<h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p><article class="work-card"><img class="reel-poster" src="https://ai.drsfilms.com/${slug}/work-still.png" alt="Traditional showreel still" width="840" height="360"><span class="play">Play</span><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article><figure><img src="https://ai.drsfilms.com/${slug}/workflow-6stage.svg" alt="Six-stage production method"><figcaption class="footnote">Locked six-stage method.</figcaption></figure></div></body></html>`,
+    body: `<!DOCTYPE html><html><head><meta name="robots" content="noindex"><title>${company} Senior Producer</title><style>.wordmark{max-height:48px;height:48px;background:#1A2B3C;color:#fff;padding:8px 16px;font-size:16px}.wrap{width:min(1120px, calc(100% - 40px));margin:0 auto}.lead-frame iframe{display:block;width:100%;min-height:calc(100vh - 56px);border:0}.brand-field{background:#1A2B3C;color:#fff;min-height:72px;padding:24px;margin:24px 0}.reel-poster{aspect-ratio:21/9;width:100%}</style></head><body><header class="wordmark">${company}</header><div class="wrap"><div class="lead-frame"><iframe src="https://player.vimeo.com/video/1174467043?background=1&autoplay=1" title="Traditional showreel"></iframe></div><p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p>${img(company + " selected work still")}${img("One Click Mute still")}${img("Manga Cut still")}${img("DoomBrush still")}<div class="brand-field">Field</div><h1>${company} Senior Producer</h1><p>https://ai.drsfilms.com/${slug}/</p><article class="work-card"><img class="reel-poster" src="https://ai.drsfilms.com/${slug}/work-still.png" alt="Traditional showreel still" width="840" height="360"><span class="play">Play</span><iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe></article><figure><img src="https://ai.drsfilms.com/${slug}/workflow-6stage.svg" alt="Six-stage production method"><figcaption class="footnote">Locked six-stage method.</figcaption></figure></div></body></html>`,
   };
 }
 
@@ -894,8 +901,8 @@ async function testEmptyHeroProfileRejected() {
   });
   assert(r2.last.verdict === "REJECT", "78vh empty hero must REJECT R2");
   assert(
-    hasFail(r2.last, "r2-profile-first-viewport-still"),
-    `empty hero must fail r2-profile-first-viewport-still, got ${failuresOf(r2.last)}`
+    hasFail(r2.last, "r2-profile-first-viewport-is-frame"),
+    `empty hero must fail r2-profile-first-viewport-is-frame, got ${failuresOf(r2.last)}`
   );
   assert(
     !hasFail(r2.last, "r2-profile-work-images"),
@@ -933,10 +940,6 @@ async function testLateStillsProfileRejected() {
     !hasFail(r2.last, "r2-profile-work-images"),
     "late-stills fixture has four real images; fail must be timing, not zero stills"
   );
-  assert(
-    !hasFail(r2.last, "r2-profile-first-viewport-still"),
-    "late-stills fixture has no 78vh hero spacer"
-  );
   return "REJECT";
 }
 
@@ -952,10 +955,6 @@ async function testPatchedShellAndHomepageSkinRejected() {
   assert(
     hasFail(patched.last, "r2-profile-not-old-shell"),
     `patched shell must fail r2-profile-not-old-shell, got ${failuresOf(patched.last)}`
-  );
-  assert(
-    !hasFail(patched.last, "r2-profile-first-viewport-still"),
-    "img stuffed into the 78vh hero still passes the empty-hero gate; fail must be B-C5"
   );
 
   const home = await runHops({
@@ -1128,10 +1127,6 @@ async function testViChromeOnlyRejected() {
     hasFail(resume.last, "vi-primary-as-field"),
     `B/W/navy résumé must fail vi-primary-as-field, got ${failuresOf(resume.last)}`
   );
-  assert(
-    !hasFail(resume.last, "vi-not-chrome-only"),
-    "full content distill + résumé HTML fails application, not the record"
-  );
 
   const pass = await runHops({
     packageDir: fixture("pass-vi-gs-content-distill"),
@@ -1196,10 +1191,15 @@ async function testViTinyLabelsRejected() {
     primaryAppliedAsField(bw, primaryHexFromVi(gsTokens)).ok === false,
     "Giant Spoon-like tokens + B/W résumé HTML must fail primary-as-field"
   );
-  const applied = `<style>.wordmark{background:#0033A0;color:#fff;padding:24px 28px;font-size:28px}</style><header class="wordmark">Giant Spoon</header>`;
+  const applied = `<style>.wordmark{max-height:48px;height:48px;background:#0033A0;color:#fff;padding:8px 16px;font-size:16px}.brand-field{background:#0033A0;min-height:72px;padding:24px}</style><header class="wordmark">Acme</header><div class="brand-field"></div>`;
   assert(
     primaryAppliedAsField(applied, "#0033A0").ok === true,
-    "token+usage + applied chrome must pass primary-as-field"
+    "thin chrome + later field must pass primary-as-field"
+  );
+  const fat = `<style>.wordmark{background:#0033A0;color:#fff;padding:24px 28px;font-size:28px}.brand-field{background:#0033A0;min-height:80px;padding:24px}</style><header class="wordmark">Acme</header><div class="brand-field"></div>`;
+  assert(
+    primaryAppliedAsField(fat, "#0033A0").ok === false,
+    "fat brand-color document header fails even with a later field"
   );
   return "REJECT";
 }
@@ -1357,8 +1357,14 @@ async function testClosedDebateCardsRejected() {
   assert(
     brandStillsNotWordmarks(
       '<iframe src="https://player.vimeo.com/video/190660903" title="COACH"></iframe><h2>Tencent Dungeon &amp; Fighter</h2>'
+    ).ok === false,
+    "a heading type card is not a brand hang"
+  );
+  assert(
+    brandStillsNotWordmarks(
+      '<iframe src="https://player.vimeo.com/video/190660903" title="COACH"></iframe><img src="nike-spot.jpg" alt="Nike campaign still">'
     ).ok === true,
-    "Coach in-page Vimeo plus Tencent type card must pass"
+    "Coach Vimeo plus a brand still is a hang"
   );
   assert(
     sixStageOneGraphic(
@@ -1470,12 +1476,12 @@ async function testRecentBarFixtures() {
   );
   const staleCheck = (stale.last.checks || []).find((c) => c.id === "r2-profile-recent-bar");
   assert(
-    staleCheck && Array.isArray(staleCheck.compared_to) && staleCheck.compared_to.includes("bar-newer"),
-    `stale check must write compared_to including the newer peer, got ${JSON.stringify(staleCheck && staleCheck.compared_to)}`
+    staleCheck && sameSlugSet(staleCheck.compared_to || [], ["elevenlabs", "luma"]),
+    `stale check must write the recorded illegal compared_to, got ${JSON.stringify(staleCheck && staleCheck.compared_to)}`
   );
   assert(
-    /elevenlabs/.test(staleCheck.detail) && /luma/.test(staleCheck.detail),
-    `stale detail must name the frozen pair, got ${staleCheck.detail}`
+    /not an external https|work\/case/i.test(staleCheck.detail),
+    `stale detail must say compared_to is not an official work/case URL, got ${staleCheck.detail}`
   );
 
   const recent = await runHops({
@@ -1491,8 +1497,11 @@ async function testRecentBarFixtures() {
     `pass-recent-bar must PASS r2-profile-recent-bar, got ${failuresOf(recent.last)}`
   );
   assert(
-    sameSlugSet(recentCheck.compared_to || [], ["bar-alpha", "bar-beta", "bar-gamma"]),
-    `pass-recent-bar compared_to must be the newest 3, got ${JSON.stringify(recentCheck.compared_to)}`
+    sameSlugSet(recentCheck.compared_to || [], [
+      "https://www.example.test/work/case-one",
+      "https://www.example.test/work/case-two",
+    ]),
+    `pass-recent-bar compared_to must be official work/case URLs, got ${JSON.stringify(recentCheck.compared_to)}`
   );
 
   const r3 = await runHops({
@@ -1608,12 +1617,12 @@ async function testBriefPageSlotsRejected() {
     decideVerdict([
       {
         id: "brief-lead-assets-clearable",
-        severity: "P1",
+        severity: "P0",
         status: "FAIL",
         detail: unclearable.reason,
       },
-    ]) === "REPAIR",
-    "lead that cannot be hung is R0 REPAIR, not a later-hop category swap"
+    ]) === "REJECT",
+    "lead that cannot be hung is R0 REJECT, not a later-hop category swap"
   );
 
   return "REJECT";
@@ -1634,12 +1643,12 @@ async function testTypewallAsRecentBarRejected() {
   );
   const check = (r2.last.checks || []).find((c) => c.id === "r2-profile-recent-bar");
   assert(
-    check && /type-wall|Thread B|still-first/i.test(check.detail),
-    `type-wall bar detail must name the skip, got ${check && check.detail}`
+    check && /not an external https|work\/case/i.test(check.detail),
+    `type-wall bar detail must say compared_to is not an official work/case URL, got ${check && check.detail}`
   );
   assert(
-    sameSlugSet(check.compared_to || [], ["still-alpha", "still-beta", "still-gamma"]),
-    `still-first bar must be still-alpha/beta/gamma, got ${JSON.stringify(check.compared_to)}`
+    sameSlugSet(check.compared_to || [], ["aaa-typewall", "bbb-typewall", "ccc-typewall"]),
+    `recorded type-wall slugs must be the compared_to exam, got ${JSON.stringify(check.compared_to)}`
   );
   const typeHtml = fs.readFileSync(
     path.join(fixture("fail-typewall-as-recent-bar"), "public", "aaa-typewall", "index.html"),
@@ -1661,7 +1670,7 @@ async function testBriefLeadNotClearableRepair() {
     reportsDir: tmpReports(),
     stopOnFail: false,
   });
-  assert(r0.last.verdict === "REPAIR", "fail-brief-lead-not-clearable R0 must REPAIR");
+  assert(r0.last.verdict === "REJECT", "fail-brief-lead-not-clearable R0 must REJECT");
   assert(
     hasFail(r0.last, "brief-lead-assets-clearable"),
     `must fail brief-lead-assets-clearable, got ${failuresOf(r0.last)}`
@@ -1670,7 +1679,31 @@ async function testBriefLeadNotClearableRepair() {
     !hasFail(r0.last, "brief-page-slots"),
     "slots must exist so the named fail is lead clearance"
   );
-  return "REPAIR";
+  return "REJECT";
+}
+
+async function testApplyGsLeadAssetsInspectLeadSlotsOnly() {
+  const pkgDir = path.join(__dirname, "..", "..", "apply", "giant-spoon-senior-producer");
+  const r0 = await runHops({
+    packageDir: pkgDir,
+    hops: ["R0"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+  });
+  assert(
+    r0.last.verdict === "ACCEPT",
+    `apply GS R0 must ACCEPT (Coach Vimeo is a legal lead); got ${r0.last.verdict}: ${failuresOf(r0.last).join("; ")}`
+  );
+  const check = (r0.last.checks || []).find((c) => c.id === "brief-lead-assets-clearable");
+  assert(
+    check && check.status === "PASS",
+    `brief-lead-assets-clearable must PASS on page_slots.lead, got ${check && check.status}: ${check && check.detail}`
+  );
+  assert(
+    !/tencent/i.test(check.detail || ""),
+    `lead clearance must not treat Tencent as lead: ${check.detail}`
+  );
+  return "ACCEPT";
 }
 
 async function testFullBleedProfileRejected() {
@@ -1722,11 +1755,14 @@ async function testLiveOverStaleLocalAccepted() {
   const recent = (r2.last.checks || []).find((c) => c.id === "r2-profile-recent-bar");
   assert(
     recent && recent.status === "PASS",
-    "still-first compared_to must PASS r2-profile-recent-bar"
+    "official work/case compared_to must PASS r2-profile-recent-bar"
   );
   assert(
-    sameSlugSet(recent.compared_to || [], ["still-alpha", "still-beta", "still-gamma"]),
-    `compared_to must be still-first peers, got ${JSON.stringify(recent && recent.compared_to)}`
+    sameSlugSet(recent.compared_to || [], [
+      "https://www.example.test/work/case-one",
+      "https://www.example.test/work/case-two",
+    ]),
+    `compared_to must be official work/case URLs, got ${JSON.stringify(recent && recent.compared_to)}`
   );
   const width = (r2.last.checks || []).find((c) => c.id === "r2-profile-max-width");
   assert(width && width.status === "PASS", "capped wrap on live body must PASS r2-profile-max-width");
@@ -1738,7 +1774,7 @@ async function testLiveOverStaleLocalAccepted() {
     stopOnFail: false,
   });
   assert(
-    hasFail(localOnly.last, "r2-profile-first-viewport-still") ||
+    hasFail(localOnly.last, "r2-profile-first-viewport-is-frame") ||
       hasFail(localOnly.last, "r2-profile-not-old-shell"),
     `local-only must still judge stale 78vh HTML, got ${failuresOf(localOnly.last)}`
   );
@@ -1839,6 +1875,69 @@ async function testGs18HtmlStillRejected() {
       "<p>A-SHOWREEL-TRAD · IN-CARD. Traditional showreel lives in this paragraph.</p>"
     ).ok === false,
     "text-card showreel pattern must fail"
+  );
+  assert(
+    showreelIsPicture(
+      '<article><iframe src="https://player.vimeo.com/video/1174467043?background=1" title="Traditional showreel"></iframe></article>'
+    ).ok === true,
+    "Vimeo iframe with background=1 is a showreel picture"
+  );
+  return "REJECT";
+}
+
+async function testRenderedLiveExamRejected() {
+  const snapshotPath = path.join(fixture("fail-rendered-live-exam"), "live-snapshot.html");
+  const snapshot = fs.readFileSync(snapshotPath, "utf8");
+  let body = snapshot;
+  const fetched = await optionalFetch("https://ai.drsfilms.com/giant-spoon/", 8000);
+  if (fetched && fetched.status === 200 && fetched.body && String(fetched.body).length > 500) {
+    body = fetched.body;
+  }
+  assert(
+    firstViewportIsFrame(body).ok === false,
+    "live exam must fail first-viewport-is-frame"
+  );
+  assert(
+    noResumeMasthead(body, "#0033A0").ok === false,
+    "live exam must fail no-resume-masthead"
+  );
+  assert(
+    noTypeSlabWorkSlot(body, "#0033A0").ok === false,
+    "live exam must fail no-type-slab-work"
+  );
+  assert(
+    leadMediaCleared(body).ok === false,
+    "live exam must fail lead-media-cleared"
+  );
+
+  const r2 = await runHops({
+    packageDir: fixture("fail-rendered-live-exam"),
+    hops: ["R2"],
+    reportsDir: tmpReports(),
+    stopOnFail: false,
+    fetchResult: { status: 200, timedOut: false, error: null, body },
+  });
+  assert(r2.last.verdict === "REJECT", "live rendered exam must REJECT R2");
+  assert(
+    hasFail(r2.last, "r2-profile-first-viewport-is-frame"),
+    `live exam must fail r2-profile-first-viewport-is-frame, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    hasFail(r2.last, "r2-profile-no-resume-masthead"),
+    `live exam must fail r2-profile-no-resume-masthead, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    hasFail(r2.last, "r2-profile-no-type-slab-work"),
+    `live exam must fail r2-profile-no-type-slab-work, got ${failuresOf(r2.last)}`
+  );
+  assert(
+    hasFail(r2.last, "r2-profile-lead-media-cleared"),
+    `live exam must fail r2-profile-lead-media-cleared, got ${failuresOf(r2.last)}`
+  );
+  const blob = JSON.stringify((r2.last.checks || []).map((c) => `${c.id}:${c.detail}`));
+  assert(
+    !/reject this blue bar|reject this tencent slab/i.test(blob),
+    "exam details must stay generic; do not encode screenshot strings into the law"
   );
   return "REJECT";
 }
@@ -2385,12 +2484,35 @@ function testLooseningAnyP0RuleBreaksSelftest() {
           false,
         "text-only Profile HTML"
       ),
-    "r2-profile-first-viewport-still": () =>
+    "r2-profile-first-viewport-is-frame": () =>
       assert(
-        firstViewportHasStill(
+        firstViewportIsFrame(
           '<style>.hero{min-height:78vh}</style><header class="hero"><h1>x</h1></header><img src="later.jpg">'
         ).ok === false,
-        "78vh hero without still"
+        "78vh type hero is not a work frame"
+      ),
+    "r2-profile-no-resume-masthead": () =>
+      assert(
+        noResumeMasthead(
+          '<style>.wordmark{background:#1A2B3C;padding:24px 28px;font-size:28px}</style><header class="wordmark">Acme<small>Senior Producer · NYC hybrid</small></header>',
+          "#1A2B3C"
+        ).ok === false,
+        "fat brand-color header with role + location"
+      ),
+    "r2-profile-no-type-slab-work": () =>
+      assert(
+        noTypeSlabWorkSlot(
+          '<style>.type-card{background:#1A2B3C;padding:48px}</style><article class="type-card"><h2>Work title</h2><p>No still. Type only.</p></article>',
+          "#1A2B3C"
+        ).ok === false,
+        "brand-color type slab as a work slot"
+      ),
+    "r2-profile-lead-media-cleared": () =>
+      assert(
+        leadMediaCleared(
+          '<img src="stills/uncatalogued-fixture.webp" alt="invented lead">'
+        ).ok === false,
+        "uncatalogued fixture still is not a lead asset"
       ),
     "r2-profile-still-early": () =>
       assert(
@@ -2554,23 +2676,13 @@ function testLooseningAnyP0RuleBreaksSelftest() {
       ),
     "r2-profile-recent-bar": () => {
       const stale = loadPackage({ packageDir: fixture("fail-stale-classic-bar") });
-      assert(recentBarOk(stale).ok === false, "stale elevenlabs+luma pair");
+      assert(recentBarOk(stale).ok === false, "portfolio slugs are not official work URLs");
       const recent = loadPackage({ packageDir: fixture("pass-recent-bar") });
-      assert(recentBarOk(recent).ok === true, "recorded newest 3");
-      const resume = loadPackage({ packageDir: fixture("pass-recent-bar") });
-      resume.profileHtml = {
-        ok: true,
-        value: "<html><body><h1>Acme</h1><p>Résumé text only. No stills.</p></body></html>",
-      };
-      resume.paths = { ...resume.paths, profileHtml: resume.paths.profileHtml || "profile.html" };
-      assert(
-        recentBarOk(resume).ok === false,
-        "résumé/text page vs bar first-viewport still"
-      );
+      assert(recentBarOk(recent).ok === true, "official work/case URLs");
       const typewall = loadPackage({ packageDir: fixture("fail-typewall-as-recent-bar") });
       assert(
         recentBarOk(typewall).ok === false,
-        "timestamp-only type-wall compared_to while still-first peer exists"
+        "type-wall slug bar is not official work URLs"
       );
     },
     "brief-page-slots": () => {
@@ -2652,6 +2764,39 @@ function testLooseningAnyP0RuleBreaksSelftest() {
           },
         }).ok === true,
         "Coach 190660903 / trad reel 1174467043 are allowed lead hangs"
+      );
+      assert(
+        briefLeadAssetsClearable({
+          selected_work_ids: [
+            "coach-make-the-ground-shake",
+            "tencent-dungeon-and-fighter",
+            "brief-history-of-a-family",
+          ],
+          page_slots: {
+            archetype: "P-led",
+            lead: ["traditional advertising showreel", "Coach brand spot"],
+            second: ["Tencent Dungeon & Fighter"],
+            supporting: ["Brief History of A Family"],
+            omit: ["58-node"],
+          },
+        }).ok === true,
+        "second-slot Tencent with no still is not an R0 STOP; inspect page_slots.lead only"
+      );
+      assert(
+        briefLeadAssetsClearable({
+          selected_work_ids: [
+            "coach-make-the-ground-shake",
+            "tencent-dungeon-and-fighter",
+          ],
+          page_slots: {
+            archetype: "P-led",
+            lead: ["tencent-dungeon-and-fighter"],
+            second: ["Coach brand spot"],
+            supporting: [],
+            omit: [],
+          },
+        }).ok === false,
+        "Tencent as page_slots.lead is still an R0 STOP"
       );
     },
     "r2-profile-follows-brief-slots": () => {
@@ -3047,12 +3192,15 @@ async function runSelfTest() {
     "test-recent-bar-fixtures": await testRecentBarFixtures(),
     "test-typewall-as-recent-bar": await testTypewallAsRecentBarRejected(),
     "test-brief-lead-not-clearable": await testBriefLeadNotClearableRepair(),
+    "test-apply-gs-lead-assets-inspect-lead-slots-only":
+      await testApplyGsLeadAssetsInspectLeadSlotsOnly(),
     "test-full-bleed-profile": await testFullBleedProfileRejected(),
     "test-live-over-stale-local": await testLiveOverStaleLocalAccepted(),
     "test-live-gs-film-slate-and-ai-dominate":
       await testLiveGiantSpoonFilmSlateAndAiDominateRejected(),
     "test-brief-page-slots-rejected": await testBriefPageSlotsRejected(),
     "test-gs18-html-still-rejected": await testGs18HtmlStillRejected(),
+    "test-rendered-live-exam-rejected": await testRenderedLiveExamRejected(),
     "test-profile-requires-deployment-not-local-html":
       await testProfileRequiresDeploymentNotLocalHtml(),
     "test-live-fetch-rejects-spa-fallback": await testLiveFetchRejectsSpaFallback(),
@@ -3114,7 +3262,7 @@ async function runSelfTest() {
       "fail-p-led-pb-gallery": "REJECT",
       "fail-stale-classic-bar": "REJECT",
       "fail-typewall-as-recent-bar": "REJECT",
-      "fail-brief-lead-not-clearable": "REPAIR",
+      "fail-brief-lead-not-clearable": "REJECT",
       "fail-full-bleed-profile": "REJECT",
       "pass-still-first-live-over-stale": "ACCEPT",
       "pass-recent-bar": "ACCEPT",
@@ -3123,6 +3271,7 @@ async function runSelfTest() {
       "fail-page-ignores-brief-lead": "REJECT",
       "fail-p-led-film-slate": "REJECT",
       "fail-p-led-ai-dominate": "REJECT",
+      "fail-rendered-live-exam": "REJECT",
       "pass-brief-slots-lead": "ACCEPT",
       "pass-a-led-wonder": "ACCEPT",
       "pass-wonder-58node": "ACCEPT",

@@ -74,6 +74,14 @@ function workImagesInHtml(html) {
   return images;
 }
 
+function vimeoIdsInHtml(html) {
+  const ids = new Set();
+  const re = /player\.vimeo\.com\/video\/(\d+)/gi;
+  let m;
+  while ((m = re.exec(String(html || "")))) ids.add(m[1]);
+  return ids;
+}
+
 function htmlHasWorkImages(html) {
   const images = workImagesInHtml(html);
   return {
@@ -144,37 +152,41 @@ function visibleTextBeforeFirstImage(html) {
 }
 
 function firstStillIsEarly(html) {
-  const images = workImagesInHtml(html);
-  const { words } = visibleTextBeforeFirstImage(html);
-  if (!images.length) {
+  const chunk = stripChrome(bodyInner(html));
+  const visualAt = firstVisualStillIndex(chunk);
+  const prefix = visualAt < 0 ? chunk : chunk.slice(0, visualAt);
+  const words = stripToWords(prefix);
+  if (visualAt < 0) {
     return {
       ok: false,
-      wordsBefore: words,
-      reason: "no real still; first viewport is text (B-C6 / B-P3)",
+      wordsBefore: words.length,
+      reason: "no real still or video frame; first viewport is text (B-C6 / B-P3)",
     };
   }
-  if (words > MAX_WORDS_BEFORE_STILL) {
+  if (words.length > MAX_WORDS_BEFORE_STILL) {
     return {
       ok: false,
-      wordsBefore: words,
-      reason: `${words} words before first still (max ${MAX_WORDS_BEFORE_STILL}; B-C6 / B-WKS4)`,
+      wordsBefore: words.length,
+      reason: `${words.length} words before first still or video frame (max ${MAX_WORDS_BEFORE_STILL}; B-C6 / B-WKS4)`,
     };
   }
   return {
     ok: true,
-    wordsBefore: words,
-    reason: `first still after ${words} words`,
+    wordsBefore: words.length,
+    reason: `first still or video frame after ${words.length} words`,
   };
 }
 
 function htmlHasEnoughStills(html, min = MIN_STILL_COUNT) {
   const images = workImagesInHtml(html);
+  const vimeos = vimeoIdsInHtml(html).size;
+  const count = images.length + vimeos;
   return {
-    ok: images.length >= min,
-    count: images.length,
-    reason: images.length >= min
-      ? `${images.length} real work image(s) (>=${min})`
-      : `${images.length} still(s); B-WKS4 two films do not carry a page (need >=${min})`,
+    ok: count >= min,
+    count,
+    reason: count >= min
+      ? `${images.length} still(s) + ${vimeos} video frame(s) (>=${min})`
+      : `${images.length} still(s) + ${vimeos} video frame(s); B-WKS4 two films do not carry a page (need >=${min})`,
   };
 }
 

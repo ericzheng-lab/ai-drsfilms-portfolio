@@ -1,5 +1,5 @@
 {
-  "version": "1.16.0",
+  "version": "1.17.0",
   "source": "Named production failures only. HyperAgent career-application-loop (check.js + rules v1.3) lived as cloud skill scripts, did not hard-stop the chain when Profile was skipped, and allowed a builder to declare a role did not need a Profile. Canon lives in this repo because Profiles ship at ai.drsfilms.com/{company}/. Encode those failures. Do not dump speculative L0 lists.",
   "rules": [
     {
@@ -96,14 +96,44 @@
       "note": "Company Profile HTML must contain real work images: <img> with a real src. Empty, placeholder, spacer, 1x1, decorative, or missing stills are REJECT. Text-only pages fail. Local HTML without stills fails. Images are not optional. No waiver."
     },
     {
-      "id": "r2-profile-first-viewport-still",
+      "id": "r2-profile-first-viewport-is-frame",
       "severity": "P0",
-      "failure": "blank first viewport / min-height hero spacer with no still",
+      "failure": "first viewport is not the lead work as a frame",
       "hops": [
         "R2",
         "R3"
       ],
-      "note": "A .hero / header with min-height >= 70vh and no <img> is REJECT (the Giant Spoon #18 78vh fail). A later thumb does not save an empty first viewport. Cheap HTML heuristic: first 800px of body text/images must be still-led. First-viewport screenshot compare is a supervisor check (Career Manager / Mac), not CI Playwright. No waiver. _CAREER B-C6 / B-C4 / B-P3."
+      "note": "First viewport is the Brief lead as a frame: real video (Vimeo iframe or <video>) or an INDEX public:true still, filling the capped work column after ≤56px chrome. A 21:9 boxed card that does not fill the column is not a frame. Type-led opens fail. Wordmark/header chrome taller than 56px fails. HTML heuristic standing in for a first-screen look; no Playwright. No waiver."
+    },
+    {
+      "id": "r2-profile-no-resume-masthead",
+      "severity": "P0",
+      "failure": "fat brand-color document header holding role + location",
+      "hops": [
+        "R2",
+        "R3"
+      ],
+      "note": "Wordmark is thin chrome. A fat brand-color document header that also holds role + location is a résumé masthead = REJECT. No waiver."
+    },
+    {
+      "id": "r2-profile-no-type-slab-work",
+      "severity": "P0",
+      "failure": "solid brand-color type slab standing in for a work slot",
+      "hops": [
+        "R2",
+        "R3"
+      ],
+      "note": "A solid brand-color block whose only content is a heading + paragraph (no video/still) is not a work slot. Type slabs are not lead assets. No waiver."
+    },
+    {
+      "id": "r2-profile-lead-media-cleared",
+      "severity": "P0",
+      "failure": "lead is not a real video and not an INDEX public:true still",
+      "hops": [
+        "R2",
+        "R3"
+      ],
+      "note": "If the lead has no real video (Vimeo ok) and no INDEX public:true still, STOP. Uncatalogued fixture files, invented frames, and a solid brand-color type slab standing in for a work slot are not lead assets. No waiver."
     },
     {
       "id": "r2-profile-still-early",
@@ -113,7 +143,7 @@
         "R2",
         "R3"
       ],
-      "note": "First real <img> must appear within 80 words of visible body text. A Kalshi/Wonder type hero with posters below the fold is REJECT (B-C6 / B-WKS4 / B-P3). No waiver."
+      "note": "First real still or video frame (img | Vimeo iframe | <video>) must appear within 80 words of visible body text. A type hero with posters below the fold is REJECT (B-C6 / B-WKS4 / B-P3). No waiver."
     },
     {
       "id": "r2-profile-still-count",
@@ -123,7 +153,7 @@
         "R2",
         "R3"
       ],
-      "note": "At least 4 real work images. B-WKS4: 作品多、话少、没照片。两个片子撑不起一页. BPI 3-thumb and #18 1-thumb classes REJECT. No waiver."
+      "note": "At least 4 real work images, counting unique in-page Vimeo embeds toward density so a video-led page is not forced to hang four lead stills. Two films / two stills with no video still fail. B-WKS4. No waiver."
     },
     {
       "id": "r2-profile-traditional-credits",
@@ -165,28 +195,28 @@
       "severity": "P0",
       "failure": "R-VI token-only / hex+font with no usage notes",
       "hops": ["R-VI", "R3"],
-      "note": "A VI record that lists hex/font/radius but does not say how they are used (wordmark/field/canvas) is a token-only distill. Official Giant Spoon is Klein Blue as wordmark/field on a white canvas. Distill without USAGE is REJECT. No waiver."
+      "note": "A VI record that lists hex/font/radius but does not say how they are used (wordmark/field/canvas) is a token-only distill. Usage notes are required; they do not waive the rendered-page field gate. Distill without USAGE is REJECT. No waiver."
     },
     {
       "id": "vi-not-chrome-only",
       "severity": "P0",
       "failure": "chrome-only Giant Spoon distill / home hero treated as the brand",
       "hops": ["R-VI", "R3"],
-      "note": "Official Giant Spoon audit (giantspoon.com, 2026-08-18): chrome-only distill is REJECT even if hex/font match. Home hero type-only white is chrome, not the brand. Distill must include work/case pages: full-bleed autoplay video work cards + per-project duotone scrims; gradients #337789→#2D434B, #BA2210→#2D4654, #01388B→#4E2652, #775714→#665B3A; Yeti #D26403; HBO oxblood/black; home 6 videos + 29 images; zero illustration. Flood fields (services/contact #0033A0, logo garden #000000) are chrome, not a substitute for content. Off Giant Spoon this check is N/A. No waiver."
+      "note": "Gates the rendered page when HTML is present: first viewport must be a work frame (thin chrome + lead video/still filling the column). Notes in vi.json are not enough to pass a type-led or résumé page. When HTML is absent, a chrome-only Giant Spoon distill is still REJECT even if hex/font match — the record must include work/case content. Home hero type-only white is chrome, not the brand. No waiver."
     },
     {
       "id": "vi-primary-as-field",
       "severity": "P0",
-      "failure": "primary hex only in tiny labels / B/W/navy résumé after a token distill",
+      "failure": "primary used as a fat brand-color document header, or only in tiny labels",
       "hops": ["R-VI", "R2", "R3"],
-      "note": "When profile HTML is present, the primary brand color must be a real field or wordmark, not 10px labels on a black/white page. A black/white/navy résumé page is R-VI FAIL even when hex/font match. Footer/closing-only or hover washes do not count. No waiver."
+      "note": "When profile HTML is present, invert the old pass: a fat brand-color document header fails even if a later field exists. Pass path: thin ≤56px chrome (may be primary) and/or a later primary field that is not the first-80px header. Tiny labels on a black/white page still fail. Footer/closing-only or hover washes do not count. No waiver."
     },
     {
       "id": "r2-profile-showreel-picture",
       "severity": "P0",
       "failure": "text-only showreel card / A-SHOWREEL-TRAD described in a paragraph",
       "hops": ["R2", "R3"],
-      "note": "If a showreel is claimed, it must be a 21:9 poster + play on the card, not a paragraph, iframe-only IN-CARD kicker, or 16:9 text card. Recruiter 6-second FAIL. No waiver."
+      "note": "If a showreel is claimed, it must be a real video frame (Vimeo/YouTube iframe with play or background=1/autoplay=1, or <video>) or a 21:9 poster + play on the card — not a paragraph. Recruiter 6-second FAIL. No waiver."
     },
     {
       "id": "r2-profile-credits-not-legal",
@@ -214,14 +244,14 @@
       "severity": "P0",
       "failure": "empty white work cards / brand boxes with no stills",
       "hops": ["R2", "R3"],
-      "note": "A work-card or brand-mark row without a real still is an empty white card. Recruiter 6-second FAIL. No waiver."
+      "note": "A work-card or brand-mark row without a real still or in-page video frame is an empty white card. Recruiter 6-second FAIL. No waiver."
     },
     {
       "id": "r2-profile-brand-stills",
       "severity": "P0",
       "failure": "brand wordmarks standing in for brand stills",
       "hops": ["R2", "R3"],
-      "note": "If COACH/Nike/BMW/Tencent are claimed, they must be hung — not typeset wordmarks. Hang = dual-gate still, Coach in-page Vimeo 190660903 when INDEX has no still, or a Tencent heading type card when INDEX has no game still. Do not invent frames. No waiver."
+      "note": "If COACH/Nike/BMW/Tencent are claimed, they must be hung as stills or an allowed in-page Vimeo — not typeset wordmarks. A heading type card is not a hang. Do not invent frames. No waiver."
     },
     {
       "id": "r2-profile-six-stage",
@@ -281,10 +311,10 @@
     },
     {
       "id": "brief-lead-assets-clearable",
-      "severity": "P1",
-      "failure": "Brief lead id has no dual-gate still and is not an allowed Vimeo embed; later hops must not substitute another category",
+      "severity": "P0",
+      "failure": "Brief lead id has no real video and no INDEX public:true still",
       "hops": ["R0"],
-      "note": "If a lead id cannot be hung (assets.json external_ready:true AND INDEX public:true) and is not an allowed Vimeo embed (Coach 190660903, trad reel 1174467043), R0 is REPAIR. Do not allow later hops to substitute another category (film for ads). Uncatalogued fixture ids are N/A."
+      "note": "Inspect page_slots.lead ids only — not selected_work_ids, not second, not supporting. If a lead id cannot be hung (assets.json external_ready:true AND INDEX public:true) and is not an allowed Vimeo embed (Coach 190660903, trad reel 1174467043), R0 is REJECT (STOP). Uncatalogued fixture files and invented frames are not lead assets. A second-slot work with no still is not an R0 STOP; r2-profile-no-type-slab-work is the page exam. Do not allow later hops to substitute another category (film for ads). No waiver."
     },
     {
       "id": "r2-profile-follows-brief-slots",
@@ -296,9 +326,9 @@
     {
       "id": "r2-profile-recent-bar",
       "severity": "P0",
-      "failure": "new Profile judged against a frozen pair / timestamp-only type-wall bar / stale compared_to, or a résumé page while the current still-first bar has a first-viewport still",
+      "failure": "compared_to is our live portfolio, a timestamp type-wall bar, or not this company's official work/case pages",
       "hops": ["R2", "R3"],
-      "note": "Every NEW company Profile is built and judged against the newest 3 still-first public/*/index.html pages (first viewport is a still/reel poster), not a timestamp-only newest 3 and not a fixed pair (not ElevenLabs/Luma forever, not Wonder/Kalshi forever). Discover peers except the package company. Sort by last git commit timestamp (mtime if git is unavailable). Skip type-wall / Thread B pages. ACCEPT only if manifest compared_to records that still-first set. Timestamp-only newest 3 that are type-first while a still-first peer exists is REJECT. A stale fixed pair while newer pages exist is REJECT. Also REJECT if the new HTML is a text/résumé page while any of the newest 3 have a first-viewport still. Reuses still gates plus the first-800px still-led heuristic. No waiver."
+      "note": "compared_to is this company's official work/case pages (external https URLs on the VI source_url host). Never our live portfolio (ai.drsfilms.com). Never our /wonder/ route. Never a timestamp type-wall bar (home / is chrome, not a work page). Path must be work/case/campaign/project/reel/film. No waiver."
     },
     {
       "id": "r2-profile-max-width",

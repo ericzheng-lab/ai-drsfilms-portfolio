@@ -6,5 +6,9 @@
   "cl": "cl.md",
   "profile_url": "https://ai.drsfilms.com/acme/",
   "profile_html": "profile.html",
-  "vi": "vi.json"
+  "vi": "vi.json",
+  "compared_to": [
+    "https://giantspoon.com/work",
+    "https://giantspoon.com/work/yeti"
+  ]
 }

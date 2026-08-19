@@ -23,7 +23,6 @@ const {
 } = require("./brief-slots");
 const {
   htmlHasWorkImages,
-  firstViewportHasStill,
   firstStillIsEarly,
   htmlHasEnoughStills,
   hasTraditionalCredits,
@@ -40,6 +39,12 @@ const {
   primaryAppliedAsField,
   viNotChromeOnly,
 } = require("./vi-apply");
+const {
+  firstViewportIsFrame,
+  noResumeMasthead,
+  noTypeSlabWorkSlot,
+  leadMediaCleared,
+} = require("./profile-frame");
 const {
   showreelIsPicture,
   creditsNotLegalParagraph,
@@ -544,7 +549,7 @@ function hopR0(pkg, rules) {
 
   const leadClear = briefLeadAssetsClearable(attrs);
   checks.push(
-    check("brief-lead-assets-clearable", "P1", leadClear.ok, leadClear.reason)
+    check("brief-lead-assets-clearable", "P0", leadClear.ok, leadClear.reason)
   );
 
   const skips = scanSkipLanguage(text, skipPatterns(rules));
@@ -668,7 +673,18 @@ function hopRVI(pkg, _rules, opts = {}) {
     )
   );
 
-  const chrome = viNotChromeOnly(rec);
+  const localHtml =
+    pkg.paths && pkg.paths.profileHtml && pkg.profileHtml && pkg.profileHtml.ok
+      ? String(pkg.profileHtml.value || "").trim()
+      : "";
+  const liveHtml =
+    opts.fetchResult && opts.fetchResult.body
+      ? String(opts.fetchResult.body || "").trim()
+      : "";
+  const judgedHtml =
+    gateOpts.preferLiveHtml && liveHtml ? liveHtml : localHtml;
+
+  const chrome = viNotChromeOnly(rec, judgedHtml);
   checks.push(
     check(
       "vi-not-chrome-only",
@@ -680,16 +696,6 @@ function hopRVI(pkg, _rules, opts = {}) {
     )
   );
 
-  const localHtml =
-    pkg.paths && pkg.paths.profileHtml && pkg.profileHtml && pkg.profileHtml.ok
-      ? String(pkg.profileHtml.value || "").trim()
-      : "";
-  const liveHtml =
-    opts.fetchResult && opts.fetchResult.body
-      ? String(opts.fetchResult.body || "").trim()
-      : "";
-  const judgedHtml =
-    gateOpts.preferLiveHtml && liveHtml ? liveHtml : localHtml;
   if (judgedHtml) {
     const field = primaryAppliedAsField(judgedHtml, primaryHexFromVi(rec));
     checks.push(check("vi-primary-as-field", "P0", field.ok, field.reason));
@@ -804,28 +810,36 @@ function profileWorkImageGate(pkg, opts = {}) {
   };
 }
 
+function primaryHexFromPkg(pkg) {
+  const rec =
+    pkg && pkg.vi && pkg.vi.ok && pkg.vi.value && typeof pkg.vi.value === "object"
+      ? pkg.vi.value
+      : {};
+  return primaryHexFromVi(rec);
+}
+
 function profileFirstViewportGate(pkg, opts = {}) {
   const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
   const parts = [];
   let ok = true;
   if (localHtml) {
-    const ev = firstViewportHasStill(localHtml);
+    const ev = firstViewportIsFrame(localHtml);
     parts.push(`local HTML: ${ev.reason}`);
     if (!ev.ok) ok = false;
   }
   if (liveHtml) {
-    const ev = firstViewportHasStill(liveHtml);
+    const ev = firstViewportIsFrame(liveHtml);
     parts.push(`live HTML: ${ev.reason}`);
     if (!ev.ok) ok = false;
   }
   if (!localHtml && !liveHtml) {
-    return { ok: false, detail: "no Profile HTML to inspect for first-viewport still" };
+    return { ok: false, detail: "no Profile HTML to inspect for first-viewport frame" };
   }
   return {
     ok,
     detail: ok
       ? parts.join("; ")
-      : `blank / spacer first viewport: ${parts.join("; ")}`,
+      : `first viewport is not a work frame: ${parts.join("; ")}`,
   };
 }
 
@@ -1036,6 +1050,24 @@ const profileAiMustNotDominateGate = profileGateFromPkg(
   "P-led AI film stills dominate ads lead frames"
 );
 
+const profileResumeMastheadGate = profileGateFromPkg(
+  (html, pkg) => noResumeMasthead(html, primaryHexFromPkg(pkg)),
+  "no Profile HTML to inspect for résumé masthead",
+  "résumé masthead"
+);
+
+const profileTypeSlabGate = profileGateFromPkg(
+  (html, pkg) => noTypeSlabWorkSlot(html, primaryHexFromPkg(pkg)),
+  "no Profile HTML to inspect for type-slab work slots",
+  "brand-color type slab standing in for a work slot"
+);
+
+const profileLeadMediaGate = profileGateFrom(
+  leadMediaCleared,
+  "no Profile HTML to inspect for lead media clearance",
+  "lead is not a real video or INDEX public:true still"
+);
+
 function profileFollowsBriefSlotsGate(pkg, opts = {}) {
   const { localHtml, liveHtml } = profileHtmlSides(pkg, opts);
   const parts = [];
@@ -1119,7 +1151,19 @@ function hopR2(pkg, rules, opts = {}) {
   checks.push(check("r2-profile-work-images", "P0", stills.ok, stills.detail));
   const viewport = profileFirstViewportGate(pkg, opts);
   checks.push(
-    check("r2-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
+    check("r2-profile-first-viewport-is-frame", "P0", viewport.ok, viewport.detail)
+  );
+  const masthead = profileResumeMastheadGate(pkg, opts);
+  checks.push(
+    check("r2-profile-no-resume-masthead", "P0", masthead.ok, masthead.detail)
+  );
+  const typeSlab = profileTypeSlabGate(pkg, opts);
+  checks.push(
+    check("r2-profile-no-type-slab-work", "P0", typeSlab.ok, typeSlab.detail)
+  );
+  const leadMedia = profileLeadMediaGate(pkg, opts);
+  checks.push(
+    check("r2-profile-lead-media-cleared", "P0", leadMedia.ok, leadMedia.detail)
   );
   const early = profileStillEarlyGate(pkg, opts);
   checks.push(check("r2-profile-still-early", "P0", early.ok, early.detail));
@@ -1318,7 +1362,19 @@ function hopR3(pkg, rules, opts = {}) {
   checks.push(check("r3-profile-work-images", "P0", stills.ok, stills.detail));
   const viewport = profileFirstViewportGate(pkg, opts);
   checks.push(
-    check("r3-profile-first-viewport-still", "P0", viewport.ok, viewport.detail)
+    check("r3-profile-first-viewport-is-frame", "P0", viewport.ok, viewport.detail)
+  );
+  const masthead = profileResumeMastheadGate(pkg, opts);
+  checks.push(
+    check("r3-profile-no-resume-masthead", "P0", masthead.ok, masthead.detail)
+  );
+  const typeSlab = profileTypeSlabGate(pkg, opts);
+  checks.push(
+    check("r3-profile-no-type-slab-work", "P0", typeSlab.ok, typeSlab.detail)
+  );
+  const leadMedia = profileLeadMediaGate(pkg, opts);
+  checks.push(
+    check("r3-profile-lead-media-cleared", "P0", leadMedia.ok, leadMedia.detail)
   );
   const early = profileStillEarlyGate(pkg, opts);
   checks.push(check("r3-profile-still-early", "P0", early.ok, early.detail));
@@ -1541,7 +1597,10 @@ const REQUIRED_HOP_CHECKS = {
   R2: [
     "r2-profile-present",
     "r2-profile-work-images",
-    "r2-profile-first-viewport-still",
+    "r2-profile-first-viewport-is-frame",
+    "r2-profile-no-resume-masthead",
+    "r2-profile-no-type-slab-work",
+    "r2-profile-lead-media-cleared",
     "r2-profile-still-early",
     "r2-profile-still-count",
     "r2-profile-traditional-credits",
@@ -1578,7 +1637,10 @@ const REQUIRED_HOP_CHECKS = {
     "r3-profile-present",
     "r3-three-live-pieces",
     "r3-profile-work-images",
-    "r3-profile-first-viewport-still",
+    "r3-profile-first-viewport-is-frame",
+    "r3-profile-no-resume-masthead",
+    "r3-profile-no-type-slab-work",
+    "r3-profile-lead-media-cleared",
     "r3-profile-still-early",
     "r3-profile-still-count",
     "r3-profile-traditional-credits",
