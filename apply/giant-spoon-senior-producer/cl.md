@@ -7,7 +7,7 @@ The seat asks someone to take integrated productions from concept through delive
 
 At Final Frontier I was Executive Producer / Lead Producer. I bid the job, sat with Creative before the idea hardened, and kept Account and Business Affairs on the same board. Peak load was 6–8 concurrent campaigns. $8M+ is an aggregate across that shop and earlier brand work, not one line. After the first Dungeon & Fighter film, I ran the three-film expansion as a production-company EP.
 
-The Profile opens on ads: the traditional advertising showreel as a 21:9 picture, then in-page play, and the COACH brand spot in-page. Tencent Dungeon & Fighter is second. Brief History of A Family is one supporting card (Sundance Grand Jury Prize nominee; Berlinale Panorama). When a generated pass is cheaper than a reshoot day, I price it as One Click Mute, then Manga Cut, then DoomBrush — a schedule line, not a reel of tools.
+The Profile opens on a Coach campaign frame — picture, then silent play — with the traditional advertising showreel on the same card. Tencent Dungeon & Fighter is second. Brief History of A Family is one supporting card (Sundance Grand Jury Prize nominee; Berlinale Panorama). When a generated pass is cheaper than a reshoot day, I price it as One Click Mute, then Manga Cut, then DoomBrush — a schedule line, not a reel of tools.
 
 I am in Greater New York, a U.S. Permanent Resident, and can be in the office Tuesday through Thursday.
 
