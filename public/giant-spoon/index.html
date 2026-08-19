@@ -4,239 +4,343 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet"/>
-<title>Yue (Eric) Zheng · Giant Spoon Senior Producer · Role Profile</title>
+<title>Eric Zheng · Giant Spoon Senior Producer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;600;800&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --canvas:#FFFFFF;
+  --paper:#EBEBE3;
+  --ink:#0A0A0A;
   --blue:#0033A0;
-  --black:#000000;
-  --yeti:#D26403;
-  --oxblood:#4A0A16;
+  --mute:rgba(10,10,10,.58);
+  --line:rgba(10,10,10,.16);
   --font:"Sora",sans-serif;
+  --col:min(1120px, calc(100% - 48px));
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font:300 16px/1.45 var(--font);color:var(--black);background:var(--canvas);-webkit-font-smoothing:antialiased}
-img{display:block}
-a{color:inherit;text-decoration:none}
+body{
+  font:300 17px/1.5 var(--font);
+  color:var(--ink);
+  background:var(--paper);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{color:inherit}
 a:hover,a:focus{color:var(--blue)}
-button{appearance:none;border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:0;border-radius:0}
-.wordmark{
-  background:var(--blue);
-  color:var(--canvas);
-  padding:22px 24px;
-  font-size:22px;
-  font-weight:700;
-  letter-spacing:-0.1px;
+.wrap{width:var(--col);margin-inline:auto}
+.eyebrow{
+  color:var(--blue);
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.14em;
   text-transform:uppercase;
 }
-.wordmark small{display:block;margin-top:6px;font-size:13px;font-weight:500}
-.wrap{width:min(1120px, calc(100% - 40px));margin-inline:auto}
-.frames{padding:24px 0 0}
-.frame{position:relative;background:var(--black);overflow:hidden;margin:0 0 24px}
-.reel-poster{aspect-ratio:21/9;width:100%;object-fit:cover;display:block}
-.wide{aspect-ratio:16/9;width:100%;object-fit:cover;display:block}
-.scrim{position:absolute;inset:auto 0 0 0;padding:22px 24px 24px;color:var(--canvas);pointer-events:none}
-.scrim-blue{background:linear-gradient(transparent,var(--blue) 42%)}
-.scrim-ox{background:linear-gradient(transparent,var(--oxblood) 42%,var(--black))}
-.scrim h1,.scrim h2{font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;line-height:.95}
-.scrim h1{font-size:clamp(26px,3.6vw,48px);max-width:16ch}
-.scrim h2{font-size:clamp(22px,3vw,36px);max-width:18ch}
-.scrim p{margin-top:8px;max-width:36rem;font-size:14px;font-weight:300}
-.play{
-  position:absolute;top:18px;right:18px;z-index:2;
-  border:1px solid var(--canvas);color:var(--canvas);
-  padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:-0.1px;
-  text-transform:uppercase;border-radius:0;
+
+/* Hero — Coach is the page */
+.hero{
+  position:relative;
+  height:100vh;
+  height:100svh;
+  min-height:560px;
+  overflow:hidden;
+  background:#0A0A0A;
+  color:#fff;
 }
-.player{width:100%;aspect-ratio:21/9;border:0;display:none;background:var(--black)}
-.player.on{display:block}
-.wide-player{aspect-ratio:16/9}
-.stage.is-playing .reel-poster,
-.stage.is-playing .wide,
-.stage.is-playing .play,
-.stage.is-playing .scrim{display:none}
-.plays{position:absolute;top:18px;right:18px;z-index:2;display:flex;gap:8px}
-.type-card{
-  background:var(--blue);
-  color:var(--canvas);
-  padding:48px 24px;
-  margin:0 0 24px;
+.hero-frame{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
 }
-.type-card h2{font-size:clamp(26px,3.4vw,42px);font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;max-width:18ch;line-height:.95}
-.type-card p{margin-top:12px;max-width:40rem;font-size:14px;font-weight:300}
-.band{padding:8px 0 36px}
-.band h2{font-size:clamp(22px,3vw,36px);font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;max-width:18ch}
-.band p{margin-top:12px;max-width:40rem}
-.cost-line{display:flex;gap:20px;align-items:flex-start;margin-top:22px}
-.cost-still{width:min(240px,38%);flex:0 0 auto}
-.cost-still img{width:100%;height:auto;display:block;aspect-ratio:16/9;object-fit:cover}
-.cost-copy{font-size:14px;max-width:36rem}
-.cost-copy b{display:block;font-size:13px;font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;margin-bottom:8px}
-.pb{margin:8px 0 36px}
-.pb img{width:min(320px,100%);height:auto;display:block}
-.pb figcaption{margin-top:10px;font-size:13px;max-width:32rem}
-.method{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--black);margin-top:22px}
-.method article{padding:22px;border-right:1px solid var(--black)}
-.method article:last-child{border-right:0}
-.method b{display:block;font-size:13px;font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;margin-bottom:8px}
-.method p{font-size:14px}
-.fit{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--black);margin-top:22px}
-.fit div{padding:22px}
-.fit div + div{border-left:1px solid var(--black)}
-.fit h3{font-size:22px;font-weight:700;letter-spacing:-0.1px;text-transform:uppercase;margin-bottom:10px}
-.fit li{margin:8px 0 0 18px;font-size:14px}
-.brand-field{
-  background:var(--blue);
-  color:var(--canvas);
-  padding:48px 24px;
-  font-size:22px;
-  font-weight:700;
-  letter-spacing:-0.1px;
+.hero-frame iframe{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:100vw;
+  height:56.25vw;
+  min-height:100vh;
+  min-height:100svh;
+  min-width:177.78vh;
+  border:0;
+  transform:translate(-50%,-50%);
+}
+.scrim{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.18) 36%, rgba(0,0,0,.55) 100%);
+  pointer-events:none;
+}
+.bar{
+  position:relative;
+  z-index:2;
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:baseline;
+  padding:18px 24px 0;
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.06em;
+  color:rgba(255,255,255,.82);
+}
+.hero-copy{
+  position:absolute;
+  z-index:2;
+  left:0;right:0;bottom:0;
+  padding:0 24px 56px;
+}
+.hero-copy .kicker{
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:.16em;
   text-transform:uppercase;
+  color:rgba(255,255,255,.78);
+  margin-bottom:18px;
 }
-.brand-field p{margin-top:10px;font-size:14px;font-weight:300;max-width:40rem;text-transform:none;letter-spacing:0}
-.brand-field a{color:var(--canvas);font-weight:700;letter-spacing:-0.1px;text-transform:uppercase}
-.note{padding:18px 0 36px;font-size:12px;max-width:46rem}
-@media(max-width:900px){
-  .cost-line,.fit,.method{display:block}
-  .cost-still{width:min(240px,100%)}
-  .fit div + div,.method article{border-left:0;border-top:1px solid var(--black);border-right:0}
-  .plays{flex-direction:column;align-items:flex-end}
+.hero-copy h1{
+  font-size:clamp(64px, 12vw, 132px);
+  line-height:.86;
+  letter-spacing:-.045em;
 }
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.hero-copy h1 .given{font-weight:300}
+.hero-copy h1 .family{font-weight:800}
+.hero-copy .line{
+  margin-top:22px;
+  max-width:38rem;
+  font-size:clamp(15px, 1.6vw, 18px);
+  font-weight:300;
+  line-height:1.45;
+  color:rgba(255,255,255,.92);
+}
+.hero-copy .credit{
+  margin-top:14px;
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.04em;
+  color:rgba(255,255,255,.62);
+}
+
+/* Statement */
+.statement{padding:88px 0 72px}
+.statement h2{
+  margin-top:14px;
+  max-width:18ch;
+  font-size:clamp(32px, 4.6vw, 52px);
+  font-weight:300;
+  line-height:1.08;
+  letter-spacing:-.035em;
+}
+.statement h2 strong{font-weight:800}
+
+/* Proof — the ONE blue field */
+.proof{
+  background:var(--blue);
+  color:#fff;
+  padding:56px 0 52px;
+}
+.proof .grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:28px 24px;
+}
+.proof b{
+  display:block;
+  font-size:clamp(28px, 3.4vw, 44px);
+  font-weight:800;
+  letter-spacing:-.04em;
+  line-height:1;
+}
+.proof span{
+  display:block;
+  margin-top:10px;
+  font-size:12px;
+  font-weight:300;
+  line-height:1.4;
+  color:rgba(255,255,255,.82);
+}
+
+/* Work list */
+.work{padding:88px 0 24px}
+.work h2{
+  margin:12px 0 36px;
+  font-size:clamp(28px, 3.8vw, 44px);
+  font-weight:800;
+  letter-spacing:-.04em;
+}
+.rows{border-top:1px solid var(--line)}
+.row{
+  display:grid;
+  grid-template-columns:minmax(8rem, .9fr) 1.6fr auto;
+  gap:16px 28px;
+  align-items:baseline;
+  padding:20px 0;
+  border-bottom:1px solid var(--line);
+  font-size:16px;
+}
+.row .brand{font-weight:800;letter-spacing:-.02em}
+.row .scope{font-weight:300}
+.row .role{
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--blue);
+}
+
+/* Film */
+.film{padding:64px 0 24px}
+.film h2{
+  margin:12px 0 16px;
+  font-size:clamp(28px, 3.8vw, 44px);
+  font-weight:800;
+  letter-spacing:-.04em;
+}
+.film p{max-width:40rem;color:var(--mute)}
+
+/* Method */
+.now{padding:64px 0 24px}
+.now h2{
+  margin:12px 0 16px;
+  font-size:clamp(28px, 3.8vw, 44px);
+  font-weight:800;
+  letter-spacing:-.04em;
+}
+.now p{max-width:40rem}
+.now a{font-weight:600;text-underline-offset:3px}
+
+/* Credentials + contact */
+.creds{
+  padding:48px 0 8px;
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--mute);
+}
+.contact{padding:28px 0 72px}
+.contact a{
+  font-size:clamp(22px, 3vw, 34px);
+  font-weight:800;
+  letter-spacing:-.03em;
+  text-decoration:none;
+}
+.foot{
+  padding:0 0 28px;
+  font-size:11px;
+  font-weight:300;
+  color:var(--mute);
+}
+
+@media(max-width:820px){
+  .bar{flex-wrap:wrap;padding:16px 20px 0}
+  .hero-copy{padding:0 20px 40px}
+  .proof .grid{grid-template-columns:1fr 1fr}
+  .row{grid-template-columns:1fr;gap:6px;padding:18px 0}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .hero-frame{display:none}
+}
 </style>
 </head>
 <body>
-<div class="wordmark">Giant Spoon<small>Yue Zheng · Senior Producer · NYC hybrid</small></div>
 
-<main class="wrap">
-  <div class="frames">
-    <article class="frame" id="lead">
-      <div class="stage" data-player data-src="https://player.vimeo.com/video/190660903">
-        <img class="reel-poster" src="stills/coach-make-the-ground-shake.webp" alt="COACH · Make the Ground Shake — live-action advertising frame" width="1600" height="593"/>
-        <div class="plays">
-          <button class="play" type="button" data-src="https://player.vimeo.com/video/190660903">Play Coach</button>
-          <button class="play" type="button" data-src="https://player.vimeo.com/video/1174467043">Play reel</button>
-        </div>
-        <div class="scrim scrim-blue">
-          <h1>COACH · Make the Ground Shake</h1>
-          <p>Advertising lead. Traditional advertising showreel and brand spot on this card. Picture, then silent play.</p>
-        </div>
-        <iframe class="player" title="Advertising lead" src="https://player.vimeo.com/video/190660903" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
-      </div>
-    </article>
-
-    <article class="type-card" id="dnf">
-      <h2>Tencent Dungeon &amp; Fighter</h2>
-      <p>Second. After the first film, production-company EP on the client-requested three-film expansion. No public still — type card only.</p>
-    </article>
-
-    <article class="frame" id="bhoaf">
-      <div class="stage" data-player data-src="https://player.vimeo.com/video/1172739705">
-        <img class="wide" src="stills/brief-history-of-a-family-still-01.jpg" alt="Brief History of A Family still" width="1600" height="900"/>
-        <button class="play" type="button">Play</button>
-        <div class="scrim scrim-ox">
-          <h2>Brief History of A Family</h2>
-          <p>One supporting card. Producer. Sundance Grand Jury Prize nominee. Berlinale Panorama. Nominee, not a win.</p>
-        </div>
-        <iframe class="player wide-player" title="Brief History of A Family" src="https://player.vimeo.com/video/1172739705" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>
-      </div>
-    </article>
+<section class="hero" id="top">
+  <div class="hero-frame">
+    <iframe
+      src="https://player.vimeo.com/video/190660903?background=1&autoplay=1&loop=1&muted=1&dnt=1"
+      title="COACH · 11/11 Own This Day"
+      allow="autoplay; fullscreen"
+      allowfullscreen></iframe>
   </div>
-
-  <section class="band" id="cost">
-    <h2>Generated work is a schedule and a cost.</h2>
-    <p>When a generated pass is cheaper than a reshoot day, the priced line is One Click Mute, then Manga Cut, then DoomBrush — a named owner on the gate, not a three-tile hero.</p>
-    <div class="cost-line">
-      <div class="cost-still">
-        <img src="stills/one-click-mute-key-frame-01.jpg" alt="One Click Mute — priced generate still" width="480" height="270"/>
-      </div>
-      <div class="cost-copy">
-        <b>Cost line</b>
-        One Click Mute is the still on this line. Manga Cut, then DoomBrush, stay named here as the rest of the quote. AI share stays supporting.
-      </div>
-    </div>
-  </section>
-
-  <figure class="pb">
-    <img src="stills/prompt-builder-ui-01.jpg" alt="Prompt Builder one screenshot" width="640" height="360"/>
-    <figcaption>Prompt Builder, one small screenshot. The workbench used to quote that generate line. Not a product gallery.</figcaption>
-  </figure>
-
-  <section class="band" id="method">
-    <h2>How a job is held.</h2>
-    <p>Type only. A generated pass is a cost and a date, with a named owner on the gate.</p>
-    <div class="method">
-      <article>
-        <b>Bid</b>
-        <p>Deliverables, medium, decision-makers, and the first envelope before Creative hardens the idea.</p>
-      </article>
-      <article>
-        <b>Vendors</b>
-        <p>Director and house options, bid comparison, and the assumptions Account has to hear early.</p>
-      </article>
-      <article>
-        <b>Close</b>
-        <p>Named review dates, version control, and reconciliation — then a clean handoff to media.</p>
-      </article>
-    </div>
-  </section>
-
-  <section class="band" id="fit">
-    <h2>Budgets, vendors, several jobs at once.</h2>
-    <p>Giant Spoon Senior Producer is an integrated production seat. I bid the job, hold the vendor, and keep concurrent work honest — broadcast, digital, social, experiential, branded content. NYC hybrid. Tuesday through Thursday on site.</p>
-    <div class="fit">
-      <div>
-        <h3>On the job</h3>
-        <ul>
-          <li>Lead integrated productions from concept through delivery.</li>
-          <li>Partner with Creative on what is executable before the idea locks.</li>
-          <li>Work with Account on timing and with Business Affairs on talent, music, and contracts.</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Commercial control</h3>
-        <ul>
-          <li>Build, track, and reconcile production budgets.</li>
-          <li>Bid and negotiate directors, editorial, VFX, and finish partners.</li>
-          <li>Keep several campaigns visible at once: owners, dates, and risk.</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-</main>
-
-<section class="brand-field" id="contact">
-  Yue (Eric) Zheng
-  <p>Giant Spoon Senior Producer · Greater New York · U.S. Permanent Resident · Executive MBA<br/>
-  <a href="mailto:eric.zheng@drsfilms.com">eric.zheng@drsfilms.com ↗</a></p>
+  <div class="scrim"></div>
+  <div class="bar">
+    <span>Role Profile — Giant Spoon</span>
+    <span>Senior Producer / Greater New York</span>
+  </div>
+  <div class="hero-copy wrap">
+    <p class="kicker">Integrated Brand Production</p>
+    <h1><span class="given">Eric</span><br/><span class="family">Zheng</span></h1>
+    <p class="line">I take integrated jobs from first brief through delivery: budget, vendors, and several campaigns at once.</p>
+    <p class="credit">COACH · 11/11 Own This Day · Hantang / D’ELE · dir. Shigeto “Rage” Sayama</p>
+  </div>
 </section>
-<p class="note wrap">Applicant-prepared · private/noindex · route /giant-spoon/ · Coach campaign frame + Vimeo 190660903 · showreel Vimeo 1174467043 · Brief History one still · VI giantspoon.com 2026-08-18 · 18 Aug 2026</p>
-<script>
-(function(){
-  var stages=document.querySelectorAll("[data-player]");
-  for(var i=0;i<stages.length;i++){
-    (function(stage){
-      var player=stage.querySelector("iframe");
-      if(!player) return;
-      var buttons=stage.querySelectorAll(".play");
-      for(var b=0;b<buttons.length;b++){
-        buttons[b].addEventListener("click",function(){
-          var src=this.getAttribute("data-src")||stage.getAttribute("data-src")||"";
-          if(!src) return;
-          stage.classList.add("is-playing");
-          player.classList.add("on");
-          if(src.indexOf("autoplay")<0) src=src+(src.indexOf("?")>=0?"&":"?")+"autoplay=1";
-          player.src=src;
-        });
-      }
-    })(stages[i]);
-  }
-})();
-</script>
+
+<section class="statement">
+  <div class="wrap">
+    <p class="eyebrow">On the brief</p>
+    <h2>Giant Spoon sits between strategy, creative, and production. <strong>That in-between is where I produce.</strong></h2>
+  </div>
+</section>
+
+<section class="proof">
+  <div class="wrap grid">
+    <div><b>$8M+</b><span>aggregate branded portfolio</span></div>
+    <div><b>Tencent</b><span>Dungeon &amp; Fighter three-film package, EP</span></div>
+    <div><b>$6M+</b><span>Final Frontier revenue in 18 months</span></div>
+    <div><b>15+</b><span>years · live action, branded, post</span></div>
+  </div>
+</section>
+
+<section class="work">
+  <div class="wrap">
+    <p class="eyebrow">Selected work</p>
+    <h2>Brand · scope · role</h2>
+    <ol class="rows">
+      <li class="row">
+        <span class="brand">Coach</span>
+        <span class="scope">11/11 Own This Day</span>
+        <span class="role">Producer</span>
+      </li>
+      <li class="row">
+        <span class="brand">Tencent</span>
+        <span class="scope">Dungeon &amp; Fighter · three-film package</span>
+        <span class="role">EP</span>
+      </li>
+      <li class="row">
+        <span class="brand">Nike / BMW</span>
+        <span class="scope">Brand production · live action and post</span>
+        <span class="role">Producer</span>
+      </li>
+      <li class="row">
+        <span class="brand">Final Frontier</span>
+        <span class="scope">$6M+ in 18 months</span>
+        <span class="role">EP / Lead Producer</span>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="film">
+  <div class="wrap">
+    <p class="eyebrow">The differentiator</p>
+    <h2>Brief History of A Family</h2>
+    <p>$2.5M international co-production. Sundance Grand Jury Prize nominee. Berlinale Panorama. Coordinated co-production legal, contractual, and delivery across partners.</p>
+  </div>
+</section>
+
+<section class="now">
+  <div class="wrap">
+    <p class="eyebrow">How I work now</p>
+    <h2>DRS Films</h2>
+    <p>Generated work is throughput — a priced line when it is cheaper than a reshoot — not a wall of tools. The workbench is <a href="/prompt-builder/">Prompt Builder</a>.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <p class="creds">Executive MBA · Greater New York · U.S. Permanent Resident</p>
+</div>
+
+<section class="contact">
+  <div class="wrap">
+    <a href="mailto:eric.zheng@drsfilms.com">eric.zheng@drsfilms.com</a>
+  </div>
+</section>
+
+<p class="foot wrap">Giant Spoon · Senior Producer</p>
+
 </body>
 </html>
