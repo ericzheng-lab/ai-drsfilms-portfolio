@@ -5,29 +5,39 @@
     <meta name="robots" content="noindex" />
     <title>Acme — Synthetic Senior Producer</title>
     <style>
-      .wordmark{background:#1A2B3C;color:#F4F1EA;padding:20px 24px;font-size:22px;font-weight:700}
+      .wordmark{max-height:48px;height:48px;background:#1A2B3C;color:#F4F1EA;padding:8px 16px;font-size:16px}
+      .wrap{width:min(1120px, calc(100% - 40px));margin:0 auto}
+      .lead-frame iframe{display:block;width:100%;min-height:calc(100vh - 56px);border:0}
+      .brand-field{background:#1A2B3C;color:#F4F1EA;min-height:72px;padding:24px;margin:24px 0}
       .reel-poster{aspect-ratio:21/9;width:100%;object-fit:cover}
     </style>
   </head>
   <body>
     <header class="wordmark">Acme</header>
-    <img src="work-still.png" alt="Brief History of a Family still" width="640" height="360" />
-    <img src="work-still.png" alt="One Click Mute still" width="640" height="360" />
-    <img src="work-still.png" alt="HOME Manga Cut still" width="640" height="360" />
-    <img src="work-still.png" alt="DoomBrush still" width="640" height="360" />
-    <h1>Acme Senior Producer (fixture)</h1>
-    <p>Synthetic company Profile page. Not a live application.</p>
-    <article class="work-card">
-      <img class="reel-poster" src="work-still.png" alt="Traditional showreel still" width="840" height="360" />
-      <span class="play">Play</span>
-      <h3>Brief History of a Family</h3>
-      <iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe>
-    </article>
-    <p>One Click Mute. HOME × SMARTHOME Manga Cut. DoomBrush.</p>
-    <figure>
-      <img src="workflow-6stage.svg" alt="Six-stage production method" />
-      <figcaption class="footnote">Locked six-stage method.</figcaption>
-    </figure>
-    <p>https://ai.drsfilms.com/acme/</p>
+    <div class="wrap">
+      <div class="lead-frame">
+        <iframe src="https://player.vimeo.com/video/1174467043?background=1&amp;autoplay=1" title="Traditional showreel"></iframe>
+      </div>
+      <p>Brief History of a Family. One Click Mute. Manga Cut. DoomBrush.</p>
+      <img src="work-still.png" alt="Brief History of a Family still" width="640" height="360" />
+      <img src="work-still.png" alt="One Click Mute still" width="640" height="360" />
+      <img src="work-still.png" alt="HOME Manga Cut still" width="640" height="360" />
+      <img src="work-still.png" alt="DoomBrush still" width="640" height="360" />
+      <div class="brand-field">Field</div>
+      <h1>Acme Senior Producer (fixture)</h1>
+      <p>Synthetic company Profile page. Not a live application.</p>
+      <article class="work-card">
+        <img class="reel-poster" src="work-still.png" alt="Traditional showreel still" width="840" height="360" />
+        <span class="play">Play</span>
+        <h3>Traditional showreel</h3>
+        <iframe src="https://player.vimeo.com/video/1174467043" title="Traditional showreel"></iframe>
+      </article>
+      <p>One Click Mute. HOME × SMARTHOME Manga Cut. DoomBrush.</p>
+      <figure>
+        <img src="workflow-6stage.svg" alt="Six-stage production method" />
+        <figcaption class="footnote">Locked six-stage method.</figcaption>
+      </figure>
+      <p>https://ai.drsfilms.com/acme/</p>
+    </div>
   </body>
 </html>

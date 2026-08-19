@@ -246,6 +246,15 @@ function primaryAppliedAsField(html, primaryHex) {
   if (!src.trim()) {
     return { ok: false, reason: "no profile HTML; primary cannot be a field" };
   }
+  const { fatBrandColorDocumentHeader } = require("./profile-frame");
+  const fat = fatBrandColorDocumentHeader(src, primaryHex);
+  if (fat.hit) {
+    return {
+      ok: false,
+      reason:
+        "primary used as a fat brand-color document header (wordmark must be thin chrome; a later field does not save it)",
+    };
+  }
   const rules = cssRules(styleBlocks(src));
   const vars = collectVars(rules, src);
   const kinds = [];
@@ -258,7 +267,7 @@ function primaryAppliedAsField(html, primaryHex) {
   if (fields.length || inlines.length) {
     return {
       ok: true,
-      reason: `primary used as field/wordmark (${
+      reason: `primary used as thin chrome and/or a later field (${
         fields[0] ? fields[0].selector.trim() : "inline"
       })`,
     };
@@ -313,9 +322,9 @@ function isGiantSpoonDistill(rec) {
   return primary === "#0033a0" && /sora/i.test(String(font));
 }
 
-function viNotChromeOnly(rec) {
+function viRecordNotChromeOnly(rec) {
   if (!isGiantSpoonDistill(rec)) {
-    return { ok: true, reason: "chrome-only gate N/A off Giant Spoon distill" };
+    return { ok: true, reason: "chrome-only record gate N/A off Giant Spoon distill" };
   }
   const blob = recordBlob(rec);
   const missing = [];
@@ -353,6 +362,23 @@ function viNotChromeOnly(rec) {
     ok: true,
     reason: "Giant Spoon distill includes chrome + work/case content",
   };
+}
+
+function viNotChromeOnly(rec, html) {
+  const recordEv = viRecordNotChromeOnly(rec);
+  const src = String(html || "").trim();
+  if (!src) return recordEv;
+  const { firstViewportIsFrame } = require("./profile-frame");
+  const frame = firstViewportIsFrame(src);
+  const pageEv = frame.ok
+    ? { ok: true, reason: `rendered page is a work frame (${frame.reason})` }
+    : {
+        ok: false,
+        reason: `rendered page is not a work frame: ${frame.reason}`,
+      };
+  if (!recordEv.ok) return recordEv;
+  if (!pageEv.ok) return pageEv;
+  return { ok: true, reason: `${recordEv.reason}; ${pageEv.reason}` };
 }
 
 module.exports = {

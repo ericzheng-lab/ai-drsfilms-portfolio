@@ -72,6 +72,26 @@ function reelArticles(html) {
     .filter((body) => SHOWREEL_RE.test(body));
 }
 
+function cardHasVideoFrame(body) {
+  const src = String(body || "");
+  return (
+    /player\.vimeo\.com\/video\//i.test(src) ||
+    /(?:youtube\.com\/embed\/|player\.youtube\.com)/i.test(src) ||
+    /<video\b/i.test(src)
+  );
+}
+
+function vimeoAsPicture(body) {
+  const src = String(body || "");
+  if (!/player\.vimeo\.com\/video\//i.test(src) && !/<video\b/i.test(src)) {
+    return false;
+  }
+  return (
+    hasPlayControl(src) ||
+    /[?&](background|autoplay)=1/i.test(src)
+  );
+}
+
 function showreelIsPicture(html) {
   const src = visibleHtml(html);
   if (!SHOWREEL_RE.test(src)) {
@@ -79,22 +99,35 @@ function showreelIsPicture(html) {
   }
   const reelCards = reelArticles(html);
   if (reelCards.length) {
-    const pictured = reelCards.filter((body) => workImagesInHtml(body).length > 0);
+    const pictured = reelCards.filter(
+      (body) => workImagesInHtml(body).length > 0 || cardHasVideoFrame(body)
+    );
     if (!pictured.length) {
       return {
         ok: false,
-        reason: "showreel card has no picture (text/iframe-only · IN-CARD class)",
+        reason: "showreel card has no picture (text-only · IN-CARD class)",
       };
     }
-    const wide = pictured.some((body) => cardHas21x9(body, html));
-    const play = pictured.some((body) => hasPlayControl(body));
-    if (!wide || !play) {
+    const videoLed = pictured.some((body) => vimeoAsPicture(body));
+    const posterLed = pictured.some(
+      (body) =>
+        workImagesInHtml(body).length > 0 &&
+        cardHas21x9(body, html) &&
+        hasPlayControl(body)
+    );
+    if (videoLed || posterLed) {
       return {
-        ok: false,
-        reason: "showreel must be a 21:9 poster + play (not a 16:9 text/iframe card)",
+        ok: true,
+        reason: videoLed
+          ? "showreel card is a real video frame"
+          : "showreel card is a 21:9 poster + play",
       };
     }
-    return { ok: true, reason: "showreel card is a 21:9 poster + play" };
+    return {
+      ok: false,
+      reason:
+        "showreel must be a real video frame (play or background/autoplay) or a 21:9 poster + play",
+    };
   }
   return {
     ok: false,
@@ -109,7 +142,7 @@ function noEmptyWhiteWorkCards(html) {
     const attrs = m[1] || "";
     const body = m[2] || "";
     if (!/\bwork-card\b/i.test(attrs)) continue;
-    if (workImagesInHtml(body).length === 0) {
+    if (workImagesInHtml(body).length === 0 && !cardHasVideoFrame(body)) {
       return {
         ok: false,
         reason: "empty white work card (no still) — recruiter 6-second FAIL",
@@ -129,12 +162,6 @@ function noEmptyWhiteWorkCards(html) {
 function brandIsHung(brand, src, imgsJoined) {
   if (new RegExp(brand, "i").test(imgsJoined)) return true;
   if (brand === "coach" && /player\.vimeo\.com\/video\/190660903/i.test(src)) {
-    return true;
-  }
-  if (
-    brand === "tencent" &&
-    /<(h[1-6])[^>]*>[\s\S]*?\btencent\b[\s\S]*?<\/\1>/i.test(src)
-  ) {
     return true;
   }
   return false;

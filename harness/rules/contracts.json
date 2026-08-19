@@ -1,5 +1,5 @@
 {
-  "version": "1.16.0",
+  "version": "1.17.0",
   "algebra": {
     "P0_FAIL": "REJECT",
     "P1_FAIL_without_P0": "REPAIR",
@@ -22,7 +22,7 @@
       "required_inputs": [
         "brief"
       ],
-      "notes": "Brief YAML locks page composition: selected_work_ids lead-first plus page_slots (archetype, lead, second, supporting, omit). Missing slots or a P-led agency film-only lead while ads/reel ids are listed is REJECT. A lead id with no dual-gate still and not an allowed Vimeo embed (Coach 190660903, trad reel 1174467043) is REPAIR — later hops may not substitute another category (film for ads)."
+      "notes": "Brief YAML locks page composition: selected_work_ids lead-first plus page_slots (archetype, lead, second, supporting, omit). Missing slots or a P-led agency film-only lead while ads/reel ids are listed is REJECT. First viewport is the lead work as a frame (real video or INDEX public:true still). A lead id with no real video (Vimeo ok) and no INDEX public:true still is REJECT (STOP) — uncatalogued fixture files and invented frames are not lead assets. Later hops may not substitute another category (film for ads)."
     },
     {
       "id": "R-VI",
@@ -33,7 +33,7 @@
       "required_inputs": [
         "vi"
       ],
-      "notes": "VI distill needs source URL + date + exact hex/font/radius AND usage notes (how primary is a wordmark/field on the canvas). Token-only hex/font is REJECT. Chrome-only Giant Spoon distill is REJECT even if hex/font match — work/case content (video cards, duotone scrims, real gradients) must be in the record. Home hero type-only white is chrome, not the brand. When profile HTML is present, primary must be applied as a real field/wordmark; a black/white/navy résumé is REJECT."
+      "notes": "VI distill needs source URL + date + exact hex/font/radius AND usage notes. Token-only hex/font is REJECT. R-VI gates the rendered page, not notes in vi.json: a fat brand-color document header fails even if usage notes say field/wordmark. Thin ≤56px chrome (may be primary) and/or a later primary field that is not the first-80px header is the pass path. Tiny labels still fail. When HTML is present, the first viewport must be a work frame. When HTML is absent, a chrome-only Giant Spoon distill is still REJECT (work/case content must be in the record). Home hero type-only white is chrome, not the brand."
     },
     {
       "id": "R1",
@@ -70,7 +70,7 @@
       "required_inputs": [
         "profile"
       ],
-      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. When --fetch-profile succeeds, profile content gates judge the live body; a stale local exam HTML (old 78vh spacer) must not AND-fail R2/R3 if live would PASS. Local-only runs (no fetch) still judge local HTML. Profile HTML must contain real work stills; text-only / empty / placeholder <img> is REJECT. Images are not optional. Hung files require assets.json external_ready:true AND INDEX public:true. 58-node file only on /wonder/ until generic public. DEV4 UIs are public:false. Visible A-* ids REJECT. Also REJECT token-only VI, text-only showreel cards, legal-paragraph credits, and JD-archetype invocation misses. First viewport / first work row must match Brief page_slots.lead (ids or trad reel / brand spot); a film-only page while Brief lead is ads/reel is REJECT. P-led ads Brief whose first viewport is a FILM PRODUCER / film-slate wordmark fighting advertising showreel is REJECT. P-led AI film stills (OCM/Manga/DoomBrush) that are larger, earlier, or more numerous than ads lead frames are REJECT. Every new Profile is judged against the newest 3 still-first shipped public/*/index.html peers (git last-touch, mtime fallback; skip type-wall / Thread B); manifest compared_to must record that moving bar — timestamp-only type-first newest 3 while a still-first peer exists is REJECT. A résumé/text page is REJECT when any of those 3 has a first-viewport still. Work column capped min(1120px, calc(100% - 40px)) (1080–1240); 100vw work img/iframe/video is REJECT (wordmark/nav may be full row)."
+      "notes": "Qualifying live evidence required: HTTP 2xx AND body contains dedicated-profile path identity (/{slug}/ or ai.drsfilms.com/{slug}). Company-word mention alone is not enough. Local profile.html alone is REJECT. SPA 200 empty shell is FAIL. --fetch-profile 4xx/5xx/timeout/error is FAIL. Self-test may inject fetchResult. When --fetch-profile succeeds, profile content gates judge the live body; a stale local exam HTML (old 78vh spacer) must not AND-fail R2/R3 if live would PASS. Local-only runs (no fetch) still judge local HTML. First viewport is the Brief lead as a frame: real video (Vimeo ok) or INDEX public:true still, filling the capped work column after ≤56px chrome. Wordmark is thin chrome, not a résumé masthead (role + location in a fat brand-color header). A solid brand-color type slab (heading + paragraph, no media) is not a work slot. Uncatalogued fixture files and invented frames are not lead assets. Work column capped min(1120px, calc(100% - 40px)) (1080–1240); 100vw work img/iframe/video is REJECT (wordmark/nav may be full row). Picture/video fills the column, not the viewport. compared_to is this company's official work/case pages (external https URLs on the VI source host) — never our live portfolio, never our /wonder/ route, never a timestamp type-wall bar. Profile HTML must contain real work stills; text-only / empty / placeholder <img> is REJECT. Hung files require assets.json external_ready:true AND INDEX public:true. 58-node file only on /wonder/ until generic public. DEV4 UIs are public:false. Visible A-* ids REJECT. Also REJECT token-only VI, text-only showreel cards, legal-paragraph credits, and JD-archetype invocation misses. First viewport / first work row must match Brief page_slots.lead. P-led ads Brief whose first viewport is a FILM PRODUCER / film-slate wordmark fighting advertising showreel is REJECT. P-led AI film stills that dominate ads lead frames are REJECT. First-viewport screenshot compare is a supervisor check, not CI Playwright; HTML heuristics stand in."
     },
     {
       "id": "R3",

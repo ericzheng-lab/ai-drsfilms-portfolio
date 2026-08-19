@@ -8,8 +8,7 @@
   "profile_html": "profile.html",
   "vi": "vi.json",
   "compared_to": [
-    "still-alpha",
-    "still-beta",
-    "still-gamma"
+    "https://www.example.test/work/case-one",
+    "https://www.example.test/work/case-two"
   ]
 }

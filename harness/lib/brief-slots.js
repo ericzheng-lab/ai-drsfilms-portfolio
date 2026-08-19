@@ -337,7 +337,11 @@ function leadItemHangable(item) {
       };
     }
   }
-  return { ok: true, reason: "uncatalogued fixture id" };
+  return {
+    ok: false,
+    reason:
+      "uncatalogued fixture id is not a lead asset; need Vimeo or INDEX public:true still",
+  };
 }
 
 function briefLeadAssetsClearable(attrs) {
@@ -362,15 +366,15 @@ function briefLeadAssetsClearable(attrs) {
   if (blocked.length) {
     return {
       ok: false,
-      reason: `lead id cannot be hung (no dual-gate still and not Coach 190660903 / trad reel 1174467043): ${blocked.join(
+      reason: `lead id cannot be hung (no dual-gate still / allowed Vimeo, and uncatalogued files are not lead assets): ${blocked.join(
         ", "
-      )} — do not substitute another category later`,
+      )} — STOP; do not substitute another category later`,
     };
   }
   return {
     ok: true,
     reason:
-      "Brief lead ids are dual-gate clearable, or allowed Vimeo (Coach 190660903 / trad reel 1174467043), or uncatalogued fixture ids",
+      "Brief lead ids are dual-gate clearable, or allowed Vimeo (Coach 190660903 / trad reel 1174467043)",
   };
 }
 

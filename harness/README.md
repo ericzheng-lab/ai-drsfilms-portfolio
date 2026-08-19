@@ -87,24 +87,24 @@ Hop order:
    Missing slot order is `REJECT` (`brief-page-slots`). A P-led
    agency/producer Brief whose `lead` is indie-film-only while ads/reel
    ids are in the list is `REJECT` (`brief-lead-matches-archetype`).
-   A lead id with no dual-gate still is `REPAIR`
-   (`brief-lead-assets-clearable`) — later hops may not substitute
-   another category (film for ads). Allowed Vimeo embeds that count
-   as a hang when INDEX has no still: Coach `190660903`, trad reel
-   `1174467043`. Page composition is locked here, not after the
-   Profile exists.
+   A lead id with no real video (Vimeo ok) and no INDEX `public:true`
+   still is `REJECT` / STOP (`brief-lead-assets-clearable`) — uncatalogued
+   fixture files and invented frames are not lead assets. Later hops
+   may not substitute another category (film for ads). Allowed Vimeo
+   embeds: Coach `190660903`, trad reel `1174467043`. Page composition
+   is locked here, not after the Profile exists.
 2. **R-VI** — VI distill record has source URL + date + exact hex / font /
    radius **and usage notes** (how the primary is a wordmark/field on the
    canvas). Empty or “similar to” = REJECT. Missing provenance = REJECT.
-   Hex/font without USAGE = token-only = REJECT. A **chrome-only**
-   Giant Spoon distill is REJECT even if hex/font match (official
-   giantspoon.com audit, 2026-08-18). Home hero type-only white is
-   chrome, not the brand; the record must include work/case pages
-   (full-bleed autoplay video cards, per-project duotone scrims, real
-   gradients, Yeti #D26403, HBO oxblood/black, 6 videos + 29 images,
-   zero illustration). When profile HTML is present, the primary hex
-   must be applied as a real field/wordmark — a black/white/navy
-   résumé page is R-VI FAIL even when tokens match.
+   Hex/font without USAGE = token-only = REJECT. R-VI gates the
+   **rendered page**, not notes in `vi.json`. A fat brand-color
+   document header fails (`vi-primary-as-field`) even if a later field
+   exists. Pass path: thin ≤56px chrome (may be primary) and/or a later
+   primary field that is not the first-80px header. Tiny labels still
+   fail. When HTML is present, the first viewport must be a work frame.
+   When HTML is absent, a chrome-only Giant Spoon distill is still
+   REJECT (work/case content must be in the record). Home hero type-only
+   white is chrome, not the brand.
 3. **R1 CV** — file exists; claim-lock + slop lexicons; header/contact
    cannot use a generic homepage as the portfolio URL.
 4. **R1b CL** — file exists; same slop / claim-lock checks. Cannot be waived.
@@ -119,12 +119,21 @@ Hop order:
    HTML, when present, still gets structure + noindex + claim-lock/slop
    checks, and **must contain real work stills** (`<img>` with a real src).
    Text-only pages, empty/placeholder/decorative marks, and local HTML
-   without stills are `REJECT` (`_CAREER` B-C6 / B-P3 / B-WKS4). A
-   `.hero` / `header` with `min-height >= 70vh` and no still in that
-   hero is `REJECT` even if a thumb appears later (B-C6 blank first
-   viewport; Giant Spoon #18). A type-only open with stills after 80
-   words of body copy is `REJECT` (Wonder/Kalshi class; B-C6 / B-WKS4).
-   Fewer than 4 real work images is `REJECT` (B-WKS4). A    leftover
+   without stills are `REJECT` (`_CAREER` B-C6 / B-P3 / B-WKS4). First
+   viewport is the Brief lead as a **frame** (`r2-profile-first-viewport-is-frame`):
+   real video (Vimeo ok) or an INDEX `public:true` still, filling the
+   capped work column after ≤56px chrome. A 21:9 boxed card that does
+   not fill the column is not a frame. Wordmark is thin chrome, not a
+   résumé masthead (role + location in a fat brand-color header)
+   (`r2-profile-no-resume-masthead`). A solid brand-color type slab
+   (heading + paragraph, no media) is not a work slot
+   (`r2-profile-no-type-slab-work`). Uncatalogued fixture files and
+   invented frames are not lead assets (`r2-profile-lead-media-cleared`).
+   HTML heuristics stand in for a first-screen look; no Playwright.
+   A type-only open with stills after 80
+   words of body copy is `REJECT` (B-C6 / B-WKS4).
+   Fewer than 4 real work images is `REJECT` (B-WKS4; unique in-page
+   Vimeo embeds count toward density). A    leftover
    70vh+ `.hero` shell is `REJECT` even with an image inside (B-C5
    patch-on-old-shell). A company homepage skin without a role and
    work-sample titles is `REJECT` (B-EL1). Token-only VI application
@@ -148,14 +157,11 @@ Hop order:
    as must-or-should and the strip is a picture. O-led: required
    (DOC-6/R8). A-led: supporting only.    P-led pages may not hang a
    Prompt Builder gallery. Invocation must match the JD archetype
-   (see matrix below). Every new Profile is judged against the
-   **newest 3 still-first** shipped `public/*/index.html` peers (last git
-   commit that touched the file; mtime if git is unavailable). Skip
-   type-wall / Thread B pages whose first viewport is type, not a
-   still/reel poster. Manifest `compared_to` must record that same
-   still-first set (`r2-profile-recent-bar` / R3 echo). Timestamp-only
-   newest-3 that are type-first while a still-first peer exists is
-   `REJECT`. First
+   (see matrix below). Manifest `compared_to` records this company's
+   official **work/case** pages (external https URLs on the VI
+   `source_url` host) — never our live portfolio, never our `/wonder/`
+   route, never a timestamp type-wall bar (`r2-profile-recent-bar` /
+   R3 echo). Home `/` is chrome, not a work page. First
    viewport / first work row must match Brief `page_slots.lead` (ids
    or named category: trad reel, brand spot). A page that is only film
    stills while Brief lead is ads/reel is `REJECT`
@@ -270,11 +276,14 @@ This CLI will not apply, submit, or restyle `public/` for you.
 
 First-viewport screenshot compare is a **supervisor check**, not CI.
 Career Manager / Mac takes the shot of `https://ai.drsfilms.com/{company}/`
-and compares it to the still-first bar. This repo has no Playwright;
-`--self-test` does not open a browser. The mechanical stand-in is a
-cheap HTML heuristic: the first 800px of body text/images must be
-still-led (work `<img>` / reel poster / in-page Vimeo before a type-wall).
-A type-first Thread B page is not the recent bar.
+and compares it to that company's official work/case pages. This repo has
+no Playwright; `--self-test` does not open a browser. Live screenshots
+are the exam of the law, not the source of the law. The mechanical
+stand-in is an HTML heuristic: first viewport is a work frame (real
+video or INDEX `public:true` still filling the capped column after
+≤56px chrome). A type-led open, a résumé masthead, a type slab, or an
+uncatalogued fixture lead fails. `compared_to` is official external
+work/case URLs, never our live portfolio.
 
 ## How a Cursor Profile PR drops an R2 report
 
@@ -309,7 +318,7 @@ See `schema/package-manifest.schema.json`. Required fields:
 | `profile_html` | Optional local HTML (not sufficient for R2/R3 ACCEPT) |
 | `company_aliases` | Trusted shortenings only (whole token or hyphen-boundary prefix of `company`, or built-in map). Prefix collisions inside a longer token (Metaphor + meta) and foreign slugs are ignored. |
 | `vi` | VI distill record (required for R-VI) |
-| `compared_to` | Newest 3 **still-first** shipped `public/{company}/` routes this Profile was built against (skip type-wall / Thread B). `r2-profile-recent-bar` ACCEPT only when this matches that still-first bar. |
+| `compared_to` | This company's official work/case pages (external https URLs on the VI source host). Never our live portfolio, never a timestamp type-wall bar. `r2-profile-recent-bar` ACCEPT only when every entry is an official work/case path. |
 | `waivers` | **Forbidden** for Profile / CL. Presence is P0 REJECT. Novel skip/omit/optional/defer keys are also REJECT. |
 
 Paths are relative to the package directory.
@@ -322,7 +331,7 @@ Paths are relative to the package directory.
 | `fixtures/fail-generic-homepage` | R2 or R3 `REJECT` (`ai.drsfilms.com/` root) |
 | `fixtures/fail-missing-cl` | `REJECT` (no cover letter file) |
 | `fixtures/fail-text-only-profile` | R2 `REJECT` (Profile HTML has no real work stills) |
-| `fixtures/fail-empty-hero-profile` | R2 `REJECT` (78vh / min-height hero spacer, no still in first viewport) |
+| `fixtures/fail-empty-hero-profile` | R2 `REJECT` (first viewport is not a work frame) |
 | `fixtures/fail-late-stills-profile` | R2 `REJECT` (type-only open; stills below 80 words) |
 | `fixtures/fail-thin-stack-profile` | R2 `REJECT` (fewer than 4 real work stills) |
 | `fixtures/fail-ai-only-profile` | R2 `REJECT` (no traditional film/showreel credits) |
@@ -357,17 +366,18 @@ Paths are relative to the package directory.
 | `fixtures/fail-6stage-caption-mix` | R2 `REJECT` (6-stage caption mixed with 7/58) |
 | `fixtures/fail-o-led-missing-6stage` | R2 `REJECT` (O-led missing 6-stage picture) |
 | `fixtures/fail-p-led-pb-gallery` | R2 `REJECT` (P-led Prompt Builder gallery) |
-| `fixtures/fail-stale-classic-bar` | R2 `REJECT` (`compared_to` is elevenlabs+luma while a newer peer exists) |
-| `fixtures/fail-typewall-as-recent-bar` | R2 `REJECT` (timestamp-only newest 3 are type-wall / Thread B while a still-first peer exists) |
-| `fixtures/pass-recent-bar` | `r2-profile-recent-bar` `ACCEPT` (`compared_to` matches the newest 3 in the fixture tree) |
-| `fixtures/fail-brief-lead-not-clearable` | R0 `REPAIR` (`brief-lead-assets-clearable`; lead cannot hang dual-gate still or allowed Vimeo) |
+| `fixtures/fail-stale-classic-bar` | R2 `REJECT` (`compared_to` is portfolio slugs, not official work/case URLs) |
+| `fixtures/fail-typewall-as-recent-bar` | R2 `REJECT` (`compared_to` is type-wall slugs, not official work/case URLs) |
+| `fixtures/pass-recent-bar` | `r2-profile-recent-bar` `ACCEPT` (`compared_to` is official work/case https URLs) |
+| `fixtures/fail-brief-lead-not-clearable` | R0 `REJECT` (`brief-lead-assets-clearable`; lead cannot hang dual-gate still or allowed Vimeo) |
 | `fixtures/fail-full-bleed-profile` | R2 `REJECT` (`r2-profile-max-width`; work img/iframe/video is `100vw`) |
-| `fixtures/pass-still-first-live-over-stale` | R2 `ACCEPT` when fetch is on (still-first `compared_to` + capped wrap + live body wins over stale local 78vh exam HTML) |
+| `fixtures/pass-still-first-live-over-stale` | R2 `ACCEPT` when fetch is on (official `compared_to` + capped wrap + live body wins over stale local 78vh exam HTML) |
 | `fixtures/fail-brief-no-slots` | R0 `REJECT` (no `page_slots` / slot order) |
 | `fixtures/fail-p-led-film-lead` | R0 `REJECT` (P-led agency producer, lead = BHOAF only while ads/reel ids are listed) |
 | `fixtures/fail-page-ignores-brief-lead` | R2 `REJECT` (Brief lead = reel+coach; HTML is four BHOAF cards) |
 | `fixtures/fail-p-led-film-slate` | R2 `REJECT` (`r2-profile-lead-not-film-slate`; saved copy of live `/giant-spoon/` — FILM PRODUCER title card hung as the ads reel poster) |
 | `fixtures/fail-p-led-ai-dominate` | R2 `REJECT` (`r2-profile-ai-must-not-dominate`; same live page — three-tile OCM/Manga/DoomBrush hero) |
+| `fixtures/fail-rendered-live-exam` | R2 `REJECT` (generic frame/masthead/slab/lead hops; live `/giant-spoon/` is the exam of the law, not the source of the law) |
 | `fixtures/pass-brief-slots-lead` | R2 `ACCEPT` (slots present; first work matches Brief lead) |
 | `fixtures/pass-a-led-wonder` | R2 `ACCEPT` (A-led films first + tools strip; 58-node *text* cite) |
 | `fixtures/pass-wonder-58node` | R2 `ACCEPT` (58-node *file* legal on `/wonder/`) |
@@ -379,7 +389,7 @@ Do not copy HyperAgent files into this repo. Name the asset id and the rule.
 
 | Archetype | Invoke | Forbidden |
 |---|---|---|
-| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a *21:9 poster + play* + brand hang (still, or Coach in-page Vimeo if INDEX has no still); `A-WORKFLOW-6STAGE` in the method slot only if the JD has process/gates as must-or-should, as one reskin picture; Prompt Builder at most one public screenshot | text showreel; legal-paragraph credits; empty white cards; 58-node *file*; DEV4 suite; Prompt Builder gallery / tools wall; 7-stage; in-dev wall before/taller than the reel; visible `A-*` ids; Drive original 6-stage; Klein Blue only as 10px labels |
+| **P-led** (agency Senior Producer) | `A-SHOWREEL-TRAD` as a real video frame or *21:9 poster + play* + brand hang (still, or Coach in-page Vimeo if INDEX has no still); `A-WORKFLOW-6STAGE` in the method slot only if the JD has process/gates as must-or-should, as one reskin picture; Prompt Builder at most one public screenshot | text showreel; legal-paragraph credits; empty white cards; heading type card as a hang; 58-node *file*; DEV4 suite; Prompt Builder gallery / tools wall; 7-stage; in-dev wall before/taller than the reel; visible `A-*` ids; Drive original 6-stage; fat brand-color résumé masthead |
 | **O-led** | `A-WORKFLOW-6STAGE` required (DOC-6/R8), one picture | `A-WORKFLOW-58NODE` file (unless `/wonder/` or generic public); 58-node without JD process depth |
 | **A-led** (Wonder is the exam) | `A-FILM-*` first, then a tools strip; 58-node *file* only on `/wonder/` until generic public:true; 6-stage supporting only | tools before films; 58-node file off `/wonder/`; DEV4 screenshots |
 
