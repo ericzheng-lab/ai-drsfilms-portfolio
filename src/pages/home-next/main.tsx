@@ -65,7 +65,7 @@ function App() {
       </header>
 
       <div className="hero">
-        <h1>Film producer and AI production-system builder.</h1>
+        <h1>Produces the film. Builds the studio around it.</h1>
         <p className="lede">
           Produced{' '}
           <a className="scan" href="#film">
@@ -80,7 +80,7 @@ function App() {
           <a className="scan" href="#software">
             one powerhouse
           </a>
-          : every creative head in one place, each taking what they need.
+          : every creative head under one roof, each taking what they need.
         </p>
         <div className="statline">
           <span>

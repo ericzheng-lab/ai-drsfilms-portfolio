@@ -24,23 +24,23 @@ export const vision: Vision = {
   statementZh:
     '我想象的未来的电影制作,就是所有的 creative heads 都是在同一个 powerhouse 里面各取所需。现在做的这些事情都是在为那个方向努力。',
   statementEn:
-    'The film production I am building toward: every creative head working in one powerhouse, each taking what they need. Everything below is a working station on that road.',
+    "Every creative head under one roof, each taking what they need. Film crews wrote the coordination protocol a hundred years ago — I'm teaching it to agents.",
   principles: [
     {
       zh: '每个部门有自己的 agent:制片人有制片人的 agent,美术组有美术组的,摄影、灯光、服化道都一样。',
-      en: 'Every department gets its own agent — producer, art, camera, lighting, wardrobe.',
+      en: 'Every department gets its own agent, listed like crew: producer, art, camera, lighting, wardrobe.',
     },
     {
       zh: '剧组本来就是一个 agent 网络:部门制、通告单、日报、签字权层级——一百年打磨好的书面协议,就是 agent 协作的现成蓝本。',
-      en: 'A film crew already runs on a hundred years of written protocol — call sheets, daily reports, sign-off chains. That protocol is the blueprint for how agents cooperate.',
+      en: 'Call sheets, dailies, purchase orders, sign-off chains: the paperwork becomes the messages agents exchange.',
     },
     {
       zh: 'Agent 只能提议,人签字才算数;没有批准就没有生成。',
-      en: 'Agents propose; people sign. No generation without approval.',
+      en: 'Agents propose. People sign. Nothing generates without approval.',
     },
     {
-      zh: '项目真相是一套普通文件,所有工具只对同一套文件读写。',
-      en: 'Project truth is one spine of plain files that every tool reads and writes.',
+      zh: '项目真相是一套普通文件,所有工具只对同一套文件读写。一切以书面为准。',
+      en: "If it isn't in the file, it didn't happen: one spine of files, read and written by every tool.",
     },
   ],
   evidence: {
