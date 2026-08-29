@@ -90,3 +90,12 @@ second rollup input; nothing else in the existing app changes.
 - Claim locks as in the archive loop.
 - Stacked PR pitfall (2026-08-23 lesson): when feat/data-archive merges, this PR does NOT rebase automatically unless that branch is deleted — re-base or re-merge manually.
 
+## Evidence
+- `npx tsc --noEmit` exit 0; `npm run build` exit 0; `dist/home-next.html` and `dist/index.html` both present.
+- DOM verification via local vite preview (browser, 2026-08-28): hero renders; photo slots 328x219 (3:2); AI films = 6 rows (finished only — My New Haircut and War and Peace excluded); Lab = 2 rows (pending excluded); commercial = 3 publicly-credited + 12 selected cells (Lunar God excluded); contact + footer render. Full-page screenshots partially blank — known hidden-pane capture artifact, contradicted by DOM metrics.
+- Hardcoded-number scan of page source: only section numerals, placeholder labels and CSS values remain; showreel duration and X handle were found hardcoded and moved to archive-derived (durationSec: 154 added to showreel with v29:4159 source).
+- Preview deployment (non-production, explicit --branch=feat/site-first-screen): https://1ad04f99.ai-drsfilms.pages.dev/home-next and alias https://feat-site-first-screen.ai-drsfilms.pages.dev/home-next — both HTTP 200, title correct, noindex TRUE. Production check after deploy: https://ai.drsfilms.com/ still serves the old site (title "Eric Zheng - AI Portfolio", no noindex) — untouched.
+
+AUDIT 31efba6e6b89859f516c98de62d34e0c960b68a2: command-layer review — rendered output checked against archive exclusion rules (pending/concepts never render) and claim locks; derived-counts-only verified by grep. CLEAN at this grade; blind audit remains the merge gate.
+USABLE 31efba6e6b89859f516c98de62d34e0c960b68a2: preview deployment live at the URLs above; production unchanged; Draft PR to follow (base feat/data-archive), never merged without Eric.
+
