@@ -59,4 +59,10 @@ WhatIBuilt/ToolStack), and 2026-08-27/28 web research with per-URL checks.
 - Loop 0 base: aef4afe671c1c9b7b59064513df31d652b71ef6a
 - Link check 2026-08-28 (37 URLs, log: scratchpad/linkcheck-archive.txt): 34x HTTP 200; 3x 403 bot-block (slantmagazine x1 — dropped; lbbonline x2 — both browser-verified live 2026-08-28, content read in full).
 - LBB 2024-09-13 hire announcement independently confirms: Gold House membership, NIKE/miHoYo/Tencent/NetEase at Final Frontier, "over 13 years" experience as of 2024-09, Shanghai HQ EP role, "more than 50 credits".
+- `npx tsc --noEmit` exit 0; `npm run build` exit 0 (pre-commit hook re-ran build on commit and amend).
+- Additive-only proof: `git diff work/current --stat -- src/components src/App.tsx public index.html` is empty.
+- Review pass 2026-08-28 (grade: 指挥层复核 / command-layer review, NOT a blind audit — data only, no execution path imports the archive; blind audit remains the merge gate): claim-lock greps clean (no winner language outside the warning note; every Berlinale claim says Panorama); dollar figures appear only in pending.ts and one explicit exclusion note (verified with `grep -F` after the `\$` regex proved unreliable under this machine's grep); three press titles fetched verbatim from live pages, one invented-from-slug title corrected before push (variety-trailer-news).
+
+AUDIT d069ae0f9fbc348d83c5a7ea9cf36cd175534d08: command-layer review of the full archive diff against sources — CLEAN at this grade. Blind audit deferred to the merge gate per the two-grades rule (data/documentation loop, nothing executes it).
+USABLE d069ae0f9fbc348d83c5a7ea9cf36cd175534d08: build green, tsc clean, archive importable but unimported; Draft PR to follow, never merged without Eric.
 
