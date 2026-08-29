@@ -99,3 +99,11 @@ second rollup input; nothing else in the existing app changes.
 AUDIT 31efba6e6b89859f516c98de62d34e0c960b68a2: command-layer review — rendered output checked against archive exclusion rules (pending/concepts never render) and claim locks; derived-counts-only verified by grep. CLEAN at this grade; blind audit remains the merge gate.
 USABLE 31efba6e6b89859f516c98de62d34e0c960b68a2: preview deployment live at the URLs above; production unchanged; Draft PR to follow (base feat/data-archive), never merged without Eric.
 
+## Iteration 2 (Eric's structural note, 2026-08-29): center the powerhouse thesis
+- Eric: section 02 read as scattered tools; his central philosophy lives in CC session 「AI 电影制作平台架构」 (local_f38ca49e) and the P007 governance diagrams. Located both; distilled ONLY the public-safe worldview (powerhouse, department agents, crew protocol as agent protocol, agents-propose-people-sign, file spine). Strategy layer (partners/wedges/moats/phases) marked never-render in archive/vision.ts.
+- Section 02 renamed "Toward one powerhouse": manifesto (his words, en rendering) above the tool stations; hero closing line points at it.
+- Verification: tsc + build green (after catching a cwd drift that had run the build in the wrong repo — reran in this worktree); DOM check confirms h2/lead/4 principles/sub-label; redeployed preview https://4e3cfbf2.ai-drsfilms.pages.dev (alias unchanged), deployed JS bundle greps 1x "Toward one powerhouse" and 1x "Agents propose; people sign"; production ai.drsfilms.com greps 0 for both.
+
+AUDIT 12c6d202016dada6f5c7d764fb5d2d03083e5c50: command-layer review of the vision addition — verbatim zh preserved, en built from his sentences, no strategy leakage (grep for loopling/wedge/moat in page source and bundle: absent). CLEAN at this grade; blind audit remains the merge gate.
+USABLE 12c6d202016dada6f5c7d764fb5d2d03083e5c50: preview redeployed and verified as above; production unchanged; PR #30 updated by push.
+
