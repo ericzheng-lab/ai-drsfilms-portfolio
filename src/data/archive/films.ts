@@ -23,6 +23,7 @@ export interface FeatureFilm {
   productionCompanies: string[];
   sales: string;
   logline: string;
+  trailerUrl?: string;
   reception: { metric: string; value: string; evidence: Evidence }[];
   evidence: Evidence;
 }
@@ -42,6 +43,7 @@ export const briefHistory: FeatureFilm = {
   sales: 'Films Boutique',
   logline:
     "A middle-class family becomes entangled with their only son's enigmatic friend in post-one-child-policy China.",
+  trailerUrl: 'https://vimeo.com/1172739705',
   reception: [
     {
       metric: 'Rotten Tomatoes',
@@ -64,7 +66,7 @@ export const briefHistory: FeatureFilm = {
   ],
   evidence: {
     source:
-      'V29:4179-4188 (facts), :4214-4221 (credits); V28 feature block; producer trio per Wikipedia (web research 2026-08-27)',
+      'V29:4179-4188 (facts), :4214-4221 (credits), :1054 (trailer URL); V28 feature block; producer trio per Wikipedia (web research 2026-08-27)',
     verification: 'public',
     checkedAt: '2026-08-28',
     note:

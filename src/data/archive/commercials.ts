@@ -196,6 +196,7 @@ export const commercials: CommercialEntry[] = [
 /** 2 min 34 sec reel covering the campaign work above. */
 export const showreel = {
   title: 'Eric Zheng Showreel 2026',
+  durationSec: 154,
   url: 'https://vimeo.com/1174467043',
   evidence: {
     source: `${V29}:4159`,

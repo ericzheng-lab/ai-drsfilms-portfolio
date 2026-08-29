@@ -66,3 +66,27 @@ WhatIBuilt/ToolStack), and 2026-08-27/28 web research with per-URL checks.
 AUDIT d069ae0f9fbc348d83c5a7ea9cf36cd175534d08: command-layer review of the full archive diff against sources — CLEAN at this grade. Blind audit deferred to the merge gate per the two-grades rule (data/documentation loop, nothing executes it).
 USABLE d069ae0f9fbc348d83c5a7ea9cf36cd175534d08: build green, tsc clean, archive importable but unimported; Draft PR to follow, never merged without Eric.
 
+---
+
+# LOOP-STATE — Home first screen (middle layer, Yan-style editorial)
+
+CHARTER: feat/site-first-screen
+- 级别: L2
+- DoD: `npm run build` exits 0 and `dist/home-next.html` exists; every number on the page is imported from `src/data/archive` (derived counts — grep confirms no hardcoded stat digits in the page source); noindex meta present; existing routes untouched (`git diff feat/data-archive -- src/components src/App.tsx public index.html` empty; `index.html` entry still builds); Cloudflare PREVIEW deployment (branch ≠ production) serves the page HTTP 200 and the production URL still serves the old site; Draft PR open (base feat/data-archive) and NOT merged. Blind audit = merge gate.
+- Loop 0: 4c46e85083fb9f93011529ddc79e3dc99a61310e (tip of feat/data-archive; stacked branch — see stacked-PR pitfall note below)
+
+## Scope
+New Vite entry `home-next.html` + `src/pages/home-next/` rendering the
+approved 编排 from archive data only: hero with three highlighted scan
+phrases → film anchor (locked claims, press strip, PHOTO PLACEHOLDER
+awaiting Eric's folder) → tool suite (TTL→CODA→Martini pipeline + live
+tools) → finished AI films → dated Lab (shipped, non-pending only) →
+commercials (publicly credited first) → contact. `vite.config.ts` gains a
+second rollup input; nothing else in the existing app changes.
+
+## Guardrails
+- Production untouched: deploy ONLY with an explicit non-production branch flag; verify ai.drsfilms.com after.
+- pending.ts items never render; photo slots are labeled placeholders.
+- Claim locks as in the archive loop.
+- Stacked PR pitfall (2026-08-23 lesson): when feat/data-archive merges, this PR does NOT rebase automatically unless that branch is deleted — re-base or re-merge manually.
+
