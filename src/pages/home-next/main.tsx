@@ -13,6 +13,7 @@ import {
   lab,
   contact,
   counts,
+  vision,
 } from '../../data/archive';
 import './home-next.css';
 
@@ -70,16 +71,16 @@ function App() {
           <a className="scan" href="#film">
             {briefHistory.title}
           </a>{' '}
-          — {briefHistory.positioningLine}. Builds the{' '}
-          <a className="scan" href="#software">
-            production software
-          </a>{' '}
-          he works with: script breakdown, budgeting and scheduling, live
-          today. Directs{' '}
+          — {briefHistory.positioningLine}. Directs{' '}
           <a className="scan" href="#ai-films">
             AI-native films
           </a>
-          , logged experiment by experiment.
+          , logged experiment by experiment. And everything he builds runs
+          toward{' '}
+          <a className="scan" href="#software">
+            one powerhouse
+          </a>
+          : every creative head in one place, each taking what they need.
         </p>
         <div className="statline">
           <span>
@@ -190,9 +191,22 @@ function App() {
       <section id="software">
         <div className="sec-head">
           <span className="num">02</span>
-          <h2>Production software</h2>
-          <span className="note">breakdown → budget → schedule, one pipeline</span>
+          <h2>Toward one powerhouse</h2>
+          <span className="note">vision first, working stations below</span>
         </div>
+
+        <div className="manifesto">
+          <p className="manifesto-lead">{vision.statementEn}</p>
+          <ul className="manifesto-principles">
+            {vision.principles.map((p) => (
+              <li key={p.en}>{p.en}</li>
+            ))}
+          </ul>
+        </div>
+
+        <h3 className="sub-label">
+          The pipeline today — breakdown → budget → schedule
+        </h3>
         <div className="pipeline">
           {pipeline.map((t) => (
             <div className="tool-card" key={t.id}>

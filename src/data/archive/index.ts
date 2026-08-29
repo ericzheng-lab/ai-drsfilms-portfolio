@@ -25,6 +25,7 @@ export {
   toolStack,
 } from './profile';
 export { pending } from './pending';
+export { vision } from './vision';
 
 import { briefHistoryFestivalRecord } from './films';
 import { press } from './press';

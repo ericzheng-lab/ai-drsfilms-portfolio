@@ -312,6 +312,50 @@ section {
 
 /* ---- tools ---- */
 
+.manifesto {
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 24px;
+  margin-bottom: 40px;
+  max-width: 74ch;
+}
+
+.manifesto-lead {
+  font-family: var(--serif);
+  font-size: clamp(19px, 2.6vw, 24px);
+  line-height: 1.45;
+}
+
+.manifesto-principles {
+  list-style: none;
+  margin-top: 18px;
+}
+
+.manifesto-principles li {
+  position: relative;
+  padding: 7px 0 7px 22px;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.manifesto-principles li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15px;
+  width: 10px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.sub-label {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
 .pipeline {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
