@@ -119,7 +119,7 @@ export const tools: ToolEntry[] = [
   },
   {
     id: 'ai-film-studio',
-    name: 'AI Film Studio (P007)',
+    name: 'AI Film Studio',
     stage: 'shot-production',
     status: 'active-development',
     blurb:

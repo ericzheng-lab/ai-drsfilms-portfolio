@@ -356,6 +356,23 @@ section {
   margin-bottom: 14px;
 }
 
+.in-force {
+  margin-top: 40px;
+}
+
+.in-force .sub-label {
+  color: var(--accent-ink);
+}
+
+.force-claim {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.force-claim::first-line {
+  font-variant-numeric: tabular-nums;
+}
+
 .pipeline {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));

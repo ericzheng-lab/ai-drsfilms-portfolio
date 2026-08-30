@@ -26,6 +26,7 @@ export {
 } from './profile';
 export { pending } from './pending';
 export { vision } from './vision';
+export { governance } from './governance';
 
 import { briefHistoryFestivalRecord } from './films';
 import { press } from './press';

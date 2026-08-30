@@ -14,6 +14,7 @@ import {
   contact,
   counts,
   vision,
+  governance,
 } from '../../data/archive';
 import './home-next.css';
 
@@ -235,6 +236,19 @@ function App() {
                     <span className="badge dev">In development</span>
                   )}
                   {t.url && <a href={t.url}>open</a>}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="in-force">
+          <h3 className="sub-label">Already in force — not a roadmap</h3>
+          <div className="row-list">
+            {governance.map((g) => (
+              <div className="row" key={g.id}>
+                <span className="what">
+                  <span className="force-claim">{g.claim}</span>
                 </span>
               </div>
             ))}

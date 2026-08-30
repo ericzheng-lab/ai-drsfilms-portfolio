@@ -91,6 +91,15 @@ export const pending: PendingItem[] = [
     needed: 'Role + link, or keep off the films section.',
   },
   {
+    id: 'governance-public-links',
+    question:
+      'Which governance receipts get public links, and do any private repos open up?',
+    conflict:
+      'Only ai-drsfilms-astro and ai-drsfilms-portfolio are public. The 45-rule/440-fixture quality gate lives in the public portfolio repo but is the job-application machinery — linking it shows employers the automation behind applications (double-edged: reads as discipline, or as mass-production). The commit-gate hook (131 tests) is machine-local; a sanitized excerpt or write-up could be published. FastLane/P007/martini/ttl/CODA are private.',
+    needed:
+      'Per-receipt ruling: link, describe without link, or publish a sanitized excerpt. Opening any private repo is a separate outward-facing decision.',
+  },
+  {
     id: 'commercial-count-twelve',
     question: 'v29 page copy says "twelve campaigns"; data arrays hold 8 with links, 16 total in V28.',
     conflict: 'Three different counts across copies.',
