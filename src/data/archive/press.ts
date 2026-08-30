@@ -1,17 +1,13 @@
 import type { PressItem } from './types';
 
 /**
- * Press with working URLs, checked 2026-08-28 (log:
- * session scratchpad linkcheck-archive.txt, statuses copied into each entry).
+ * Press with working URLs — display-safe fields only. Check dates, HTTP
+ * statuses, negative findings (which outlets have NO coverage) and photo
+ * notes live in sources.ts.
  *
- * Display rule: one line per outlet, quoted or neutrally described, linked to
- * the original. These reviews praise the FILM — copy must present them as the
- * film's reception, not as personal endorsements of Eric.
- *
- * Negative findings, recorded so nobody re-invents them:
- * - Deadline: no coverage of Brief History of A Family found (searched
- *   2026-08-28). Do not cite Deadline.
- * - Slant review exists but returns 403 to automated checks — left out.
+ * Display rule: one line per outlet, quoted or neutrally described, linked
+ * to the original. These reviews praise the FILM — copy must present them
+ * as the film's reception, not as personal endorsements of Eric.
  */
 
 export const press: PressItem[] = [
@@ -23,7 +19,6 @@ export const press: PressItem[] = [
     kind: 'review',
     date: '2024-01',
     supports: 'Variety reviewed the film at Sundance 2024.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
   {
     id: 'thr-review',
@@ -33,7 +28,6 @@ export const press: PressItem[] = [
     kind: 'review',
     date: '2024-01',
     supports: 'THR reviewed the film at Sundance 2024.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
   {
     id: 'screendaily-review',
@@ -43,7 +37,6 @@ export const press: PressItem[] = [
     kind: 'review',
     date: '2024-01',
     supports: 'Screen Daily reviewed the film at Sundance 2024.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
   {
     id: 'filmstage-review',
@@ -53,7 +46,6 @@ export const press: PressItem[] = [
     kind: 'review',
     date: '2024-01',
     supports: 'The Film Stage reviewed the film at Sundance 2024.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
   {
     id: 'scmp-review',
@@ -64,7 +56,6 @@ export const press: PressItem[] = [
     kind: 'review',
     date: '2024-01',
     supports: 'SCMP reviewed the film at Sundance 2024.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
   {
     id: 'paste-review',
@@ -74,7 +65,6 @@ export const press: PressItem[] = [
     kind: 'review',
     date: '2024-01',
     supports: 'Paste reviewed the film at Sundance 2024.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
   {
     id: 'variety-debut-news',
@@ -84,7 +74,6 @@ export const press: PressItem[] = [
     kind: 'news',
     date: '2024-01',
     supports: 'Trade coverage of the Sundance premiere.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
   {
     id: 'variety-trailer-news',
@@ -93,8 +82,7 @@ export const press: PressItem[] = [
     url: 'https://variety.com/2024/film/global/brief-history-of-a-family-films-boutique-sundance-1235883828/',
     kind: 'news',
     date: '2024-01',
-    supports: 'Trade coverage after the Sundance premiere; Films Boutique (world sales) appears in the URL slug and coverage.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
+    supports: 'Trade coverage after the Sundance premiere; Films Boutique (world sales) appears in the coverage.',
   },
   {
     id: 'wikipedia-film',
@@ -102,9 +90,7 @@ export const press: PressItem[] = [
     title: 'Brief History of a Family',
     url: 'https://en.wikipedia.org/wiki/Brief_History_of_a_Family',
     kind: 'news',
-    supports:
-      'Awards table (Sundance: Nominated), producer trio, production companies.',
-    evidence: { source: 'web research 2026-08-27, re-checked 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
+    supports: 'Awards table, producer trio, production companies.',
   },
   {
     id: 'lbb-eric-joins-ff',
@@ -115,12 +101,6 @@ export const press: PressItem[] = [
     date: '2024-09-13',
     supports:
       'Names Eric directly: Shanghai HQ executive producer; "over 13 years of experience"; "more than 50 credits"; Gold House member; at Final Frontier from 2022, lead producer to executive producer; brands incl. NIKE, miHoYo, Tencent, NetEase.',
-    evidence: {
-      source: 'browser-verified 2026-08-28 (full text read)',
-      verification: 'public',
-      checkedAt: '2026-08-28',
-      note: 'curl returns 403 (bot block); page loads normally in a browser.',
-    },
   },
   {
     id: 'lbb-naraka',
@@ -131,12 +111,6 @@ export const press: PressItem[] = [
     date: '2024-01-08',
     supports:
       'Quotes "Final Frontier executive producer Eric Zheng" on the NetEase Naraka: Bladepoint Asian Games film.',
-    evidence: {
-      source: 'browser-verified 2026-08-28 (full text read)',
-      verification: 'public',
-      checkedAt: '2026-08-28',
-      note: 'curl returns 403 (bot block); page loads normally in a browser.',
-    },
   },
   {
     id: 'stash-naraka',
@@ -146,17 +120,5 @@ export const press: PressItem[] = [
     kind: 'news',
     date: '2024-01',
     supports: 'Second independent outlet on the Naraka Asian Games film.',
-    evidence: { source: 'web search 2026-08-28', verification: 'public', checkedAt: '2026-08-28', note: 'HTTP 200' },
   },
 ];
-
-/**
- * Photo evidence. Eric holds personal Berlinale/Sundance photos (folder path
- * pending — see pending.ts). Getty premiere photo exists but is LICENSED
- * content: link to it, never embed the file.
- */
-export const photoNotes = {
-  gettyPremiere:
-    'Getty Images holds a Sundance 2024 premiere photo of Eric (found 2026-08-27). Licensed — may be linked, must not be embedded without a license.',
-  personalFolders: 'Awaiting folder path from Eric (pending.ts: photos-folder).',
-};

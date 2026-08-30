@@ -32,15 +32,9 @@ const noms = briefHistoryFestivalRecord.filter((f) => f.outcome !== 'won');
 
 const reviews = press.filter((p) => p.kind === 'review');
 const finishedFilms = aiFilms.filter((f) => f.status === 'finished');
-const labShipped = lab.filter(
-  (l) => l.status === 'shipped' && l.evidence.verification !== 'pending'
-);
-const publiclyCredited = commercials.filter(
-  (c) => c.evidence.verification === 'public'
-);
-const selectedCampaigns = commercials.filter(
-  (c) => c.evidence.verification === 'self'
-);
+const labShipped = lab.filter((l) => l.verification !== 'pending');
+const publiclyCredited = commercials.filter((c) => c.verification === 'public');
+const selectedCampaigns = commercials.filter((c) => c.verification === 'self');
 const pipeline = pipelineOrder
   .map((id) => tools.find((t) => t.id === id))
   .filter((t): t is NonNullable<typeof t> => Boolean(t));
@@ -199,8 +193,8 @@ function App() {
         <div className="manifesto">
           <p className="manifesto-lead">{vision.statementEn}</p>
           <ul className="manifesto-principles">
-            {vision.principles.map((p) => (
-              <li key={p.en}>{p.en}</li>
+            {vision.principlesEn.map((p) => (
+              <li key={p}>{p}</li>
             ))}
           </ul>
         </div>
