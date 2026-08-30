@@ -48,3 +48,32 @@ USABLE a21ec39907944b05ed84dd5f7aaef6dd482206da
   ffprobe-matching duration/codec and renders the correct frame content on seek,
   confirmed all 8 external video IDs return 200 + valid oembed, confirmed 0 console
   errors on a clean tab, confirmed `git diff origin/main --stat -- src` is empty.
+
+AUDIT 5d2226b52b1dba7bdf5e7ec3395ef2394fbc55e8
+USABLE 5d2226b52b1dba7bdf5e7ec3395ef2394fbc55e8
+- Round 2, same branch/PR, per Eric's live-preview feedback relayed via a peer session.
+  Self-verified (指挥层复核, not blind audit): rebuilt dist, fresh tab each check (avoids
+  stale cross-navigation console buffer, same as round 1).
+  - 16 slides now (added an agenda slide); measured every slide's `.slide-inner`
+    getBoundingClientRect at 1366x768, 1280x720 and 1024x768 with all slides cycled
+    active in turn — 0 overflow at any of the three after tightening game-grid sizing
+    (first pass overflowed 1366x768 by ~10px top+bottom on the game slide only).
+  - All 8 external clips switched from window.open to lazy inline <iframe> (YouTube
+    embed, src set on click, not on load). Re-confirmed embeddable via oEmbed HTTP 200
+    for all 8 ids (a 401 there is YouTube's documented signal for embedding disabled —
+    none hit it). Verified via real DOM events: clicking a play-btn swaps in the
+    correct embed URL (incl. correct `&start=` offset on the one hard-example clip that
+    needs it); navigating away removes the iframe and restores the idle state, including
+    when 3 game-grid clips were opened simultaneously (all 3 torn down together) — matters
+    live since these now play in-page instead of a separate tab.
+  - Local clips: confirmed the 4 <video> posters resolve 200 and are real ffmpeg
+    frame-grabs from the clips themselves (not stock imagery). Found and fixed one real
+    bug while testing: clicking a local clip's play button left an unhandled promise
+    rejection (`AbortError`, media power-saving pausing an unawaited `.play()`) visible
+    in the console; added `.catch()`, reverified 0 console errors after the same click.
+  - NOT independently verified: literal real-time playback of the YouTube iframes
+    (autoplay + visible video advancing) — same sandbox constraint as round 1
+    (backgrounded-tab media throttling); relied on oEmbed 200 + correct embed URL
+    construction + no console/network errors instead. Presenter notes were rewritten
+    Chinese-to-English by me, not back-translated/checked by a separate pass.
+  - `git diff origin/main --stat -- src` still empty.
