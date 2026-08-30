@@ -77,3 +77,14 @@ USABLE 5d2226b52b1dba7bdf5e7ec3395ef2394fbc55e8
     construction + no console/network errors instead. Presenter notes were rewritten
     Chinese-to-English by me, not back-translated/checked by a separate pass.
   - `git diff origin/main --stat -- src` still empty.
+
+AUDIT 312b31368666886419c7b91b382a41f1be2493af
+USABLE 312b31368666886419c7b91b382a41f1be2493af
+- Small follow-up, flagged by a peer session's own independent click-through of round 2
+  (not Eric): slide 3 ("Four kinds of film" divider) declared layout:split but only put 4
+  small text chips in the media column — same sparse-composition pattern this whole pass
+  was meant to fix, just missed on this one slide. Replaced with a 2x2 grid of the same
+  icon marks already used on the 4 category slides (no new assets, no judgment call).
+  Self-verified (指挥层复核): rebuilt, fresh tab, confirmed 4 icons render with correct
+  labels, re-measured all 16 slides overflow-free at 1366x768/1280x720/1024x768, 0 console
+  errors. All other split-layout slides checked against the same pattern — none had it.
