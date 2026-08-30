@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<title>Little Filmmakers · Week 1 — Presenter Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141E36;
+    --paper:#F7F5EF;
+    --paper-2:#EDE9DF;
+    --marigold:#E0A02A;
+    --cherry:#C8323F;
+    --teal:#2C8A85;
+    --rule:rgba(20,30,54,.14);
+
+    --display:'Bricolage Grotesque',system-ui,sans-serif;
+    --body:'Work Sans',system-ui,sans-serif;
+    --mono:'DM Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ink);color:var(--ink);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  .mono{font-family:var(--mono)}
+
+  /* ===== DECK CHROME ===== */
+  #deck{position:fixed;inset:0;background:var(--paper);overflow:hidden}
+
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    align-items:center;justify-content:center;
+    text-align:center;
+    padding:min(3.5vh,48px) min(7vw,90px);
+    background:var(--paper);
+  }
+  .slide.active{display:flex}
+  .slide::before{
+    content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 90% -10%, rgba(224,160,42,.14), transparent 55%),
+               radial-gradient(120% 90% at -10% 110%, rgba(44,138,133,.10), transparent 55%);
+  }
+  .slide-inner{position:relative;z-index:1;max-width:1180px;width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.6vh,18px)}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:clamp(12px,1.3vw,15px);letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cherry);
+  }
+  .headline{
+    font-family:var(--display);font-weight:800;letter-spacing:-.02em;line-height:1.08;
+    font-size:clamp(1.9rem,5vw,4rem);
+    color:var(--ink);
+  }
+  .headline em{color:var(--cherry);font-style:normal}
+  .headline .accent-teal{color:var(--teal);font-style:normal}
+  .headline .accent-marigold{color:var(--marigold);font-style:normal}
+  .subline{
+    font-family:var(--body);font-weight:500;font-size:clamp(1.05rem,2.1vw,1.55rem);
+    color:rgba(20,30,54,.72);max-width:52ch;line-height:1.5;
+  }
+  .callout{
+    margin-top:4px;
+    display:inline-block;font-family:var(--display);font-weight:700;
+    font-size:clamp(1rem,1.9vw,1.35rem);
+    color:#fff;background:var(--cherry);padding:9px 20px;border-radius:3px;
+  }
+  .footnote{font-family:var(--mono);font-size:clamp(11px,1.1vw,13px);color:rgba(20,30,54,.5);letter-spacing:.02em}
+
+  /* ===== TITLE SLIDE ===== */
+  .title-slide .en-mark{font-family:var(--mono);font-size:clamp(12px,1.3vw,15px);letter-spacing:.2em;text-transform:uppercase;color:rgba(20,30,54,.5)}
+  .title-slide h1{font-family:var(--display);font-weight:800;font-size:clamp(2.8rem,8vw,6.2rem);letter-spacing:-.03em;line-height:1.0;color:var(--ink)}
+  .title-slide .tagline{font-family:var(--display);font-weight:700;font-size:clamp(1.1rem,2.4vw,1.7rem);color:var(--cherry)}
+  .title-slide .weekbadge{
+    margin-top:10px;font-family:var(--mono);font-size:clamp(12px,1.3vw,14px);
+    color:rgba(20,30,54,.6);border:1px solid var(--rule);padding:8px 18px;border-radius:999px;
+  }
+
+  /* ===== CLIP STAGE ===== */
+  .clip-row{display:flex;gap:clamp(16px,3vw,40px);align-items:stretch;justify-content:center;flex-wrap:wrap;width:100%}
+  .clip-stage{width:min(480px,88vw,46vh)}
+  .stage-frame{
+    position:relative;background:var(--ink);border-radius:10px;overflow:hidden;
+    aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 18px 40px rgba(20,30,54,.28);
+  }
+  .stage-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+  .play-btn{
+    position:relative;z-index:2;
+    width:clamp(64px,9vw,88px);height:clamp(64px,9vw,88px);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:clamp(22px,3vw,30px);color:#fff;
+    box-shadow:0 10px 26px rgba(0,0,0,.35);
+    transition:transform .12s ease;
+  }
+  .play-btn:hover{transform:scale(1.06)}
+  .play-btn.local{background:var(--cherry)}
+  .play-btn.ext{background:var(--teal)}
+  .play-btn .glyph{position:relative;left:2px}
+  .stage-frame.playing .play-btn{opacity:0;pointer-events:none}
+  .stage-frame .badge{
+    position:absolute;top:10px;left:10px;z-index:2;
+    font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    background:rgba(247,245,239,.92);color:var(--ink);padding:4px 9px;border-radius:3px;
+  }
+  .stage-frame.opened .badge.done{background:var(--marigold);color:#fff}
+  .stage-caption{
+    margin-top:8px;font-size:clamp(12px,1.3vw,14px);color:rgba(20,30,54,.8);line-height:1.4;
+  }
+  .stage-caption .mono{display:block;margin-top:4px;font-size:clamp(11px,1.1vw,12.5px);color:rgba(20,30,54,.55)}
+  .stage-caption .src-tag{font-weight:600;color:var(--ink)}
+
+  /* ===== GAME SLIDE ===== */
+  .game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,1.6vw,18px);width:100%;max-width:920px}
+  .game-slot{
+    background:#fff;border:1.5px solid var(--rule);border-radius:8px;
+    padding:clamp(10px,1.6vw,16px) 10px;display:flex;flex-direction:column;align-items:center;gap:8px;
+    transition:border-color .15s ease;
+  }
+  .game-slot.opened{border-color:var(--teal)}
+  .game-slot .n{font-family:var(--display);font-weight:800;font-size:clamp(22px,2.6vw,30px);color:var(--ink)}
+  .game-slot button.slot-play{
+    width:100%;background:var(--teal);color:#fff;border-radius:5px;padding:8px 6px;
+    font-family:var(--mono);font-size:clamp(10.5px,1.05vw,12px);letter-spacing:.04em;text-transform:uppercase;
+  }
+  .game-slot .reveal{
+    font-family:var(--body);font-weight:600;font-size:clamp(11.5px,1.2vw,13.5px);color:var(--ink);
+    min-height:1.4em;
+  }
+  .game-slot .reveal.hard{color:var(--marigold)}
+  .game-slot button.slot-reveal{
+    font-family:var(--mono);font-size:10.5px;color:rgba(20,30,54,.5);text-decoration:underline;
+    letter-spacing:.02em;
+  }
+
+  /* ===== DUAL (optional) SLIDE ===== */
+  .dual-label{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+
+  /* ===== CHROME: counter / timer / hints ===== */
+  #chrome{position:fixed;inset:0;pointer-events:none;z-index:20;font-family:var(--mono)}
+  .chip{
+    position:absolute;pointer-events:auto;
+    font-size:12px;letter-spacing:.04em;color:rgba(20,30,54,.68);
+    background:rgba(247,245,239,.86);backdrop-filter:blur(3px);
+    padding:7px 12px;border-radius:999px;border:1px solid var(--rule);
+    display:flex;align-items:center;gap:8px;
+  }
+  #counter{top:18px;left:18px}
+  #segbar{top:18px;right:18px;flex-direction:row}
+  #segbar .dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+  #segbar.warn .dot{background:var(--marigold)}
+  #segbar.over .dot{background:var(--cherry)}
+  #segbar.warn{color:var(--marigold)}
+  #segbar.over{color:var(--cherry)}
+  #segbar button{font-family:var(--mono);color:inherit}
+  #hints{bottom:16px;right:18px;font-size:10.5px;color:rgba(20,30,54,.45);background:transparent;border:none;padding:0}
+
+  /* ===== NOTES PANEL ===== */
+  #notes{
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    background:var(--ink);color:var(--paper);
+    max-height:44vh;overflow:auto;
+    transform:translateY(100%);transition:transform .22s ease;
+    padding:22px clamp(20px,6vw,80px) 26px;
+  }
+  #notes.open{transform:translateY(0)}
+  #notes .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--marigold);margin-bottom:10px}
+  #notes .txt{font-family:var(--body);font-size:clamp(14px,1.7vw,18px);line-height:1.8;white-space:pre-line;color:rgba(247,245,239,.94)}
+  #notes .txt b{color:var(--marigold);font-weight:600}
+
+  /* ===== GRID OVERVIEW ===== */
+  #overview{
+    position:fixed;inset:0;z-index:40;background:rgba(20,30,54,.96);
+    display:none;align-items:center;justify-content:center;padding:5vh 4vw;
+  }
+  #overview.open{display:flex}
+  .ov-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;max-width:1200px;width:100%}
+  .ov-card{
+    background:var(--paper);border-radius:8px;padding:14px 12px;text-align:left;
+    border:2px solid transparent;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .ov-card:hover{border-color:var(--teal)}
+  .ov-card.current{border-color:var(--cherry)}
+  .ov-card .ov-n{font-family:var(--mono);font-size:11px;color:var(--cherry)}
+  .ov-card .ov-t{font-family:var(--display);font-weight:700;font-size:13.5px;color:var(--ink);line-height:1.3;margin-top:4px}
+  #overview .ov-close{
+    position:absolute;top:22px;right:28px;color:var(--paper);font-family:var(--mono);font-size:13px;
+    border:1px solid rgba(247,245,239,.3);padding:8px 16px;border-radius:999px;
+  }
+
+  @media (max-width:760px){
+    .ov-grid{grid-template-columns:repeat(3,1fr)}
+    .game-grid{grid-template-columns:repeat(2,1fr)}
+    #segbar{max-width:46vw}
+  }
+</style>
+</head>
+<body>
+
+<div id="deck"><!-- slides injected by JS --></div>
+
+<div id="chrome">
+  <div class="chip" id="counter">01 / 15</div>
+  <div class="chip" id="segbar"><span class="dot"></span><span id="segtext">—</span><button id="segreset" title="Click to restart the clock">↻</button></div>
+  <div class="chip" id="hints">← → slides · Esc grid · N notes · Enter / 1–6 play clip</div>
+</div>
+
+<div id="notes">
+  <div class="lbl">Presenter notes (N to hide) — 中文口播</div>
+  <div class="txt" id="notes-txt"></div>
+</div>
+
+<div id="overview">
+  <button class="ov-close" id="ov-close">Esc · close</button>
+  <div class="ov-grid" id="ov-grid"></div>
+</div>
+
+<script>
+(function(){
+
+  // ---------- lesson-plan segment budget (minutes from class start) ----------
+  var SEGMENTS = [
+    {name:'Opening question',        end:5},
+    {name:'Four kinds of film',      end:30},
+    {name:'Guess the kind',          end:38},
+    {name:'The first film ever made',end:52},
+    {name:'The first visual effect', end:60}
+  ];
+
+  // ---------- clip sources (see Film_Teaching/files/week-01-clips.md for full sourcing) ----------
+  var CLIPS = {
+    usine:     {type:'local', src:'media/lumiere-usine.mp4',    title:'La Sortie de l’Usine Lumière · 1895', range:'0:00–0:38 · plays here'},
+    train:     {type:'local', src:'media/lumiere-train.mp4',    title:'L’Arrivée d’un train en gare de La Ciotat · 1895–96', range:'0:00–0:45 · plays here'},
+    arroseur:  {type:'local', src:'media/lumiere-arroseur.mp4', title:'L’Arroseur Arrosé · 1895', range:'0:00–0:40 · plays here'},
+    lune:      {type:'local', src:'media/melies-lune-eye.mp4',  title:'Le Voyage dans la Lune · 1902 · rocket-in-the-eye', range:'0:00–0:09 · plays here'},
+
+    paddington:{type:'ext', url:'https://www.youtube.com/watch?v=vFw_04XfV4I', title:'Paddington in Peru · “El Dorado” Clip · STUDIOCANAL', range:'0:00–1:25 · opens on YouTube ↗'},
+    lionking94:{type:'ext', url:'https://www.youtube.com/watch?v=EQROSyAMuOM', title:'The Lion King (1994) · Circle of Life opening', range:'0:00–2:46 · opens on YouTube ↗'},
+    shaun:     {type:'ext', url:'https://www.youtube.com/watch?v=orLMm76lwjY', title:'Shaun the Sheep S7 · “Gone to the Dogs” · Aardman', range:'first 1:30 (no dialogue — any part works) · opens on YouTube ↗'},
+    bbcearth:  {type:'ext', url:'https://www.youtube.com/watch?v=vdfMLAH1yJQ', title:'A Chameleon’s Race Against Time · BBC Earth', range:'first 2:30 · opens on YouTube ↗'},
+    lego:      {type:'ext', url:'https://www.youtube.com/watch?v=BfhV3Q4LJPM', title:'LEGO · official ad', range:'0:00–1:00 · opens on YouTube ↗'},
+    elmo:      {type:'ext', url:'https://www.youtube.com/shorts/ksxbp9yb9BU', title:'Sesame Street · “Elmo’s Got the Moves!”', range:'whole short, vertical · opens on YouTube ↗'},
+
+    g1:{type:'ext', url:'https://www.youtube.com/watch?v=vFw_04XfV4I&t=0s',  answer:'Live action', hard:false},
+    g2:{type:'ext', url:'https://www.youtube.com/watch?v=EQROSyAMuOM&t=0s',  answer:'Animation', hard:false},
+    g3:{type:'ext', url:'https://www.youtube.com/watch?v=orLMm76lwjY&t=0s',  answer:'Stop-motion', hard:false},
+    g4:{type:'ext', url:'https://www.youtube.com/watch?v=vdfMLAH1yJQ&t=0s',  answer:'Documentary', hard:false},
+    g5:{type:'ext', url:'https://www.youtube.com/watch?v=7TavVZMewpY&t=8s',  answer:'Animation — but fully photoreal CG!', hard:true},
+    g6:{type:'ext', url:'https://www.youtube.com/watch?v=1Fg5iWmQjwk&t=0s',  answer:'Live action — shot to look like a tiny model!', hard:true}
+  };
+
+  function stageHTML(clipKey, id){
+    var c = CLIPS[clipKey];
+    if (c.type === 'local'){
+      return '' +
+        '<div class="clip-stage" data-clip="'+clipKey+'">' +
+          '<div class="stage-frame" id="frame-'+id+'">' +
+            '<video preload="metadata" playsinline id="video-'+id+'" src="'+c.src+'"></video>' +
+            '<button class="play-btn local" data-clip="'+clipKey+'" data-video="video-'+id+'"><span class="glyph">▶</span></button>' +
+          '</div>' +
+          '<div class="stage-caption"><span class="src-tag">'+c.title+'</span><span class="mono">'+c.range+'</span></div>' +
+        '</div>';
+    }
+    return '' +
+      '<div class="clip-stage" data-clip="'+clipKey+'">' +
+        '<div class="stage-frame" id="frame-'+id+'">' +
+          '<span class="badge">opens on youtube ↗</span>' +
+          '<button class="play-btn ext" data-clip="'+clipKey+'" data-url="'+c.url+'"><span class="glyph">▶</span></button>' +
+        '</div>' +
+        '<div class="stage-caption"><span class="src-tag">'+c.title+'</span><span class="mono">'+c.range+'</span></div>' +
+      '</div>';
+  }
+
+  // ---------- 15 slides ----------
+  var SLIDES = [
+    { seg:-1, kind:'title',
+      note:'这节课的一句话：电影不止一种样子，而且它是一百三十年前被人发明出来的。' },
+
+    { seg:0, kind:'plain',
+      eyebrow:'OPENING QUESTION',
+      headline:'What did you watch<br>yesterday?',
+      sub:'Was that a film?',
+      note:'问：“你昨天看的那个，算不算电影？”\n让他们随便说——动画片、抖音、广告、爷爷手机里的视频。全部先不否定。\n然后说：“今天我们来看看，电影一共有多少种不一样的样子。”' },
+
+    { seg:1, kind:'plain',
+      eyebrow:'FOUR KINDS OF FILM',
+      headline:'Film is not<br><em>one</em> thing.',
+      sub:'Live action · Animation · Stop-motion · Documentary',
+      note:'每种放 2–3 分钟，放完立刻问一句“这个是拍出来的，还是画出来的？”' },
+
+    { seg:1, kind:'clip', clip:'paddington',
+      eyebrow:'① LIVE ACTION',
+      headline:'Real people.<br>A camera right beside them.',
+      note:'讲点：真的有人站在那里，摄影机在旁边拍。\n（本张用 Paddington 占位——换成这 5 个孩子现在在追的任何真人片段都行。）' },
+
+    { seg:1, kind:'clip', clip:'lionking94',
+      eyebrow:'② ANIMATION',
+      headline:'No real person.<br>Every frame is <em>drawn</em>.',
+      sub:'12–24 drawings, every single second.',
+      note:'讲点：没有一个真人。每一张都是画出来的。一秒钟要画十二到二十四张。' },
+
+    { seg:1, kind:'clip', clip:'shaun',
+      eyebrow:'③ STOP-MOTION',
+      headline:'Nobody drew it.<br>Nobody acted it.',
+      sub:'Someone moved a toy — just a little — and took a photo. Then moved it again.',
+      callout:'You will make one of these — Week 8.',
+      note:'讲点：这个不是画的，也不是演的——是有人把一个小人挖一点点，拍一张，再挖一点点，再拍一张。一天可能只拍出两秒钟。\n这一类要多讲一点，因为他们自己要做这个（第八周）。' },
+
+    { seg:1, kind:'clip', clip:'bbcearth',
+      eyebrow:'④ DOCUMENTARY',
+      headline:'No actors. No script.',
+      sub:'The camera waited three months — just for this.',
+      note:'讲点：这里面没有演员，没有剧本。摄影师可能在那里等了三个月，就为拍到这一下。' },
+
+    { seg:1, kind:'dual',
+      eyebrow:'IF TIME HOLDS',
+      headline:'Two more kinds',
+      clips:['lego','elmo'],
+      labels:['A 30-second ad','A vertical video'],
+      note:'广告：三十秒讲完一件事。\n竖着拍的短视频：手机竖着看的那种也算，只是它很短、拍法不一样。\n（时间不够可以直接跳过这屏。）' },
+
+    { seg:2, kind:'game',
+      eyebrow:'GUESS THE KIND',
+      headline:'Watch. Shout it out.',
+      sub:'Live action? Animation? Stop-motion? Documentary?',
+      note:'老师连续放 5–6 个短片段，每段十几秒，孩子举手抢答。故意混两个难的进去。\n这个游戏的目的不是考他们，是让“分类”这件事变成他们自己的能力。' },
+
+    { seg:3, kind:'plain',
+      eyebrow:'THINK BACK',
+      headline:'Now you know all the kinds.',
+      sub:'So which one do you think came FIRST?',
+      note:'现在他们知道电影有很多种了，问一句：“那你猜，最早的那一部，是哪一种？”' },
+
+    { seg:3, kind:'clip', clip:'usine',
+      eyebrow:'1895 · THE FIRST FILM EVER SHOWN',
+      headline:'Workers Leaving<br>the Factory',
+      sub:'Fifty seconds. That’s it. That’s the whole thing.',
+      note:'“一百三十年前，人们买票走进一个房间，看的就是这个——工人下班。但他们觉得这是世界上最神奇的事，因为在那之前，照片是不会动的。”' },
+
+    { seg:3, kind:'clip', clip:'train',
+      eyebrow:'1895–96',
+      headline:'The Arrival<br>of a Train',
+      sub:'Some people say the audience screamed and ran.',
+      note:'讲那个传说：据说当年观众吓得从座位上跳起来往后躲。（这个故事有多真历史学者一直在争论，可以直接说“有人说”——这本身就是个好的思辨起点。）' },
+
+    { seg:3, kind:'clip', clip:'arroseur',
+      eyebrow:'THE WORLD’S FIRST FILM JOKE',
+      headline:'The Sprinkler<br>Sprinkled',
+      sub:'Why is it funny?',
+      callout:'We can see the boy. The gardener can’t. That’s suspense.',
+      note:'男孩踩住水管，园丁低头看喷嘴，男孩松脚，园丁被喷一脸。\n追问：“为什么好笑？”引导他们说出“因为我们看得见男孩在踩，园丁看不见”——这就是悬念，一年级的孩子完全能感知。' },
+
+    { seg:4, kind:'clip', clip:'lune',
+      eyebrow:'1902 · THE FIRST VISUAL EFFECT',
+      headline:'A Trip to<br>the Moon',
+      sub:'Found completely by accident.',
+      note:'梅利爱本来是个魔术师。有一天他在巴黎街头拍马车，摄影机卡住了，他修好之后继续拍。晚上一看——马车突然变成了灵车。他立刻明白了：只要中间停一下，东西就能凭空变没。这就是世界上第一个特效，是不小心发现的。' },
+
+    { seg:4, kind:'plain',
+      eyebrow:'NEXT WEEK',
+      headline:'The funniest man<br>of a hundred years ago.',
+      sub:'He never says a single word. The whole world laughs anyway.',
+      note:'预告下周：“下周我们看一百年前最好笑的人。他一句话都不说，但全世界都在笑。”' }
+  ];
+
+  // ---------- render ----------
+  var deck = document.getElementById('deck');
+  var html = '';
+  SLIDES.forEach(function(s, i){
+    var cls = 'slide' + (s.kind==='title' ? ' title-slide' : '');
+    html += '<section class="'+cls+'" data-i="'+i+'">';
+    html += '<div class="slide-inner">';
+
+    if (s.kind === 'title'){
+      html += '<div class="en-mark">STARX FILM CLUB · SESSION 1</div>';
+      html += '<h1>Little Filmmakers</h1>';
+      html += '<div class="tagline">What is a film — and who invented it?</div>';
+      html += '<div class="weekbadge">WEEK 1 · THE DIFFERENT FORMS A FILM CAN TAKE</div>';
+    } else {
+      if (s.eyebrow) html += '<div class="eyebrow">'+s.eyebrow+'</div>';
+      if (s.headline) html += '<h1 class="headline">'+s.headline+'</h1>';
+      if (s.sub) html += '<div class="subline">'+s.sub+'</div>';
+      if (s.callout) html += '<div class="callout">'+s.callout+'</div>';
+
+      if (s.kind === 'clip'){
+        html += '<div class="clip-row">' + stageHTML(s.clip, i) + '</div>';
+      }
+      if (s.kind === 'dual'){
+        html += '<div class="clip-row">';
+        s.clips.forEach(function(ck, j){
+          html += '<div><div class="dual-label">'+s.labels[j]+'</div>'+stageHTML(ck, i+'-'+j)+'</div>';
+        });
+        html += '</div>';
+      }
+      if (s.kind === 'game'){
+        html += '<div class="game-grid">';
+        ['g1','g2','g3','g4','g5','g6'].forEach(function(gk, idx){
+          var n = idx+1;
+          html += '' +
+            '<div class="game-slot" id="slot-'+gk+'" data-clip="'+gk+'">' +
+              '<div class="n">'+n+'</div>' +
+              '<button class="slot-play" data-key="'+n+'" data-clip="'+gk+'">Play clip '+n+'</button>' +
+              '<button class="slot-reveal" data-clip="'+gk+'">reveal answer</button>' +
+              '<div class="reveal" id="reveal-'+gk+'"></div>' +
+            '</div>';
+        });
+        html += '</div>';
+      }
+    }
+
+    html += '</div></section>';
+  });
+  deck.innerHTML = html;
+
+  // ---------- overview grid content ----------
+  var ovGrid = document.getElementById('ov-grid');
+  var ovHtml = '';
+  SLIDES.forEach(function(s, i){
+    var label = s.kind==='title' ? 'Title' : (s.headline ? s.headline.replace(/<[^>]+>/g,' ') : (s.eyebrow||'Slide'));
+    ovHtml += '<button class="ov-card" data-jump="'+i+'"><span class="ov-n">'+String(i+1).padStart(2,'0')+' / 15</span><span class="ov-t">'+label+'</span></button>';
+  });
+  ovGrid.innerHTML = ovHtml;
+
+  // ---------- navigation state ----------
+  var current = 0;
+  var total = SLIDES.length;
+  var slideEls = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var notesEl = document.getElementById('notes');
+  var notesTxt = document.getElementById('notes-txt');
+  var notesOpen = false;
+  var overviewEl = document.getElementById('overview');
+  var overviewOpen = false;
+
+  function renderNotes(){
+    var n = SLIDES[current].note || '(no presenter note for this slide)';
+    notesTxt.textContent = n;
+  }
+
+  function pauseAllVideo(){
+    document.querySelectorAll('video').forEach(function(v){ v.pause(); });
+  }
+
+  function goTo(i){
+    if (i < 0) i = 0;
+    if (i > total-1) i = total-1;
+    pauseAllVideo();
+    slideEls[current].classList.remove('active');
+    current = i;
+    slideEls[current].classList.add('active');
+    document.getElementById('counter').textContent = String(current+1).padStart(2,'0') + ' / ' + total;
+    renderNotes();
+    updateOverviewHighlight();
+  }
+
+  function updateOverviewHighlight(){
+    document.querySelectorAll('.ov-card').forEach(function(c){
+      c.classList.toggle('current', parseInt(c.getAttribute('data-jump'),10) === current);
+    });
+  }
+
+  function toggleNotes(force){
+    notesOpen = (typeof force === 'boolean') ? force : !notesOpen;
+    notesEl.classList.toggle('open', notesOpen);
+  }
+
+  function toggleOverview(force){
+    overviewOpen = (typeof force === 'boolean') ? force : !overviewOpen;
+    overviewEl.classList.toggle('open', overviewOpen);
+    if (overviewOpen) updateOverviewHighlight();
+  }
+
+  // ---------- clip play/open wiring (event delegation) ----------
+  deck.addEventListener('click', function(e){
+    var playBtn = e.target.closest('.play-btn');
+    if (playBtn){
+      var clipKey = playBtn.getAttribute('data-clip');
+      var c = CLIPS[clipKey];
+      var frame = playBtn.closest('.stage-frame');
+      if (c.type === 'local'){
+        var vid = document.getElementById(playBtn.getAttribute('data-video'));
+        frame.classList.add('playing');
+        vid.currentTime = 0;
+        vid.play();
+        vid.onended = function(){ frame.classList.remove('playing'); playBtn.querySelector('.glyph').textContent = '↻'; };
+      } else {
+        window.open(playBtn.getAttribute('data-url'), '_blank', 'noopener');
+        frame.classList.add('opened');
+        var b = frame.querySelector('.badge');
+        if (b){ b.textContent = 'opened ✓ — click to reopen'; b.classList.add('done'); }
+      }
+      return;
+    }
+    var slotPlay = e.target.closest('.slot-play');
+    if (slotPlay){
+      var gk = slotPlay.getAttribute('data-clip');
+      window.open(CLIPS[gk].url, '_blank', 'noopener');
+      document.getElementById('slot-'+gk).classList.add('opened');
+      return;
+    }
+    var slotReveal = e.target.closest('.slot-reveal');
+    if (slotReveal){
+      var rk = slotReveal.getAttribute('data-clip');
+      var c2 = CLIPS[rk];
+      var target = document.getElementById('reveal-'+rk);
+      target.textContent = '→ ' + c2.answer;
+      target.classList.toggle('hard', !!c2.hard);
+      return;
+    }
+  });
+
+  // ---------- overview interactions ----------
+  ovGrid.addEventListener('click', function(e){
+    var card = e.target.closest('.ov-card');
+    if (!card) return;
+    toggleOverview(false);
+    goTo(parseInt(card.getAttribute('data-jump'),10));
+  });
+  document.getElementById('ov-close').addEventListener('click', function(){ toggleOverview(false); });
+
+  // ---------- segment timer ----------
+  var startTime = Date.now();
+  var segbar = document.getElementById('segbar');
+  var segtext = document.getElementById('segtext');
+  document.getElementById('segreset').addEventListener('click', function(e){
+    e.stopPropagation();
+    startTime = Date.now();
+  });
+
+  function pad2(n){ return (n<10?'0':'')+n; }
+
+  function tickTimer(){
+    var elapsedSec = Math.floor((Date.now() - startTime)/1000);
+    var mm = Math.floor(elapsedSec/60), ss = elapsedSec%60;
+    var elapsedMin = elapsedSec/60;
+
+    var seg = SEGMENTS[SEGMENTS.length-1];
+    for (var k=0;k<SEGMENTS.length;k++){ if (elapsedMin < SEGMENTS[k].end){ seg = SEGMENTS[k]; break; } }
+
+    var state = 'ok';
+    if (elapsedMin >= seg.end) state = 'over';
+    else if (elapsedMin >= seg.end - (seg.end>=30 && SEGMENTS.indexOf(seg)>0 ? 5 : 1)) state = 'warn';
+
+    segbar.classList.toggle('warn', state==='warn');
+    segbar.classList.toggle('over', state==='over');
+    segtext.textContent = seg.name + ' · ' + pad2(mm) + ':' + pad2(ss) + ' / ' + seg.end + ':00';
+  }
+  setInterval(tickTimer, 1000);
+  tickTimer();
+
+  // ---------- keyboard ----------
+  document.addEventListener('keydown', function(e){
+    if (overviewOpen){
+      if (e.key === 'Escape') { toggleOverview(false); e.preventDefault(); }
+      return;
+    }
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ goTo(current+1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ goTo(current-1); e.preventDefault(); }
+    else if (e.key === 'Escape'){ toggleOverview(true); e.preventDefault(); }
+    else if (e.key === 'n' || e.key === 'N'){ toggleNotes(); e.preventDefault(); }
+    else if (e.key === 'Enter'){
+      var activeSlide = slideEls[current];
+      var btn = activeSlide.querySelector('.play-btn:not([data-fired])');
+      if (btn) btn.click();
+      e.preventDefault();
+    }
+    else if (/^[1-6]$/.test(e.key)){
+      var gk = 'g' + e.key;
+      var slot = document.getElementById('slot-'+gk);
+      if (slot){
+        window.open(CLIPS[gk].url, '_blank', 'noopener');
+        slot.classList.add('opened');
+      }
+    }
+  });
+
+  // ---------- init ----------
+  goTo(0);
+})();
+</script>
+</body>
+</html>
