@@ -129,3 +129,37 @@ USABLE 3d5dbadc96594326b815f25facf6c31b2c12a3b8
     files (1 video + 3 images) return 200 and match expected ffprobe/dimensions, confirmed
     the new local clip's readyState/duration, confirmed the navigate-away fix with a direct
     before/after repro. `git diff origin/main --stat -- src` still empty.
+
+AUDIT d772388bdadeea0e16b7eaf72f757301a2b64ce0
+USABLE d772388bdadeea0e16b7eaf72f757301a2b64ce0
+- Round 4, Eric's third pass (relayed), then his own one-word follow-up "以此类推": not
+  just more/better clips — wants explicit teaching content (definition + diagram) paired
+  with every concept beat, traced to a pattern in his own Gamma reference deck this build
+  never adopted. Then extended by his own instruction to the historical slides too, using
+  judgment on what "definition" means for a historical fact vs. a category.
+  - New slide 2 ("What is a Film?"): plain-language definition, filmstrip SVG diagram,
+    4-word synonym row. 16 slides -> 17.
+  - 4 kind-of-film slides: added a 3-item fact-bullet row (explicit definitional facts)
+    and an original mechanism-diagram + caption (distinct from the 4 identity icons
+    already in use) to each — kept the existing poetic headline/sub/callout, definition
+    and hook now coexist rather than one replacing the other.
+  - 4 historical slides (usine/train/arroseur/lune): added a compact fact-line (year,
+    place, one distinguishing historical detail) — same density upgrade, different content
+    register, per Eric's own framing of the extension.
+  - Deliberately skipped, per the same instruction's explicit carve-out: game slide,
+    agenda, opening/think-back/next-week bookends — logistics/transition, not concept
+    teaching. Judgment call recorded so it's visible, not silent.
+  - No new media downloads this round — everything is text + original inline SVG, so no
+    new sourcing/provenance question like round 3's.
+  - Separately: the peer relaying this round also referenced "movie title swaps from my
+    last message" (Lion King/Kubo/HTTYD) that never actually arrived in this session —
+    did NOT guess at specifics (which slide, which clip id, timestamps); flagged the gap
+    back to the peer instead of fabricating parameters for a message I don't have.
+  - Self-verified (指挥层复核, not blind audit): rebuilt, fresh tab, all 17 slides
+    re-measured overflow-free at 1366x768/1280x720/1024x768 — including the documentary
+    slide, which now stacks 3 media-column elements (clip-stage + mech-diagram +
+    support-img) and still clears with 161-187px margin at every size. Confirmed exact
+    counts/content of all new elements (4 synonym chips, 12 fact-bullets, 4 mech-diagrams,
+    4 fact-lines) via direct DOM inspection, not just visual spot-check. Full 17-slide
+    keyboard walk + overview grid (17 cards) + game-slot multi-open/close all reconfirmed
+    working. 0 console output throughout. `git diff origin/main --stat -- src` still empty.
