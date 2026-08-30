@@ -88,3 +88,44 @@ USABLE 312b31368666886419c7b91b382a41f1be2493af
   Self-verified (指挥层复核): rebuilt, fresh tab, confirmed 4 icons render with correct
   labels, re-measured all 16 slides overflow-free at 1366x768/1280x720/1024x768, 0 console
   errors. All other split-layout slides checked against the same pattern — none had it.
+
+AUDIT 3d5dbadc96594326b815f25facf6c31b2c12a3b8
+USABLE 3d5dbadc96594326b815f25facf6c31b2c12a3b8
+- Round 3, Eric's second live-preview pass (relayed): deck still read as thin/text-heavy —
+  wants every slide to pair a real image with its video, decided not proposed. Real content
+  pass, not spot fixes:
+  - Animation example swapped Lion King (ext link) -> Steamboat Willie (1928), self-hosted
+    like the other 4 PD clips. Verified PD via archive.org licenseurl (same method as
+    original 4: creativecommons.org/publicdomain/mark/1.0/), not assumed. Trimmed to the
+    wheel-whistling sequence (20.0-42.0s), picked via the same ffmpeg contact-sheet method
+    as round 1. Orphaned `lionking94` CLIPS entry deleted (dead code) once nothing referenced
+    it — g2 in the game grid has its own independent id, unaffected.
+  - Added a real supporting photo next to 3 clips that were video-only: 1896 Lumière poster
+    (Henri Brispot) on the usine slide, a period Méliès portrait on the lune slide, a CC
+    BY-SA panther-chameleon photo (credited, Charles J. Sharp) beside the existing
+    documentary clip. Every license tag verified by reading the actual Wikimedia Commons
+    file page myself before downloading — not taken on a peer's word.
+  - Added 2 original abstract SVG graphics (opening-question, next-week) — no real photo
+    exists for a pure open-ended question, so used the same icon technique as the 4
+    category marks rather than forcing a mismatched stock image.
+  - Documentary: did NOT swap in a self-hosted Prelinger short. Best candidate found
+    (`Private Life of a Cat`, 1947) has a known on-screen birth scene — can't confirm
+    K-3-appropriate without watching end-to-end, which this sandbox can't do. Used the
+    explicitly-authorized fallback (photo, not video) instead of guessing on child-safety.
+  - Found and fixed a real bug while testing: local `<video>` clips stayed stuck in the
+    "playing" state (play button hidden) if the presenter navigated away before the clip
+    ended — only ext iframes were being torn down on slide change. Local frames now reset
+    the same way. Also dropped an invalid `web-share` token from the iframe allow-list
+    (was logging a console warning on every external clip play — now genuinely 0 console
+    output, not just 0 errors).
+  - Sourcing note: the new downloads (1 video, 3 images) come from the same trust tier
+    (archive.org, Wikimedia Commons with a verified PD/CC tag) and fall under the same
+    standing copyright policy already written into this file for round 1 — applied to
+    newly-identified sources this round, not a new category of action. Flagged explicitly
+    in the PR description rather than left silent, since the request to source them arrived
+    via a peer relay rather than Eric directly in this repo's own thread.
+  - Self-verified (指挥层复核, not blind audit): rebuilt, fresh tab each check, all 16
+    slides re-measured overflow-free at 1366x768/1280x720/1024x768, confirmed all 4 new
+    files (1 video + 3 images) return 200 and match expected ffprobe/dimensions, confirmed
+    the new local clip's readyState/duration, confirmed the navigate-away fix with a direct
+    before/after repro. `git diff origin/main --stat -- src` still empty.
