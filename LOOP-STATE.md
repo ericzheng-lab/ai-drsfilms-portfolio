@@ -39,3 +39,12 @@ Reason: quality-gate CLI only. Does not touch `public/` routes or production dep
 CHARTER: feat/starx-week-1-deck
 - 级别: L1
 - DoD: route returns 200 in local build; 4 PD clips play start-to-finish; `git diff origin/main --stat -- src` empty; 0 console errors
+
+AUDIT a21ec39907944b05ed84dd5f7aaef6dd482206da
+USABLE a21ec39907944b05ed84dd5f7aaef6dd482206da
+- Self-verified (指挥层复核, not blind audit — see PR description): built dist, served with
+  vite preview, drove all 15 slides via real DOM keydown events, confirmed 200 on
+  /starx-week-1/, confirmed each of the 4 local <video> elements loads with correct
+  ffprobe-matching duration/codec and renders the correct frame content on seek,
+  confirmed all 8 external video IDs return 200 + valid oembed, confirmed 0 console
+  errors on a clean tab, confirmed `git diff origin/main --stat -- src` is empty.
