@@ -107,3 +107,13 @@ USABLE 31efba6e6b89859f516c98de62d34e0c960b68a2: preview deployment live at the 
 AUDIT 12c6d202016dada6f5c7d764fb5d2d03083e5c50: command-layer review of the vision addition — verbatim zh preserved, en built from his sentences, no strategy leakage (grep for loopling/wedge/moat in page source and bundle: absent). CLEAN at this grade; blind audit remains the merge gate.
 USABLE 12c6d202016dada6f5c7d764fb5d2d03083e5c50: preview redeployed and verified as above; production unchanged; PR #30 updated by push.
 
+## Iteration 3 (2026-08-29): copy pass + governance receipts + bundle-leak fix
+- Copy pass (set-rules voice) at e944cb1; governance receipts block (5 inventoried claims, market vocabulary per research) at cc71a6b.
+- MISTAKE, mine: the cc71a6b deploy shipped the archive's provenance layer in the public JS bundle — evidence notes ("could not be found to exist", "No public credit found"), internal paths (VSCODE_CC/...), private repo codenames, session id, and the four unproduced clip concepts. Page-imported modules ship whole; tree-shaking drops unused MODULES (pending.ts stayed out) but not unused FIELDS. Live exposure ~30 min on a noindex preview URL.
+- Fix at 72392a5: archive split into display-safe data files + sources.ts (all provenance/notes/zh-verbatim/concepts; not re-exported from index; never page-imported). Invariant added to types.ts and index.ts headers.
+- Verification: tsc + build green; local and LIVE bundle grep 0 for eleven leak classes (VSCODE_CC, FastLane, P007, misremembering, "No public credit", "Twelve Universes", ai_Clips, local_f38, 海纳百川, harness, LOOP-STATE); DOM identical pre/post (6 films / 2 lab / 3+12 commercial / 4 principles / 5 receipts); role wordings upgraded to public-credit forms (LoL Lead Producer; Naraka EP per LBB quote).
+- New pending item: governance-public-links (which receipts get links; private repos stay private unless Eric rules).
+
+AUDIT 72392a5fa584d80e16689b43eb3dfe8c919660d0: command-layer review — bundle-leak classes enumerated and greped to zero on the LIVE deployment, DOM parity confirmed, market-vocabulary rule held (no "harness"/codenames in rendered text). CLEAN at this grade; blind audit remains the merge gate and must include a bundle-content pass.
+USABLE 72392a5fa584d80e16689b43eb3dfe8c919660d0: preview live at https://83e9da95.ai-drsfilms.pages.dev/home-next and alias; production unchanged; PR #30 updated by push.
+
