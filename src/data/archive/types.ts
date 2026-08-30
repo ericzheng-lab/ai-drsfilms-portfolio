@@ -2,9 +2,12 @@
  * Shared types for the sourced fact archive (src/data/archive/).
  *
  * Rules of the archive:
- * 1. Every entry carries `source` — where the fact was transcribed from.
- * 2. `verification` states how strongly the outside world backs it.
- * 3. Conflicting or unconfirmed numbers live in pending.ts, never in
+ * 1. Data files carry DISPLAY-SAFE fields only — anything a page imports
+ *    ships verbatim in the public JS bundle. Provenance, verification
+ *    notes, internal paths and unpublished material live in sources.ts,
+ *    which no page may ever import.
+ * 2. Every entry id has a matching key in sources.ts (checked in review).
+ * 3. Conflicting or unconfirmed facts live in pending.ts, never in
  *    display-ready fields. Claim locks: Sundance is "World Cinema Dramatic
  *    Competition, Grand Jury Prize nominee" (never winner); Berlinale is
  *    "Panorama".
@@ -15,9 +18,10 @@ export type Verification =
   | 'public'
   /** Appears only in Eric's own materials (site data, showreel, repo docs). */
   | 'self'
-  /** Conflicting sources or missing designation — do not publish until Eric rules. */
+  /** Conflicting sources or missing designation — pages must filter these out. */
   | 'pending';
 
+/** Provenance record — lives ONLY in sources.ts. */
 export interface Evidence {
   /** File:line, URL, or "Eric" for facts he stated directly. Never empty. */
   source: string;
@@ -37,7 +41,6 @@ export interface PressItem {
   date?: string;
   /** What this item is evidence FOR — quote it, do not paraphrase into praise of Eric. */
   supports: string;
-  evidence: Evidence;
 }
 
 export interface FestivalEntry {
@@ -45,7 +48,6 @@ export interface FestivalEntry {
   year: number;
   result: string;
   outcome: 'won' | 'nomination' | 'selection';
-  evidence: Evidence;
 }
 
 export interface CommercialEntry {
@@ -56,7 +58,8 @@ export interface CommercialEntry {
   proofUrl?: string;
   /** Third-party page that names Eric on this piece, when one exists. */
   publicCreditUrl?: string;
-  evidence: Evidence;
+  /** Pages group by this; 'pending' entries never render. */
+  verification: Verification;
 }
 
 export interface ToolEntry {
@@ -73,7 +76,6 @@ export interface ToolEntry {
   status: 'live' | 'active-development' | 'working';
   blurb: string;
   url?: string;
-  evidence: Evidence;
 }
 
 export interface AiFilmEntry {
@@ -86,7 +88,6 @@ export interface AiFilmEntry {
   note: string;
   /** finished = shippable on the site; pending = awaiting Eric's designation. */
   status: 'finished' | 'pending';
-  evidence: Evidence;
 }
 
 export interface LabEntry {
@@ -94,11 +95,9 @@ export interface LabEntry {
   date: string;
   title: string;
   what: string;
-  /** shipped = clips exist on disk; concept = written but not produced. */
-  status: 'shipped' | 'concept';
-  /** Local paths under ~/Movies/VIDEO_PRJ/_ai/ai_Clips/ — not web URLs. */
-  localAssets?: string[];
-  evidence: Evidence;
+  /** Pages render only 'shipped' entries whose verification is not 'pending'. */
+  status: 'shipped';
+  verification: Verification;
 }
 
 export interface PendingItem {

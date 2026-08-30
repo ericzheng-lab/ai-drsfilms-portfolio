@@ -66,3 +66,54 @@ WhatIBuilt/ToolStack), and 2026-08-27/28 web research with per-URL checks.
 AUDIT d069ae0f9fbc348d83c5a7ea9cf36cd175534d08: command-layer review of the full archive diff against sources — CLEAN at this grade. Blind audit deferred to the merge gate per the two-grades rule (data/documentation loop, nothing executes it).
 USABLE d069ae0f9fbc348d83c5a7ea9cf36cd175534d08: build green, tsc clean, archive importable but unimported; Draft PR to follow, never merged without Eric.
 
+---
+
+# LOOP-STATE — Home first screen (middle layer, Yan-style editorial)
+
+CHARTER: feat/site-first-screen
+- 级别: L2
+- DoD: `npm run build` exits 0 and `dist/home-next.html` exists; every number on the page is imported from `src/data/archive` (derived counts — grep confirms no hardcoded stat digits in the page source); noindex meta present; existing routes untouched (`git diff feat/data-archive -- src/components src/App.tsx public index.html` empty; `index.html` entry still builds); Cloudflare PREVIEW deployment (branch ≠ production) serves the page HTTP 200 and the production URL still serves the old site; Draft PR open (base feat/data-archive) and NOT merged. Blind audit = merge gate.
+- Loop 0: 4c46e85083fb9f93011529ddc79e3dc99a61310e (tip of feat/data-archive; stacked branch — see stacked-PR pitfall note below)
+
+## Scope
+New Vite entry `home-next.html` + `src/pages/home-next/` rendering the
+approved 编排 from archive data only: hero with three highlighted scan
+phrases → film anchor (locked claims, press strip, PHOTO PLACEHOLDER
+awaiting Eric's folder) → tool suite (TTL→CODA→Martini pipeline + live
+tools) → finished AI films → dated Lab (shipped, non-pending only) →
+commercials (publicly credited first) → contact. `vite.config.ts` gains a
+second rollup input; nothing else in the existing app changes.
+
+## Guardrails
+- Production untouched: deploy ONLY with an explicit non-production branch flag; verify ai.drsfilms.com after.
+- pending.ts items never render; photo slots are labeled placeholders.
+- Claim locks as in the archive loop.
+- Stacked PR pitfall (2026-08-23 lesson): when feat/data-archive merges, this PR does NOT rebase automatically unless that branch is deleted — re-base or re-merge manually.
+
+## Evidence
+- `npx tsc --noEmit` exit 0; `npm run build` exit 0; `dist/home-next.html` and `dist/index.html` both present.
+- DOM verification via local vite preview (browser, 2026-08-28): hero renders; photo slots 328x219 (3:2); AI films = 6 rows (finished only — My New Haircut and War and Peace excluded); Lab = 2 rows (pending excluded); commercial = 3 publicly-credited + 12 selected cells (Lunar God excluded); contact + footer render. Full-page screenshots partially blank — known hidden-pane capture artifact, contradicted by DOM metrics.
+- Hardcoded-number scan of page source: only section numerals, placeholder labels and CSS values remain; showreel duration and X handle were found hardcoded and moved to archive-derived (durationSec: 154 added to showreel with v29:4159 source).
+- Preview deployment (non-production, explicit --branch=feat/site-first-screen): https://1ad04f99.ai-drsfilms.pages.dev/home-next and alias https://feat-site-first-screen.ai-drsfilms.pages.dev/home-next — both HTTP 200, title correct, noindex TRUE. Production check after deploy: https://ai.drsfilms.com/ still serves the old site (title "Eric Zheng - AI Portfolio", no noindex) — untouched.
+
+AUDIT 31efba6e6b89859f516c98de62d34e0c960b68a2: command-layer review — rendered output checked against archive exclusion rules (pending/concepts never render) and claim locks; derived-counts-only verified by grep. CLEAN at this grade; blind audit remains the merge gate.
+USABLE 31efba6e6b89859f516c98de62d34e0c960b68a2: preview deployment live at the URLs above; production unchanged; Draft PR to follow (base feat/data-archive), never merged without Eric.
+
+## Iteration 2 (Eric's structural note, 2026-08-29): center the powerhouse thesis
+- Eric: section 02 read as scattered tools; his central philosophy lives in CC session 「AI 电影制作平台架构」 (local_f38ca49e) and the P007 governance diagrams. Located both; distilled ONLY the public-safe worldview (powerhouse, department agents, crew protocol as agent protocol, agents-propose-people-sign, file spine). Strategy layer (partners/wedges/moats/phases) marked never-render in archive/vision.ts.
+- Section 02 renamed "Toward one powerhouse": manifesto (his words, en rendering) above the tool stations; hero closing line points at it.
+- Verification: tsc + build green (after catching a cwd drift that had run the build in the wrong repo — reran in this worktree); DOM check confirms h2/lead/4 principles/sub-label; redeployed preview https://4e3cfbf2.ai-drsfilms.pages.dev (alias unchanged), deployed JS bundle greps 1x "Toward one powerhouse" and 1x "Agents propose; people sign"; production ai.drsfilms.com greps 0 for both.
+
+AUDIT 12c6d202016dada6f5c7d764fb5d2d03083e5c50: command-layer review of the vision addition — verbatim zh preserved, en built from his sentences, no strategy leakage (grep for loopling/wedge/moat in page source and bundle: absent). CLEAN at this grade; blind audit remains the merge gate.
+USABLE 12c6d202016dada6f5c7d764fb5d2d03083e5c50: preview redeployed and verified as above; production unchanged; PR #30 updated by push.
+
+## Iteration 3 (2026-08-29): copy pass + governance receipts + bundle-leak fix
+- Copy pass (set-rules voice) at e944cb1; governance receipts block (5 inventoried claims, market vocabulary per research) at cc71a6b.
+- MISTAKE, mine: the cc71a6b deploy shipped the archive's provenance layer in the public JS bundle — evidence notes ("could not be found to exist", "No public credit found"), internal paths (VSCODE_CC/...), private repo codenames, session id, and the four unproduced clip concepts. Page-imported modules ship whole; tree-shaking drops unused MODULES (pending.ts stayed out) but not unused FIELDS. Live exposure ~30 min on a noindex preview URL.
+- Fix at 72392a5: archive split into display-safe data files + sources.ts (all provenance/notes/zh-verbatim/concepts; not re-exported from index; never page-imported). Invariant added to types.ts and index.ts headers.
+- Verification: tsc + build green; local and LIVE bundle grep 0 for eleven leak classes (VSCODE_CC, FastLane, P007, misremembering, "No public credit", "Twelve Universes", ai_Clips, local_f38, 海纳百川, harness, LOOP-STATE); DOM identical pre/post (6 films / 2 lab / 3+12 commercial / 4 principles / 5 receipts); role wordings upgraded to public-credit forms (LoL Lead Producer; Naraka EP per LBB quote).
+- New pending item: governance-public-links (which receipts get links; private repos stay private unless Eric rules).
+
+AUDIT 72392a5fa584d80e16689b43eb3dfe8c919660d0: command-layer review — bundle-leak classes enumerated and greped to zero on the LIVE deployment, DOM parity confirmed, market-vocabulary rule held (no "harness"/codenames in rendered text). CLEAN at this grade; blind audit remains the merge gate and must include a bundle-content pass.
+USABLE 72392a5fa584d80e16689b43eb3dfe8c919660d0: preview live at https://83e9da95.ai-drsfilms.pages.dev/home-next and alias; production unchanged; PR #30 updated by push.
+
