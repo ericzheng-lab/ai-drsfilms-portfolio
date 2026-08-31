@@ -482,3 +482,60 @@ USABLE 572a85aa1b109d964e49187be97a5acbb43420f3
     already looked at all 14 of this round's images together and only flagged these 2 as
     genuinely broken (plus the 2 disputed above) — but flagging the gap in method honestly
     rather than silently assuming the rest are fine by extension.
+
+AUDIT c8db98d
+USABLE c8db98d
+- Closed the process gap noted above (checked the actual on-screen `object-fit:cover` crop,
+  not just the source file, for the remaining 15 D-group images) — and that check is what
+  surfaced a much bigger issue than any individual crop. A peer session, independently
+  re-checking the deployed preview after reading my crop-reproduction pushback on
+  boom-operator.jpg/lighting-setup.jpg, found that `.support-img img` was hard-pinned at
+  `clamp(52px,6vw,70px)` — every one of the 19 support photos across all 17 screens was
+  rendering as a ~70px chip, regardless of viewport. On a projector from the back of a
+  classroom that is effectively invisible, which defeats the entire reason Eric asked for
+  these photos (they are what keeps children with the material while an adult talks).
+- **Verified independently before touching anything**, per standing practice this round —
+  did not act on the peer's word alone: read the live CSS (confirmed the clamp), then measured
+  the actual deployed render via `getBoundingClientRect` at 1920×1080 (70px / 6.5vh, matching
+  the peer's claim), then went one step further and found the *real* rendered size was
+  sometimes even smaller than the CSS spec — 48.7px measured on one image — because
+  `.support-img{display:flex}` let flexbox's default `flex-shrink:1` squeeze the photo when
+  the caption text needed more room in the same row.
+- **This also resolved the open boom-operator/lighting-setup dispute from 572a85a, in neither
+  party's favour as originally argued**: both images were fine at their *intended* content, but
+  invisible at their *actual rendered size* — a real bug neither the peer's contact-sheet
+  method nor my own crop-reproduction method had isolated, because neither checked render size
+  specifically. The peer conceded this in writing after re-verifying against the deployed page;
+  recorded here rather than only in chat since it changes the read on both prior disputed items
+  from "kept, disagreement noted" to "kept, root cause identified and fixed."
+- **Fix**: stacked photo above caption (`flex-direction:column`) using the existing DOM order —
+  no HTML/JS change needed for that part. Dropped the forced `object-fit:cover` square crop for
+  natural aspect ratio (matching how every other photo in this deck already renders), target
+  height `clamp(158px,26vh,280px)`. Verified empirically (not assumed) at 1280×720 / 1366×768 /
+  1920×1080: all 19 images land at 23.8–26vh, clearing the peer's 22vh floor with margin at
+  every resolution.
+- **Screens 9, 16, and 32 were never actually side-by-side**: LOOP-STATE's own part-2 entry
+  (7ec51f4) describes screen 9 as already using `.support-img-row`, which was wrong — checked
+  the live DOM directly and found it was two separately-stacked full-width cards, same as 16
+  and 32. Fixed all three to genuinely pair side by side, same pattern as screen 5.
+- **Two bugs cost real debugging time, recorded so they don't repeat**:
+  1. `.si-text{max-width:min(300px,100%)}` created a circular percentage reference against the
+     very flex item being sized, which made `width:auto` *and* `width:fit-content` both resolve
+     to ~550px instead of shrinking to content. Traced by checking `getComputedStyle` on every
+     layer of the box (support-img → torn-frame → img → si-text) rather than trusting the outer
+     container's number, exactly the discipline that caught the CSS specificity trap earlier
+     this round. Fixed by replacing the percentage with a flat `220px`.
+  2. Screen 11 (drawings24, already the tightest media-col in the deck) overflowed at 1920×1080
+     but not at 720p/768p — backwards from the usual pattern. Cause: the existing
+     `@media(max-height:800px)` breakpoint only covers ≤800px-tall viewports; at 1080p the
+     *un-shrunk* base sizes for flip-grid/flip-preview applied at full size alongside the new,
+     much taller photo, and 1080p's extra headroom over 720p wasn't enough to absorb both.
+     Fixed by permanently shrinking the base values (520px→380px, 320px→240px), not just the
+     breakpoint override.
+- Self-verified (指挥层复核): full 17-screen × 3-resolution overflow + min-height sweep via
+  `getBoundingClientRect`, zero failures; visual screenshot spot-check on screens 5/9/11/16/32;
+  `node --check` on the extracted script block; `npm run build` succeeds; files staged
+  explicitly, no `git add -A`. No blind audit (真盲审) on this deck at any point — still Eric's
+  call whether one runs before this goes live.
+- **D-group provenance status unchanged from 7ec51f4/572a85a** — this round touched sizing and
+  layout only, no new source images, no credit-line changes.
