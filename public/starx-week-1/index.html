@@ -173,9 +173,13 @@
   .answer-card.c-doc .ac-icon{color:var(--ink)}
   .answer-card .ac-label{font-family:var(--display);font-weight:800;font-size:clamp(12px,1.3vw,15px);text-align:center;color:var(--ink)}
 
-  .agenda-list{width:100%;border-top:3px solid var(--ink)}
-  .agenda-row{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--rule);align-items:baseline}
-  .agenda-row .a-n{font-family:var(--display);font-weight:800;font-size:clamp(18px,2.1vw,24px);color:rgba(20,30,54,.32)}
+  .agenda-list{width:100%;display:flex;flex-direction:column;gap:12px}
+  .agenda-row{
+    display:flex;align-items:center;gap:16px;padding:12px 16px;
+    background:#fff;border:2px solid var(--ink);border-radius:16px 6px 16px 6px;
+    box-shadow:3px 4px 0 var(--ink);
+  }
+  .agenda-row .kind-icon{width:clamp(42px,4.8vw,54px);height:clamp(42px,4.8vw,54px);border-radius:13px}
   .agenda-row .a-t{font-family:var(--display);font-weight:700;font-size:clamp(15.5px,1.75vw,19.5px);letter-spacing:-.01em;color:var(--ink)}
   .agenda-row .a-d{font-family:var(--body);font-size:clamp(12.5px,1.35vw,14.5px);color:rgba(20,30,54,.62);margin-top:2px}
 
@@ -443,7 +447,6 @@
     .slide-inner.split,.slide-inner.split.rev{grid-template-columns:1fr;text-align:center}
     .slide-inner.split .text-col,.slide-inner.split .media-col{order:initial;align-items:center}
     .kind-head{flex-direction:column}
-    .agenda-row{grid-template-columns:32px 1fr}
     .answer-cards{grid-template-columns:1fr 1fr}
   }
   @media (max-width:760px){
@@ -451,6 +454,11 @@
     .game-grid{grid-template-columns:repeat(2,1fr)}
     #segbar{max-width:46vw}
     .reveal-pair{grid-template-columns:1fr}
+  }
+  @media (max-height:760px){
+    .huge-num{font-size:clamp(2.4rem,7vh,4rem)}
+    .flip-preview{width:min(200px,70vw)}
+    .flip-grid{max-width:400px;gap:4px}
   }
 </style>
 </head>
@@ -724,10 +732,10 @@
       eyebrow:'TODAY’S PLAN',
       headline:'Four stops today.',
       agenda:[
-        {t:'Four kinds of film', d:'Live action, animation, stop-motion, documentary — watch one of each.'},
-        {t:'Guess the kind', d:'A fast game. Hands up, shout it out.'},
-        {t:'The first film ever made', d:'1895. Fifty seconds. A room full of people who had never seen a moving photograph.'},
-        {t:'The first special effect', d:'1902 — found completely by accident.'}
+        {t:'Four kinds of film', d:'Live action, animation, stop-motion, documentary — watch one of each.', icon:'live', cls:'c-live'},
+        {t:'Guess the kind', d:'A fast game. Hands up, shout it out.', icon:'anim', cls:'c-anim'},
+        {t:'The first film ever made', d:'1895. Fifty seconds. A room full of people who had never seen a moving photograph.', icon:'stop', cls:'c-stop'},
+        {t:'The first special effect', d:'1902 — found completely by accident.', icon:'doc', cls:'c-doc'}
       ],
       note:'Here’s our map for the hour: what film actually is, a game to test it, then back to the very first film ever made — and the accident that invented special effects.' },
 
@@ -739,20 +747,20 @@
       note:'Play each kind for two or three minutes. After each one, ask: “Was that filmed, or was it drawn?”' },
 
     { seg:1, kind:'clip', clip:'paddington', layout:'split', icon:'live', iconCls:'c-live',
-      eyebrow:'① LIVE ACTION',
+      eyebrow:'1 · LIVE ACTION',
       headline:'Real people.<br>A camera right beside them.',
       bullets:['Real actors','Real places','Filmed as it happens'],
       mech:{icon:'mechLive', text:'The camera is right there in the room, filming.'},
       note:'The point: real people were standing right there, with a camera beside them.\n(Placeholder clip — swap in whatever live-action the five kids are actually watching right now. Open decision, see report.)' },
 
     { seg:1, kind:'setdiagram', layout:'split-rev', tags:['wait'],
-      eyebrow:'① LOOK WHO ELSE WAS THERE',
+      eyebrow:'1 · LOOK WHO ELSE WAS THERE',
       headline:'A film set is crowded.',
       prompt:'How many people are just outside this picture?',
       note:'Every live-action shot has a whole crew standing just outside the frame — camera operator, boom-pole holder for sound, lights on stands, and everyone else who isn’t acting.\nWaiting on Eric: a real set photo where the crew is the subject, camera/boom/lights/6+ people crowding a small pool of action. Built for now as a labelled diagram — it may end up sitting beside the photo rather than being replaced by it, since a diagram lets the kids count who is who.' },
 
     { seg:1, kind:'clip', clip:'lionking', layout:'split-rev', icon:'anim', iconCls:'c-anim',
-      eyebrow:'② ANIMATION',
+      eyebrow:'2 · ANIMATION',
       headline:'No real person.<br>Every frame is <em>drawn</em>.',
       sub:'Twelve to twenty-four drawings for every single second on screen.',
       bullets:['Nothing is filmed','Every frame hand-drawn','Comes to life on screen'],
@@ -761,19 +769,19 @@
       note:'The point: there’s no real person in this at all — every frame was drawn by hand. This is the opening of The Lion King (1994), all hand-drawn.\nThe animator’s-desk picture is drawn rather than a photo — no clean, freely-licensed one turned up after a real search, and it fits the deck’s own hand-drawn language better than a stock photo would.' },
 
     { seg:1, kind:'drawings24', layout:'split',
-      eyebrow:'② 24 DRAWINGS = ONE SECOND',
+      eyebrow:'2 · 24 DRAWINGS = ONE SECOND',
       headline:'Watch how many pictures that takes.',
       prompt:'Count them. Then watch them fly by.',
       note:'These are 24 real, consecutive frames from Steamboat Willie (1928) — exactly one second of the film. Count them out loud first, slowly, then hit play and watch the same 24 pictures race by in one second flat.' },
 
     { seg:1, kind:'clip', clip:'steamboat', layout:'split-rev', icon:'anim', iconCls:'c-anim', tags:['opt'],
-      eyebrow:'② DRAWN A HUNDRED YEARS AGO',
+      eyebrow:'2 · DRAWN A HUNDRED YEARS AGO',
       headline:'This one is almost a hundred years old.',
       sub:'Steamboat Willie, 1928 — the first Mickey Mouse cartoon.',
       note:'Optional second panel, drop it if you’re short on time. This is Steamboat Willie (1928) — public domain, which is why it’s hosted directly on this page instead of linked out. Framed here purely as an example of drawing, not as the sound-and-picture milestone — that’s Week 2’s job, and this is a deliberate one-week repeat, not a spoiler.' },
 
     { seg:1, kind:'clip', clip:'shaun', layout:'split', icon:'stop', iconCls:'c-stop',
-      eyebrow:'③ STOP-MOTION',
+      eyebrow:'3 · STOP-MOTION',
       headline:'Nobody drew it.<br>Nobody acted it.',
       sub:'Someone moved a toy — just a little — and took a photo. Then moved it again.',
       callout:'You will make one of these — Week 8.',
@@ -783,19 +791,19 @@
       note:'The point: nobody drew this, and nobody acted it. Someone moved a little figure — just a little — took a photo, moved it again, took another photo.\nThe skeleton-puppet picture is drawn, not a photo of any specific film’s design — it illustrates the general fact (giant puppets exist in stop-motion) without using anyone’s copyrighted character art. Spend extra time here — they’ll be making one of these themselves. (Raw lesson-plan note: this says Week 7, the school-facing overview says Week 8 — confirm which before class.)' },
 
     { seg:1, kind:'arithmetic', layout:'split-rev',
-      eyebrow:'③ A WHOLE DAY = TWO SECONDS',
+      eyebrow:'3 · A WHOLE DAY = TWO SECONDS',
       headline:'That’s a lot of work for a little bit of film.',
       prompt:'A full day of moving and photographing — for two seconds of film.',
       note:'Work the arithmetic with them out loud: a stop-motion animator might spend a whole day moving a puppet a tiny bit at a time, photographing every move — and the result might only be two seconds of finished film.' },
 
     { seg:1, kind:'puppetgame', layout:'split',
-      eyebrow:'③ EVERYBODY BE A PUPPET',
+      eyebrow:'3 · EVERYBODY BE A PUPPET',
       headline:'Stand up. You’re the puppet now.',
       prompt:'Freeze. Move an inch. Freeze again.',
       note:'Physical beat — get them out of their chairs. Everyone freezes, moves an inch, freezes again, while you snap a photo on your phone each time. Play the photos back fast at the end — they just made stop-motion out of themselves.\nThe only out-of-chair beat in the hour, right around minute 30 of 60 — good timing for restless legs.' },
 
     { seg:1, kind:'clip', clip:'bbcearth', layout:'split-rev', icon:'doc', iconCls:'c-doc',
-      eyebrow:'④ DOCUMENTARY',
+      eyebrow:'4 · DOCUMENTARY',
       headline:'No actors. No script.',
       sub:'The camera waited three months — just for this.',
       bullets:['No actors','No script','Real life, as it happens'],
@@ -804,7 +812,7 @@
       note:'The point: no actors, no script. The camera crew may have waited three months in the wild just to catch this one moment.' },
 
     { seg:1, kind:'waiting', layout:'split',
-      eyebrow:'④ THREE MONTHS OF WAITING',
+      eyebrow:'4 · THREE MONTHS OF WAITING',
       headline:'Three months.<br>For one moment.',
       prompt:'What did the camera person do while nothing happened?',
       note:'No clean, freely-licensed photo of a real camouflaged wildlife hide turned up that had the right feel — the ones found looked like a proud adventure portrait, not the boring, cramped waiting this is actually about. Built as a drawn diagram instead, per the fallback already agreed for this screen.' },
@@ -1106,8 +1114,8 @@
       html += '<h1 class="headline">'+s.headline+'</h1>';
       html += '</div>';
       html += '<div class="media-col"><div class="agenda-list">';
-      s.agenda.forEach(function(a, idx){
-        html += '<div class="agenda-row"><div class="a-n">'+String(idx+1).padStart(2,'0')+'</div><div><div class="a-t">'+a.t+'</div><div class="a-d">'+a.d+'</div></div></div>';
+      s.agenda.forEach(function(a){
+        html += '<div class="agenda-row"><div class="kind-icon '+a.cls+'">'+ICONS[a.icon]+'</div><div><div class="a-t">'+a.t+'</div><div class="a-d">'+a.d+'</div></div></div>';
       });
       html += '</div></div>';
       html += '</div>';
