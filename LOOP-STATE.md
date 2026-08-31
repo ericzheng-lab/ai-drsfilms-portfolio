@@ -49,6 +49,44 @@ USABLE a21ec39907944b05ed84dd5f7aaef6dd482206da
   confirmed all 8 external video IDs return 200 + valid oembed, confirmed 0 console
   errors on a clean tab, confirmed `git diff origin/main --stat -- src` is empty.
 
+AUDIT 432eddcbbc76fc924fed6b5f1430763d2e5aa009
+USABLE 432eddcbbc76fc924fed6b5f1430763d2e5aa009
+- Round 4, same branch/PR. Self-verified (指挥层复核, NOT a blind audit — six rounds on this
+  deck and no cold reader has ever seen it; that call is Eric's).
+  - Four category galleries on 8/10/13/16: measured 5 items each, 5 distinct sources,
+    title+year on every thumbnail, thumbnails 204x115 at 1280x720. Clicking opens the
+    existing video lightbox in image mode; arrows step 5->1 and wrap; the deck counter
+    held at 08/32 through every step; Esc and backdrop both close and empty the media
+    node. All 20 gallery files return HTTP 200 with real bytes, all are referenced, none
+    orphaned.
+  - Gallery stills: every image opened at full size before use. Trailer banners, platform
+    badges and studio bugs cropped off per image; where maxresdefault could not be
+    salvaged, YouTube's overlay-free auto-extracted frames were used. Prince Achmed is a
+    Wikimedia Commons still (the YouTube upload had been taken down).
+  - Channel provenance is verified by oEmbed, not assumed. The top search result for the
+    slot-6 replacement, titled "WONKA Official Trailer ... | Warner Bros. Pictures", is
+    uploaded by a reupload channel; the id shipped resolves to Warner Bros. UK & Ireland.
+    Strict official-channel sourcing was kept for anything the class PLAYS; relaxed for
+    gallery stills, which are verified by eye instead.
+  - Screen 9 rebuilt around Eric's two supplied set photographs plus an illustrated
+    backlot: measured 357x238 / 309x238 / 191x238 — exact natural aspect, no crop.
+  - Swept all 32 screens: 0 horizontal overflow, 0 vertical overflow, 0 broken images,
+    0 console errors, at 1280x720. Painted content clears the presenter chrome on every
+    screen except 30 (see below).
+  - Build: `npm run build` clean; dist/starx-week-1/ returns HTTP 200 (123,727 bytes);
+    20 gallery + 10 supplied images present in dist; `git diff origin/main --stat -- src`
+    empty.
+  - NOT verified: real-time playback of the new Wonka embed (same backgrounded-tab
+    throttling as rounds 1-2) — relied on oEmbed 200 and correct embed-URL construction.
+    Nobody has run this on Eric's actual projector.
+  - KNOWN DEFECT, pre-existing, not introduced by round 4 and not fixed here: screen 30's
+    content runs to y=716 and overlaps the presenter hint chip at y=690 at 1280x720.
+  - THREE ORPHANED FILES left on disk deliberately: media/frames/boom-operator.jpg,
+    filmstrip-35mm.jpg and lighting-setup.jpg are no longer referenced by anything after
+    the screen-9 rebuild. The DoD says nothing should be present-but-unreferenced, but the
+    standing rule is "do not delete files". Eric's call; they are recoverable from git
+    either way. `git rm` on those three closes the line.
+
 AUDIT 5d2226b52b1dba7bdf5e7ec3395ef2394fbc55e8
 USABLE 5d2226b52b1dba7bdf5e7ec3395ef2394fbc55e8
 - Round 2, same branch/PR, per Eric's live-preview feedback relayed via a peer session.
