@@ -439,3 +439,46 @@ USABLE 7ec51f4ffc3deeac02cebc20aee4aee2af4df851
   - **Review-grade, unchanged from every prior round**: self-verification (指挥层复核) only.
     No blind audit (真盲审) has happened on this deck at any point. Whether one happens before
     it runs live in front of the actual class is still Eric's call, not mine to assume.
+
+AUDIT 572a85aa1b109d964e49187be97a5acbb43420f3
+USABLE 572a85aa1b109d964e49187be97a5acbb43420f3
+- Post-integration D-group review by a peer session, who built a contact sheet of all 14
+  screens-4-17 images and reviewed them side by side rather than one at a time — a genuinely
+  different vantage point from mine, and it surfaced something real: the deck's own
+  `.support-img img{object-fit:cover}` treatment center-crops every one of these photos into a
+  fixed square box, so a file that reads fine at native resolution can render very differently
+  on screen. I hadn't been checking that specific transform before this round.
+  - **2 of the peer's 4 flagged items confirmed and fixed**: screen 11's cel photo carried a
+    burned-in "Imaged by Heritage Auctions, HA.com" band at the bottom that survives the
+    cover-crop (verified by reproducing the exact crop with PIL, not by assuming) — found the
+    exact pixel row via a colour-sample script and cropped precisely, leaving the artwork and
+    its legitimate Disney copyright mark untouched. Screen 12's flipbook photo was an extreme
+    3.2:1 letterbox crop that the cover-crop reduced to a bare sliver of finger on screen — far
+    worse than it looked at native resolution, confirming the peer's read. Re-downloaded the
+    original Wikimedia source (same photographer, same CC BY-SA 3.0 licence, just a different
+    region of the same photo) and iterated 3 candidate square crops, checking each against a
+    reproduction of the actual on-screen cover-crop before picking the one where the fanned
+    pages and thumb are unambiguously the subject across the full frame.
+  - **2 of the peer's 4 flagged items disputed, with reproduced evidence, not deferred to
+    either party's assertion**: for boom-operator.jpg and lighting-setup.jpg, I reproduced the
+    exact `object-fit:cover` crop with PIL (matching the CSS math precisely) before accepting
+    or rejecting the claim. In both reproductions, the flagged subject — the boom pole and
+    furry windscreen; the three lit lamp heads — remains clearly visible and prominent, not
+    lost or clipped. This contradicts "no boom pole visible at all" and "murky, nothing reads
+    at a glance." Flagged the disagreement back to the peer with the reproduced crops as
+    evidence and a specific hypothesis for the discrepancy (a multi-image contact sheet likely
+    renders each photo smaller than either the source file or the deck's own individual 52-70px
+    thumbnail, which could wash out exactly this kind of detail at contact-sheet scale without
+    it being a problem at the deck's actual display size) — not yet resolved as of this commit.
+  - Self-verified (指挥层复核): both fixes re-confirmed via DOM inspection after rebuild
+    (`img.complete`, correct new dimensions — cel 1600×1468, flipbook 1300×1300 exactly square
+    so no further browser-side crop applies); `npm run build` succeeds; files staged explicitly,
+    no `git add -A`.
+  - **Process note worth keeping**: this is the first point in the whole D-group review where
+    checking the *actual rendered crop* rather than the *source file* changed a verdict. Worth
+    applying retroactively — none of the other 17 D-group images (this round or part 1) have
+    had their on-screen `object-fit:cover` crop specifically checked yet, only their source
+    content. Not treating that as urgent right now since the peer's own contact-sheet pass
+    already looked at all 14 of this round's images together and only flagged these 2 as
+    genuinely broken (plus the 2 disputed above) — but flagging the gap in method honestly
+    rather than silently assuming the rest are fine by extension.
