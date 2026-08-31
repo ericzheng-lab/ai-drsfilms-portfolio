@@ -69,6 +69,13 @@
     width:46vw;height:46vw;right:-18vw;bottom:-20vw;border-radius:50%;
     background:radial-gradient(circle, rgba(20,30,54,.05), transparent 68%);
   }
+  /* the one large drawn illustration behind every screen's content — reused cast, not new art per screen */
+  .bg-illustration{
+    position:absolute;z-index:0;pointer-events:none;
+    right:-6vw;bottom:-8vh;height:70vh;width:70vh;
+    opacity:.09;color:var(--ink);
+  }
+  .bg-illustration svg{width:100%;height:100%;display:block}
   .slide-inner{position:relative;z-index:1;max-width:1180px;width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.6vh,18px)}
 
   /* ---- asymmetric split layout (the editorial grid) ---- */
@@ -267,12 +274,6 @@
   .play-btn.local{background:var(--cherry)}
   .play-btn.ext{background:var(--teal)}
   .play-btn .glyph{position:relative;left:2px}
-  .stage-frame.playing .play-btn{opacity:0;pointer-events:none}
-  .stage-frame .badge{
-    position:absolute;top:10px;left:10px;z-index:2;
-    font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
-    background:rgba(247,245,239,.92);color:var(--ink);padding:4px 9px;border-radius:3px;
-  }
   .stage-frame.small{aspect-ratio:16/10}
   .stage-frame.small .play-btn{width:40px;height:40px;font-size:14px}
   .stage-caption{
@@ -290,6 +291,7 @@
   }
   .game-slot.opened{border-color:var(--teal)}
   .game-slot .n{font-family:var(--display);font-weight:800;font-size:clamp(16px,1.8vw,21px);color:var(--ink);align-self:flex-start}
+  .game-slot .clip-stage{width:100%;min-width:0}
   .game-slot .stage-frame{width:100%;margin-top:-2px}
   .game-slot .stage-frame.small{aspect-ratio:16/7}
   .game-slot .reveal{
@@ -429,6 +431,22 @@
     border:1px solid rgba(247,245,239,.3);padding:8px 16px;border-radius:999px;
   }
 
+  /* ===== video lightbox — one mechanism for every clip, self-hosted or embedded ===== */
+  #lightbox{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center}
+  #lightbox.open{display:flex}
+  #lightbox-backdrop{position:absolute;inset:0;background:rgba(10,14,28,.9)}
+  #lightbox-stage{
+    position:relative;width:90vw;max-height:85vh;aspect-ratio:16/9;
+    background:#000;border-radius:10px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.5);
+  }
+  #lightbox-stage.portrait{width:auto;height:85vh;max-width:92vw;aspect-ratio:9/13}
+  #lightbox-media{position:absolute;inset:0}
+  #lightbox-media video,#lightbox-media iframe{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain}
+  #lightbox-close{
+    position:absolute;top:-46px;right:0;color:var(--paper);font-family:var(--mono);font-size:13px;
+    border:1px solid rgba(247,245,239,.3);padding:8px 16px;border-radius:999px;background:transparent;
+  }
+
   /* ===== entry motion — under a second, gated entirely behind reduced-motion preference ===== */
   @media (prefers-reduced-motion:no-preference){
     .enter-play .text-col{animation:riseUp .5s cubic-bezier(.2,.8,.2,1) both}
@@ -492,6 +510,14 @@
   <div class="ov-grid" id="ov-grid"></div>
 </div>
 
+<div id="lightbox">
+  <div id="lightbox-backdrop"></div>
+  <div id="lightbox-stage">
+    <button id="lightbox-close">Esc · close</button>
+    <div id="lightbox-media"></div>
+  </div>
+</div>
+
 <script>
 (function(){
 
@@ -505,6 +531,10 @@
     {name:'The first film ever shown',  end:55, cls:'seg-3'},
     {name:'The first visual effect',    end:60, cls:'seg-4'}
   ];
+
+  // one big background illustration per segment (round-3 rule B) — a screen's own
+  // `bgIcon`, or its clip `icon`, overrides the segment default when the subject is more specific
+  var SEG_BG = ['clapper','fourScreens','filmstrip','filmstrip','moonFace'];
 
   // ================================================================
   // SECTION 2 of 6: ICONS — hand-drawn character cast + doodles
@@ -681,12 +711,12 @@
     lego:      {type:'ext', id:'BfhV3Q4LJPM', title:'LEGO · official ad', range:'0:00–1:00 · plays here'},
     elmo:      {type:'ext', id:'ksxbp9yb9BU', title:'Sesame Street · “Elmo’s Got the Moves!”', range:'whole short, vertical · plays here', portrait:true},
 
-    g1:{type:'ext', id:'vFw_04XfV4I', start:0, answer:'Live action', hard:false},
-    g2:{type:'ext', id:'EQROSyAMuOM', start:0, answer:'Animation', hard:false},
-    g3:{type:'ext', id:'orLMm76lwjY', start:0, answer:'Stop-motion', hard:false},
-    g4:{type:'ext', id:'vdfMLAH1yJQ', start:0, answer:'Documentary', hard:false},
-    g5:{type:'ext', id:'7TavVZMewpY', start:8, answer:'Animation — but fully photoreal CG!', hard:true},
-    g6:{type:'ext', id:'1Fg5iWmQjwk', start:0, answer:'Live action — shot to look like a tiny model!', hard:true}
+    g1:{type:'ext', id:'vFw_04XfV4I', start:0, title:'Paddington in Peru · "El Dorado" Clip · Studiocanal', answer:'Live action', hard:false},
+    g2:{type:'ext', id:'EQROSyAMuOM', start:0, title:'The Lion King · "Circle of Life" (Opening) · 1994', answer:'Animation', hard:false},
+    g3:{type:'ext', id:'orLMm76lwjY', start:0, title:'Shaun the Sheep · "Gone to the Dogs" · Aardman', answer:'Stop-motion', hard:false},
+    g4:{type:'ext', id:'vdfMLAH1yJQ', start:0, title:'A Chameleon\'s Race Against Time · BBC Earth', answer:'Documentary', hard:false},
+    g5:{type:'ext', id:'7TavVZMewpY', start:8, title:'The Lion King (2019) · Official Trailer · Disney', answer:'Animation — but fully photoreal CG!', hard:true},
+    g6:{type:'ext', id:'1Fg5iWmQjwk', start:0, title:'The Grand Budapest Hotel · Official Trailer · Searchlight Pictures', answer:'Live action — shot to look like a tiny model!', hard:true}
   };
 
   // ================================================================
@@ -700,11 +730,11 @@
     { seg:0, kind:'title',
       note:'One sentence for today: film isn’t just one thing — and somebody invented it, only about a hundred and thirty years ago.' },
 
-    { seg:0, kind:'person', layout:'split', tags:['wait'],
+    { seg:0, kind:'person', layout:'split',
       eyebrow:'BEFORE WE START',
       headline:'Who is teaching you today?',
-      facts:['Makes real films for a living','Has stood on sets just like the one you’ll see today','That’s his own film, right there'],
-      note:'Introduce yourself in one breath: you make real films for a living, you’ve stood on sets like the one they’ll see today, and that picture is from your own work.\nWaiting on Eric: a frame from one of his own films — a scene with people in it, not a poster or a logo. Built for now with a drawn placeholder so the screen already works; swap the picture in when it’s ready.' },
+      facts:['Makes real films for a living','Has stood on sets just like the one you’ll see today','This is him, right now'],
+      note:'Introduce yourself in one breath: you make real films for a living, you’ve stood on sets like the one they’ll see today.\nFour illustrated portraits Eric supplied cycle behind this screen. No longer waiting on him.' },
 
     { seg:0, kind:'plain',
       eyebrow:'OPENING QUESTION',
@@ -714,14 +744,14 @@
       bgGraphic:'screens',
       note:'Ask: “What did you watch yesterday — was that a film?” Let them answer anything — a cartoon, a short video, an ad, something on a grandparent’s phone. Don’t rule anything out yet.\nThen: “Today we’re going to find out how many different shapes a film can take.”' },
 
-    { seg:0, kind:'define', layout:'split',
+    { seg:0, kind:'define', layout:'split', bgIcon:'filmstrip',
       eyebrow:'FIRST THINGS FIRST',
       headline:'So what <em>is</em> a film,<br>exactly?',
       sub:'A big pile of still pictures, shown one after another — fast enough that your eyes think they’re moving.',
       synonyms:['Film','Movie','Motion picture','Moving image'],
       note:'Before we sort films into kinds, answer the question directly: “A film is a pile of still pictures, shown one after another, fast enough that it looks like they’re moving.”\nAll of these words mean the same thing — film, movie, motion picture, moving image. Different words, same idea.' },
 
-    { seg:0, kind:'motion', layout:'split-rev',
+    { seg:0, kind:'motion', layout:'split-rev', bgIcon:'horse',
       eyebrow:'BEFORE THERE WERE CAMERAS LIKE OURS',
       headline:'How does it even <em>move</em>?',
       sub:'1878. Twelve photographs of a galloping horse, one after another.',
@@ -753,7 +783,7 @@
       mech:{icon:'mechLive', text:'The camera is right there in the room, filming.'},
       note:'The point: real people were standing right there, with a camera beside them.\n(Placeholder clip — swap in whatever live-action the five kids are actually watching right now. Open decision, see report.)' },
 
-    { seg:1, kind:'setdiagram', layout:'split-rev', tags:['wait'],
+    { seg:1, kind:'setdiagram', layout:'split-rev', tags:['wait'], bgIcon:'live',
       eyebrow:'1 · LOOK WHO ELSE WAS THERE',
       headline:'A film set is crowded.',
       prompt:'How many people are just outside this picture?',
@@ -768,7 +798,7 @@
       supportImg:{drawn:'anim', cap:'An animator’s desk — drawings on pegs, a lightbox glowing underneath.', credit:'drawn for this deck'},
       note:'The point: there’s no real person in this at all — every frame was drawn by hand. This is the opening of The Lion King (1994), all hand-drawn.\nThe animator’s-desk picture is drawn rather than a photo — no clean, freely-licensed one turned up after a real search, and it fits the deck’s own hand-drawn language better than a stock photo would.' },
 
-    { seg:1, kind:'drawings24', layout:'split',
+    { seg:1, kind:'drawings24', layout:'split', bgIcon:'anim',
       eyebrow:'2 · 24 DRAWINGS = ONE SECOND',
       headline:'Watch how many pictures that takes.',
       prompt:'Count them. Then watch them fly by.',
@@ -790,13 +820,13 @@
       supportImg:{drawn:'skeletonPuppet', cap:'A stop-motion puppet can be enormous — one film’s skeleton puppet stood 18 feet tall.', credit:'drawn for this deck'},
       note:'The point: nobody drew this, and nobody acted it. Someone moved a little figure — just a little — took a photo, moved it again, took another photo.\nThe skeleton-puppet picture is drawn, not a photo of any specific film’s design — it illustrates the general fact (giant puppets exist in stop-motion) without using anyone’s copyrighted character art. Spend extra time here — they’ll be making one of these themselves. (Raw lesson-plan note: this says Week 7, the school-facing overview says Week 8 — confirm which before class.)' },
 
-    { seg:1, kind:'arithmetic', layout:'split-rev',
+    { seg:1, kind:'arithmetic', layout:'split-rev', bgIcon:'stop',
       eyebrow:'3 · A WHOLE DAY = TWO SECONDS',
       headline:'That’s a lot of work for a little bit of film.',
       prompt:'A full day of moving and photographing — for two seconds of film.',
       note:'Work the arithmetic with them out loud: a stop-motion animator might spend a whole day moving a puppet a tiny bit at a time, photographing every move — and the result might only be two seconds of finished film.' },
 
-    { seg:1, kind:'puppetgame', layout:'split',
+    { seg:1, kind:'puppetgame', layout:'split', bgIcon:'stop',
       eyebrow:'3 · EVERYBODY BE A PUPPET',
       headline:'Stand up. You’re the puppet now.',
       prompt:'Freeze. Move an inch. Freeze again.',
@@ -811,7 +841,7 @@
       supportImg:{src:'media/frames/chameleon-cc.jpg', alt:'Panther chameleon photograph', cap:'A real chameleon, photographed in the wild.', credit:'Charles J. Sharp · CC BY-SA 4.0'},
       note:'The point: no actors, no script. The camera crew may have waited three months in the wild just to catch this one moment.' },
 
-    { seg:1, kind:'waiting', layout:'split',
+    { seg:1, kind:'waiting', layout:'split', bgIcon:'doc',
       eyebrow:'4 · THREE MONTHS OF WAITING',
       headline:'Three months.<br>For one moment.',
       prompt:'What did the camera person do while nothing happened?',
@@ -1056,6 +1086,8 @@
     var cls = 'slide seg-'+s.seg + (s.kind==='title' ? ' title-slide' : '');
     if (s.seg < 0) cls = 'slide title-slide';
     html += '<section class="'+cls+'" data-i="'+i+'">';
+    var bgIconKey = s.bgIcon || s.icon || SEG_BG[Math.max(s.seg,0)];
+    html += '<div class="bg-illustration">'+ICONS[bgIconKey]+'</div>';
     html += marginDecoHTML(i);
     if (s.bgmark) html += '<div class="bg-mark">'+s.bgmark+'</div>';
 
@@ -1077,7 +1109,7 @@
       html += '<div class="fact-bullets">';
       s.facts.forEach(function(f){ html += '<div class="fact-bullet">'+f+'</div>'; });
       html += '</div>' + tagRowHTML(s.tags) + '</div>';
-      html += '<div class="media-col">' + drawnCard('clapper','lg') + '</div>';
+      html += '<div class="media-col"><div class="torn-frame portrait-loop"><img id="ez-loop-img" src="media/ez-loop/ez-1.webp" alt="Illustrated portrait of the course’s teacher"></div></div>';
       html += '</div>';
 
     } else if (s.kind === 'define'){
@@ -1333,35 +1365,63 @@
     notesTxt.textContent = n;
   }
 
-  function resetLocalFrame(vid){
-    var frame = vid.closest('.stage-frame');
-    frame.classList.remove('playing');
-    var glyph = frame.querySelector('.play-btn .glyph');
-    if (glyph) glyph.textContent = '▶';
+  // ---------- video lightbox — the one place any clip ever plays ----------
+  var lightboxEl = document.getElementById('lightbox');
+  var lightboxStage = document.getElementById('lightbox-stage');
+  var lightboxMedia = document.getElementById('lightbox-media');
+  var lightboxOpen = false;
+
+  function openLightbox(clipKey){
+    var c = CLIPS[clipKey];
+    lightboxStage.classList.toggle('portrait', !!c.portrait);
+    if (c.type === 'local'){
+      lightboxMedia.innerHTML = '<video src="'+c.src+'" autoplay playsinline controls></video>';
+    } else {
+      lightboxMedia.innerHTML = '<iframe src="'+ytEmbedSrc(c.id, c.start)+'" title="'+c.title+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+    lightboxEl.classList.add('open');
+    lightboxOpen = true;
   }
 
-  function pauseAllVideo(){
-    document.querySelectorAll('video').forEach(function(v){
-      v.pause();
-      resetLocalFrame(v);
-    });
+  function closeLightbox(){
+    if (!lightboxOpen) return;
+    lightboxMedia.innerHTML = ''; // removing the node stops playback — local pause and ext audio alike
+    lightboxEl.classList.remove('open');
+    lightboxOpen = false;
   }
 
-  function stopAllExtFrames(root){
-    (root||document).querySelectorAll('.stage-frame.ext-frame.playing').forEach(function(f){
-      var wrap = f.closest('[data-clip]');
-      var key = wrap ? wrap.getAttribute('data-clip') : null;
-      if (!key || !CLIPS[key]) return;
-      f.classList.remove('playing');
-      f.innerHTML = extIdleHTML(key);
-    });
-  }
+  lightboxEl.querySelector('#lightbox-backdrop').addEventListener('click', closeLightbox);
+  lightboxEl.querySelector('#lightbox-close').addEventListener('click', closeLightbox);
 
   function stopAllFlipbooks(){
     Object.keys(flipTimers).forEach(function(k){
       clearInterval(flipTimers[k]);
       delete flipTimers[k];
     });
+  }
+
+  // ---------- screen-2 portrait loop (D2) — four of Eric's own portraits, 0.7s/frame ----------
+  var EZ_FRAMES = ['media/ez-loop/ez-1.webp','media/ez-loop/ez-2.webp','media/ez-loop/ez-3.webp','media/ez-loop/ez-4.webp'];
+  var ezPreloaded = false, ezTimer = null;
+  function preloadEz(){
+    if (ezPreloaded) return;
+    ezPreloaded = true;
+    EZ_FRAMES.forEach(function(src){ var im = new Image(); im.src = src; });
+  }
+  preloadEz(); // start warming the cache on load, well before the presenter ever reaches screen 2
+  function startEzLoop(){
+    var img = document.getElementById('ez-loop-img');
+    if (!img) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; // frame 1 stays still
+    var frame = 0;
+    if (ezTimer) clearInterval(ezTimer);
+    ezTimer = setInterval(function(){
+      frame = (frame+1) % EZ_FRAMES.length;
+      img.src = EZ_FRAMES[frame]; // onerror intentionally unset — a failed frame just holds the last good src
+    }, 700);
+  }
+  function stopEzLoop(){
+    if (ezTimer){ clearInterval(ezTimer); ezTimer = null; }
   }
 
   function playEnterAnim(el){
@@ -1373,12 +1433,13 @@
   function goTo(i){
     if (i < 0) i = 0;
     if (i > total-1) i = total-1;
-    pauseAllVideo();
-    stopAllExtFrames(slideEls[current]);
+    closeLightbox();
     stopAllFlipbooks();
+    stopEzLoop();
     slideEls[current].classList.remove('active');
     current = i;
     slideEls[current].classList.add('active');
+    if (SLIDES[current].kind === 'person') startEzLoop();
     playEnterAnim(slideEls[current]);
     document.getElementById('counter').textContent = String(current+1).padStart(2,'0') + ' / ' + total;
     renderNotes();
@@ -1400,13 +1461,6 @@
     overviewOpen = (typeof force === 'boolean') ? force : !overviewOpen;
     overviewEl.classList.toggle('open', overviewOpen);
     if (overviewOpen) updateOverviewHighlight();
-    else stopAllExtFrames(overviewEl);
-  }
-
-  function playExt(clipKey, frame){
-    var c = CLIPS[clipKey];
-    frame.classList.add('playing');
-    frame.innerHTML = '<iframe src="'+ytEmbedSrc(c.id, c.start)+'" title="'+c.title+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
   }
 
   // ---------- 24-drawings flipbook ----------
@@ -1426,18 +1480,7 @@
   deck.addEventListener('click', function(e){
     var playBtn = e.target.closest('.play-btn');
     if (playBtn){
-      var clipKey = playBtn.getAttribute('data-clip');
-      var c = CLIPS[clipKey];
-      var frame = playBtn.closest('.stage-frame');
-      if (c.type === 'local'){
-        var vid = document.getElementById(playBtn.getAttribute('data-video'));
-        frame.classList.add('playing');
-        vid.currentTime = 0;
-        vid.play().catch(function(){});
-        vid.onended = function(){ frame.classList.remove('playing'); frame.querySelector('.play-btn') && (frame.querySelector('.play-btn').querySelector('.glyph').textContent = '↻'); };
-      } else {
-        playExt(clipKey, frame);
-      }
+      openLightbox(playBtn.getAttribute('data-clip'));
       return;
     }
     var slotReveal = e.target.closest('.slot-reveal');
@@ -1510,6 +1553,10 @@
 
   // ---------- keyboard ----------
   document.addEventListener('keydown', function(e){
+    if (lightboxOpen){
+      if (e.key === 'Escape') { closeLightbox(); e.preventDefault(); }
+      return; // C5: every other key is inert while the lightbox is open
+    }
     if (overviewOpen){
       if (e.key === 'Escape') { toggleOverview(false); e.preventDefault(); }
       return;
