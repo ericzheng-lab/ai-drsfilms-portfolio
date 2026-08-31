@@ -350,6 +350,54 @@
   }
 
   /* ===== screen 9: overhead set diagram ===== */
+  /* ===== category galleries (round 4) — the range inside one kind ===== */
+  .slide-inner.split.with-gallery{grid-template-areas:'txt med' 'gal gal';row-gap:clamp(6px,1.4vh,16px)}
+  .slide-inner.split.with-gallery .text-col{grid-area:txt}
+  .slide-inner.split.with-gallery .media-col{grid-area:med}
+  .slide-inner.split.rev.with-gallery{grid-template-areas:'med txt' 'gal gal'}
+  .gallery-block{grid-area:gal;width:100%;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .gal-lead{font-family:var(--display);font-weight:700;font-size:clamp(10px,1.02vw,12.5px);
+    color:var(--cherry);text-align:center}
+  /* A gallery row costs ~150px of height, and the presenter chrome owns the top
+     and bottom ~30px of the viewport, so the column above gives all of that back.
+     Measured on the rendered page at 1280x720, not read off these numbers. */
+  .slide-inner.with-gallery{padding:26px 0 30px}
+  .slide-inner.with-gallery .media-col{gap:5px}
+  .slide-inner.with-gallery .media-col .clip-stage{width:min(430px,100%,29vh)}
+  .slide-inner.with-gallery .support-img img{height:clamp(72px,10vh,105px)}
+  .slide-inner.with-gallery .gallery-block{gap:3px}
+  .slide-inner.with-gallery .support-img .si-text{max-width:270px}
+  .slide-inner.with-gallery .support-img .si-cap{font-size:clamp(10px,1.02vw,11.5px)}
+  .slide-inner.with-gallery .gal-thumb{padding:3px 3px 0}
+  .slide-inner.with-gallery .gal-y{padding-bottom:3px}
+  .gallery-strip{display:flex;gap:clamp(7px,1vw,13px);width:100%;justify-content:center;align-items:flex-start}
+  .gal-thumb{
+    flex:1 1 0;min-width:0;background:var(--paper);border:2.5px solid var(--ink);
+    border-radius:3px 10px 3px 9px/9px 3px 10px 3px;padding:4px 4px 0;cursor:pointer;
+    box-shadow:3px 4px 0 rgba(20,30,54,.15);display:block;text-align:center;
+    transition:transform .12s ease; font:inherit;
+  }
+  .gal-thumb:hover,.gal-thumb:focus-visible{transform:translateY(-3px);border-color:var(--cherry);outline:none}
+  .gal-thumb img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;border-radius:2px}
+  .gal-t{font-family:var(--display);font-weight:800;font-size:clamp(10px,1.05vw,13px);
+    color:var(--ink);line-height:1.16;margin-top:4px}
+  .gal-y{font-family:var(--mono);font-size:clamp(8.5px,.82vw,10px);color:rgba(20,30,54,.55);padding-bottom:5px}
+  /* image mode for the lightbox that already carries the clips */
+  #lightbox-stage.image{width:auto;max-width:92vw;height:auto;max-height:90vh;aspect-ratio:auto;
+    background:var(--paper);display:flex;flex-direction:column;align-items:stretch}
+  /* every gallery image is shown at the same height whatever its source resolution,
+     so stepping through a set does not make the frame jump around */
+  #lightbox-stage.image #lightbox-media{position:static;display:flex;flex-direction:column;width:100%}
+  .lb-imgwrap{display:flex;justify-content:center;align-items:center;background:#0b0f1c;width:100%}
+  #lightbox-media img{display:block;height:min(62vh,480px);width:auto;max-width:88vw;object-fit:contain}
+  .lb-cap{padding:12px 18px 14px;text-align:center;background:var(--paper);color:var(--ink);
+    max-width:min(760px,88vw);margin:0 auto}
+  .lb-cap .lb-title{font-family:var(--display);font-weight:800;font-size:clamp(17px,2.1vw,27px);line-height:1.15}
+  .lb-cap .lb-note{display:block;font-family:var(--body);font-size:clamp(13px,1.4vw,17px);
+    color:rgba(20,30,54,.78);margin-top:5px}
+  .lb-cap .lb-step{display:block;font-family:var(--mono);font-size:clamp(10px,1vw,12px);
+    color:rgba(20,30,54,.45);margin-top:8px;letter-spacing:.08em}
+
   /* screen 9 — three pictures of a crowded set earn the full width */
   .setcrowd-head{display:flex;align-items:center;gap:clamp(16px,3vw,44px);width:100%}
   .setcrowd-head .text-col{flex:1 1 auto;min-width:0}
@@ -822,7 +870,7 @@
       kinds:[['live','Live action','c-live'],['anim','Animation','c-anim'],['stop','Stop-motion','c-stop'],['doc','Documentary','c-doc']],
       note:'Play each kind for two or three minutes. After each one, ask: “Was that filmed, or was it drawn?”' },
 
-    { seg:1, kind:'clip', clip:'paddington', layout:'split', icon:'live', iconCls:'c-live',
+    { seg:1, kind:'clip', clip:'paddington', layout:'split', icon:'live', iconCls:'c-live', gallery:'live',
       eyebrow:'1 · LIVE ACTION',
       headline:'Real people.<br>A camera right beside them.',
       bullets:['Real actors','Real places','Filmed as it happens'],
@@ -841,7 +889,7 @@
       ],
       note:'Every live-action shot has a whole crew standing just outside the frame — camera operator, boom-pole holder for sound, lights on stands, and everyone else who isn’t acting.\nRun it as a counting game: point at the first photo and count the people out loud together, then the second. The drawn diagram beside the question is there so they can put a name to each job — CAMERA, BOOM POLE, LIGHT, CREW — and the illustration on the right is the one to linger on, because every job in it is findable.' },
 
-    { seg:1, kind:'clip', clip:'lionking', layout:'split-rev', icon:'anim', iconCls:'c-anim',
+    { seg:1, kind:'clip', clip:'lionking', layout:'split-rev', icon:'anim', iconCls:'c-anim', gallery:'anim',
       eyebrow:'2 · ANIMATION',
       headline:'No real person.<br>Every frame is <em>drawn</em>.',
       sub:'Twelve to twenty-four drawings for every single second on screen.',
@@ -861,10 +909,10 @@
       eyebrow:'2 · DRAWN A HUNDRED YEARS AGO',
       headline:'This one is almost a hundred years old.',
       sub:'Steamboat Willie, 1928 — the first Mickey Mouse cartoon.',
-      supportImg:{src:'media/frames/flipbook-thumb.jpg', alt:'A hand thumbing through the pages of a flipbook', cap:'The cheapest animation in the world — flip the pages fast enough, and it moves.', credit:'Josila · Wikimedia Commons · CC BY-SA 3.0'},
+      supportImg:{src:'media/frames/flipbook-metal.jpg', alt:'A hand holding a small metal flip-book viewer, thumbing through a stack of tiny photographs so they move', cap:'The cheapest film in the world — a stack of little pictures and a thumb. Flip them fast enough and they move.', credit:'Wikimedia Commons'},
       note:'Optional second panel, drop it if you’re short on time. This is Steamboat Willie (1928) — public domain, which is why it’s hosted directly on this page instead of linked out. Framed here purely as an example of drawing, not as the sound-and-picture milestone — that’s Week 2’s job, and this is a deliberate one-week repeat, not a spoiler.' },
 
-    { seg:1, kind:'clip', clip:'shaun', layout:'split', icon:'stop', iconCls:'c-stop',
+    { seg:1, kind:'clip', clip:'shaun', layout:'split', icon:'stop', iconCls:'c-stop', gallery:'stop',
       eyebrow:'3 · STOP-MOTION',
       headline:'Nobody drew it.<br>Nobody acted it.',
       sub:'Someone moved a toy — just a little — and took a photo. Then moved it again.',
@@ -888,14 +936,13 @@
       supportImg:{src:'media/frames/phone-tripod.jpg', alt:'A phone mounted on a small tripod, recording a small toy figure on a table', cap:'Exactly what you’re about to do — a phone on a tripod, pointed at a toy.', credit:'gigazine.net'},
       note:'Physical beat — get them out of their chairs. Everyone freezes, moves an inch, freezes again, while you snap a photo on your phone each time. Play the photos back fast at the end — they just made stop-motion out of themselves.\nThe only out-of-chair beat in the hour, right around minute 30 of 60 — good timing for restless legs.' },
 
-    { seg:1, kind:'clip', clip:'bbcearth', layout:'split-rev', icon:'doc', iconCls:'c-doc',
+    { seg:1, kind:'clip', clip:'bbcearth', layout:'split-rev', icon:'doc', iconCls:'c-doc', gallery:'doc',
       eyebrow:'4 · DOCUMENTARY',
       headline:'No actors. No script.',
       sub:'The camera waited three months — just for this.',
       bullets:['No actors','No script','Real life, as it happens'],
       mech:{icon:'mechDoc', text:'The camera just watches and waits.'},
       supportImg:{src:'media/frames/chameleon-cc.jpg', alt:'Panther chameleon photograph', cap:'A real chameleon, photographed in the wild.', credit:'Charles J. Sharp · CC BY-SA 4.0'},
-      supportImgs:[{src:'media/frames/harrier-flight.jpg', alt:'A harrier hawk photographed head-on in flight, wings spread, hunting', cap:'A second real animal moment — a hawk in flight, hunting.', credit:'Hari Patibanda · Flickr'}],
       note:'The point: no actors, no script. The camera crew may have waited three months in the wild just to catch this one moment.' },
 
     { seg:1, kind:'waiting', layout:'split', bgIcon:'doc',
@@ -1075,6 +1122,66 @@
     return '<div class="drawn-placeholder'+(sizeCls?' '+sizeCls:'')+'"><div class="dp-icon">'+ICONS[iconKey]+'</div></div>';
   }
 
+  // ================================================================
+  // GALLERIES (round 4) — the range *inside* one kind.
+  // The teaching idea is not "more pictures": it is that four films of the same
+  // kind can look nothing like each other. Each set is picked so no two share a
+  // look, and for stop-motion the material itself is the difference — that set
+  // carries the most weight, because Week 8 is when they build one.
+  // Stills are frames from official trailers (Prince Achmed, 1926, is from
+  // Wikimedia Commons); every one was opened and checked before it was used.
+  // ================================================================
+  var GALLERIES = {
+    live:{
+      lead:'All four are real people, filmed in a real place. Not one looks like another.',
+      items:[
+        {src:'media/gallery/la-paddington.jpg', t:'Paddington in Peru', y:'2024', note:'A real family at a real table. The bear is the only thing in the room that is not really there.'},
+        {src:'media/gallery/la-wonka.jpg', t:'Wonka', y:'2023', note:'Real rooms, really built — then painted and lit until they look drawn.'},
+        {src:'media/gallery/la-oz.jpg', t:'The Wizard of Oz', y:'1939', note:'Made almost ninety years ago. That yellow road was really built, indoors, and they really walked down it.'},
+        {src:'media/gallery/la-matilda.jpg', t:'Matilda', y:'1996', note:'A girl your size, on a set, acting. Nothing here is drawn or moved by hand.'},
+        {src:'media/gallery/la-museum.jpg', t:'Night at the Museum', y:'2006', note:'A real man in a real museum — and one dinosaur that had to be added afterwards.'}
+      ]},
+    anim:{
+      lead:'Nobody was filmed for any of these. Every single one was made — and look how differently.',
+      items:[
+        {src:'media/gallery/an-lionking.jpg', t:'The Lion King', y:'1994', note:'Drawn by hand, one sheet of paper at a time. Thousands of sheets.'},
+        {src:'media/gallery/an-toystory.jpg', t:'Toy Story', y:'1995', note:'One year later — and this one was built inside a computer. The first film ever made that way.'},
+        {src:'media/gallery/an-encanto.jpg', t:'Encanto', y:'2021', note:'A computer again, but twenty-six years on. Look at the hair. Look at the cloth.'},
+        {src:'media/gallery/an-songsea.jpg', t:'Song of the Sea', y:'2014', note:'Drawn flat on purpose, like a picture book somebody let move.'},
+        {src:'media/gallery/an-spiderverse.jpg', t:'Into the Spider-Verse', y:'2018', note:'Made to look like a comic you could hold — printing dots, smudged colour and all.'}
+      ]},
+    stop:{
+      lead:'Every one of these is a real object that somebody moved with their hands. What changes is what it is made of.',
+      items:[
+        {src:'media/gallery/sm-shaun.jpg', t:'Shaun the Sheep', y:'clay', note:'Clay over a metal skeleton. If you look closely at some shots you can find the fingerprints.'},
+        {src:'media/gallery/sm-mrfox.jpg', t:'Fantastic Mr. Fox', y:'fur & cloth', note:'Real fur and real cloth, on puppets about as big as your hand.'},
+        {src:'media/gallery/sm-pinocchio.jpg', t:'Pinocchio', y:'carved wood', note:'Carved to look like wood, with a whole drawer of swappable faces for every expression.'},
+        {src:'media/gallery/sm-kubo.jpg', t:'Kubo and the Two Strings', y:'giant puppets', note:'The same idea, but huge — some puppets were far too big for one person to move alone.'},
+        {src:'media/gallery/sm-achmed.jpg', t:'Prince Achmed', y:'cut paper, 1926', note:'Paper, cut out with scissors and lit from behind. A hundred years ago — and it still works.'}
+      ]},
+    doc:{
+      lead:'Nobody is acting in any of these. In every one, the camera turned up and waited.',
+      items:[
+        {src:'media/gallery/do-chameleon.jpg', t:'A Chameleon\u2019s Race Against Time', y:'BBC Earth', note:'A real chameleon. Nobody told it where to walk.'},
+        {src:'media/gallery/do-blueplanet.jpg', t:'Blue Planet II', y:'2017', note:'Under the sea — which means the camera and the person holding it had to go under there too.'},
+        {src:'media/gallery/do-penguins.jpg', t:'March of the Penguins', y:'2005', note:'Filmed in the coldest place on Earth, over a whole year, waiting.'},
+        {src:'media/gallery/do-apollo.jpg', t:'Apollo 11', y:'2019', note:'Every frame is real film, shot in 1969, of people really going to the Moon. Not one bit was made up.'},
+        {src:'media/gallery/do-babies.jpg', t:'Babies', y:'2010', note:'Four real babies in four countries, filmed for a year. There is no script at all.'}
+      ]}
+  };
+
+  function galleryBlockHTML(key){
+    var g = GALLERIES[key];
+    var h = '<div class="gallery-block"><div class="gal-lead">' + g.lead + '</div><div class="gallery-strip">';
+    g.items.forEach(function(it, j){
+      h += '<button class="gal-thumb" data-gal="'+key+'" data-gi="'+j+'">' +
+             '<img src="'+it.src+'" alt="'+it.t+' ('+it.y+')" loading="lazy">' +
+             '<div class="gal-t">'+it.t+'</div><div class="gal-y">'+it.y+'</div>' +
+           '</button>';
+    });
+    return h + '</div></div>';
+  }
+
   function supportImgHTML(si){
     if (!si) return '';
     if (si.drawn){
@@ -1233,7 +1340,7 @@
 
     } else if (s.kind === 'clip' && s.layout){
       var revCls2 = s.layout === 'split-rev' ? ' rev' : '';
-      html += '<div class="slide-inner split'+revCls2+'">';
+      html += '<div class="slide-inner split'+revCls2+(s.gallery ? ' with-gallery' : '')+'">';
       html += '<div class="text-col">';
       if (s.icon) html += kindHead(s.eyebrow, s.icon, s.iconCls);
       else html += '<div class="eyebrow">'+s.eyebrow+'</div>';
@@ -1262,6 +1369,7 @@
         if (s.supportImgs) s.supportImgs.forEach(function(si){ html += supportImgHTML(si); });
       }
       html += '</div>';
+      if (s.gallery) html += galleryBlockHTML(s.gallery);
       html += '</div>';
 
     } else if (s.kind === 'setdiagram'){
@@ -1476,8 +1584,34 @@
   var lightboxMedia = document.getElementById('lightbox-media');
   var lightboxOpen = false;
 
+  // A gallery image borrows the same lightbox the clips use — one mechanism, as
+  // round 3 settled. galleryState is non-null only while an image is showing.
+  var galleryState = null;
+
+  function openGalleryImage(key, i){
+    var g = GALLERIES[key], it = g.items[i];
+    galleryState = {key:key, i:i};
+    lightboxStage.classList.remove('portrait');
+    lightboxStage.classList.add('image');
+    lightboxMedia.innerHTML =
+      '<div class="lb-imgwrap"><img src="'+it.src+'" alt="'+it.t+'"></div>' +
+      '<div class="lb-cap"><div class="lb-title">'+it.t+' <span style="opacity:.55">'+it.y+'</span></div>' +
+      '<span class="lb-note">'+it.note+'</span>' +
+      '<span class="lb-step">'+(i+1)+' of '+g.items.length+'  \u00b7  \u2190 \u2192 to step  \u00b7  Esc to close</span></div>';
+    lightboxEl.classList.add('open');
+    lightboxOpen = true;
+  }
+
+  function stepGallery(d){
+    if (!galleryState) return;
+    var n = GALLERIES[galleryState.key].items.length;
+    openGalleryImage(galleryState.key, (galleryState.i + d + n) % n);
+  }
+
   function openLightbox(clipKey){
     var c = CLIPS[clipKey];
+    galleryState = null;
+    lightboxStage.classList.remove('image');
     lightboxStage.classList.toggle('portrait', !!c.portrait);
     if (c.type === 'local'){
       lightboxMedia.innerHTML = '<video src="'+c.src+'" autoplay playsinline controls></video>';
@@ -1492,7 +1626,9 @@
     if (!lightboxOpen) return;
     lightboxMedia.innerHTML = ''; // removing the node stops playback — local pause and ext audio alike
     lightboxEl.classList.remove('open');
+    lightboxStage.classList.remove('image');
     lightboxOpen = false;
+    galleryState = null;
   }
 
   lightboxEl.querySelector('#lightbox-backdrop').addEventListener('click', closeLightbox);
@@ -1588,6 +1724,11 @@
       openLightbox(playBtn.getAttribute('data-clip'));
       return;
     }
+    var galThumb = e.target.closest('.gal-thumb');
+    if (galThumb){
+      openGalleryImage(galThumb.getAttribute('data-gal'), parseInt(galThumb.getAttribute('data-gi'),10));
+      return;
+    }
     var slotReveal = e.target.closest('.slot-reveal');
     if (slotReveal){
       var rk = slotReveal.getAttribute('data-clip');
@@ -1660,6 +1801,9 @@
   document.addEventListener('keydown', function(e){
     if (lightboxOpen){
       if (e.key === 'Escape') { closeLightbox(); e.preventDefault(); }
+      // arrows step within the gallery only — they must never reach the deck underneath
+      else if (galleryState && e.key === 'ArrowRight'){ stepGallery(1); e.preventDefault(); }
+      else if (galleryState && e.key === 'ArrowLeft'){ stepGallery(-1); e.preventDefault(); }
       return; // C5: every other key is inert while the lightbox is open
     }
     if (overviewOpen){
