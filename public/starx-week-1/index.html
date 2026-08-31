@@ -214,6 +214,12 @@
   .torn-frame::after{right:8%;transform:rotate(6deg);background:rgba(44,138,133,.4);border-color:rgba(44,138,133,.55)}
   .torn-frame.tilt-l{transform:rotate(-2.2deg)}
   .torn-frame.tilt-r{transform:rotate(2deg)}
+  .photo-date-tag{
+    position:absolute;right:6px;bottom:6px;z-index:1;
+    background:rgba(10,14,28,.72);color:#f7a63c;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;
+    padding:2px 7px;border-radius:3px;pointer-events:none;
+  }
 
   .support-img{display:flex;align-items:center;gap:13px;width:100%;max-width:460px;margin-top:2px}
   .support-img .torn-frame{padding:4px}
@@ -477,6 +483,9 @@
     .huge-num{font-size:clamp(2.4rem,7vh,4rem)}
     .flip-preview{width:min(200px,70vw)}
     .flip-grid{max-width:400px;gap:4px}
+  }
+  @media (max-height:800px){
+    .accident-portrait img{max-height:20vh}
   }
 </style>
 </head>
@@ -891,7 +900,7 @@
       sub:'Fifty seconds. That’s it. That’s the whole thing.',
       factLine:'1895 · Lyon, France · ~50 seconds',
       hero:true,
-      supportImg:{src:'media/frames/lumiere-poster-1896.jpg', alt:'1896 poster for the Lumière Cinématographe', cap:'The actual poster for that first public screening, 1896.', credit:'Henri Brispot · public domain'},
+      supportImg:{src:'media/frames/lumiere-brothers.jpg', alt:'Auguste and Louis Lumière, studio portrait, circa 1895', cap:'Auguste and Louis Lumière — two real brothers who built the actual machine.', credit:'Wikimedia Commons · public domain'},
       note:'A hundred and thirty years ago, people paid for a ticket, walked into a room, and watched exactly this — workers leaving a factory. They thought it was the most magical thing in the world, because before this, photographs didn’t move.' },
 
     { seg:3, kind:'clip', clip:'train', layout:'split-rev',
@@ -900,6 +909,7 @@
       sub:'Some people say the audience screamed and ran.',
       factLine:'1895–96 · La Ciotat, France · ~45 seconds',
       hero:true,
+      supportImg:{src:'media/frames/cinema-queue-1941.jpg', alt:'A long queue of people outside a grand cinema, London, 1941', cap:'People lining up to buy a ticket — the whole point of that room. (This photo is from 1941, not 1895 — no photo of the very first audience survives.)', credit:'Imperial War Museum · public domain', dateTag:'1941'},
       note:'Tell the legend: some people say the audience screamed and leapt out of their seats. Historians still argue about how true that actually is — which is itself a great way to get the kids thinking, so it’s fine to just say “some people say...”' },
 
     { seg:3, kind:'believe',
@@ -951,6 +961,7 @@
       sub:'He never says a single word. The whole world laughs anyway.',
       bgmark:'SOON',
       supportImg:{src:'media/frames/chaplin-tramp.jpg', alt:'Charlie Chaplin as the Tramp, 1915', cap:'Charlie Chaplin as the Tramp, 1915 — instantly recognisable, even a hundred years later.', credit:'Photo by P.D. Jankels · public domain'},
+      supportImgs:[{src:'media/frames/chaplin-tramp-road.jpg', alt:'Charlie Chaplin as the Tramp, walking away down a dirt road', cap:'The closing shot of The Tramp, 1915 — same character, a real scene from a real film.', credit:'Essanay Studios · Wikimedia Commons'}],
       note:'Tease it: “Next week we meet the funniest man of a hundred years ago. He never says a single word — and the whole world still laughs.”' }
   ];
 
@@ -1005,8 +1016,8 @@
   }
 
   // real photo, wrapped in the deck's one consistent edge treatment (thick drawn border + tape + tilt)
-  function photoFrame(src, alt, tiltCls){
-    return '<div class="torn-frame'+(tiltCls?' '+tiltCls:'')+'"><img src="'+src+'" alt="'+alt+'" loading="lazy"></div>';
+  function photoFrame(src, alt, tiltCls, dateTag){
+    return '<div class="torn-frame'+(tiltCls?' '+tiltCls:'')+'"><img src="'+src+'" alt="'+alt+'" loading="lazy">'+(dateTag?'<span class="photo-date-tag">'+dateTag+'</span>':'')+'</div>';
   }
 
   // a drawn illustration standing in the same visual slot a photo would take
@@ -1020,7 +1031,7 @@
       return '<div class="support-img"><div class="torn-frame" style="padding:6px"><div class="si-icon">'+ICONS[si.drawn]+'</div></div>' +
              '<div class="si-text"><div class="si-cap">'+si.cap+'</div><div class="si-credit">'+si.credit+'</div></div></div>';
     }
-    return '<div class="support-img">'+photoFrame(si.src, si.alt, '')+'<div class="si-text"><div class="si-cap">'+si.cap+'</div><div class="si-credit">'+si.credit+'</div></div></div>';
+    return '<div class="support-img">'+photoFrame(si.src, si.alt, '', si.dateTag)+'<div class="si-text"><div class="si-cap">'+si.cap+'</div><div class="si-credit">'+si.credit+'</div></div></div>';
   }
 
   function answerCardsHTML(){
@@ -1177,6 +1188,7 @@
         html += '<div class="mech-diagram"><div class="mech-icon">'+ICONS[s.mech.icon]+'</div><div class="mc-text">'+s.mech.text+'</div></div>';
       }
       html += supportImgHTML(s.supportImg);
+      if (s.supportImgs) s.supportImgs.forEach(function(si){ html += supportImgHTML(si); });
       html += '</div>';
       html += '</div>';
 
@@ -1250,7 +1262,9 @@
       html += '<div class="clip-row" style="align-items:flex-end">';
       html += '<div class="full-photo">'+photoFrame('media/frames/lumiere-poster-1896.jpg','1896 poster for the Lumière Cinématographe','tilt-l')+'</div>';
       html += drawnCard('crowd','sm');
-      html += '</div></div>';
+      html += '</div>';
+      html += supportImgHTML({src:'media/frames/cinematographe.jpg', alt:'The actual surviving Lumière Cinématographe camera, on display', cap:'The actual machine — a camera, a printer, and a projector, all in one wooden box.', credit:'Institut Lumière · Wikimedia Commons'});
+      html += '</div>';
 
     } else if (s.kind === 'believe'){
       html += '<div class="slide-inner"><div class="eyebrow">'+s.eyebrow+'</div><h1 class="headline">'+s.headline+'</h1>';
@@ -1270,13 +1284,14 @@
       html += '<div class="slide-inner"><div class="eyebrow">'+s.eyebrow+'</div><h1 class="headline">'+s.headline+'</h1>';
       html += '<div class="prompt-line">'+s.prompt+'</div>';
       html += '<div class="clip-row" style="align-items:flex-start">';
-      html += '<div>' + photoFrame('media/frames/melies-portrait.jpg','Portrait of Georges Méliès','tilt-l') + '</div>';
+      html += '<div>' + photoFrame('media/frames/melies-portrait.jpg','Portrait of Georges Méliès','tilt-l accident-portrait') + '</div>';
       html += '<div class="beat-list" id="beat-list-'+i+'">';
       s.beats.forEach(function(b, bi){
         html += '<div class="beat-item'+(bi>0?' beat-hidden':'')+'" style="'+(bi>0?'display:none':'')+'"><span class="b-n">'+(bi+1)+'</span><span>'+b+'</span></div>';
       });
       html += '<button class="flip-play-btn" data-beatnext="'+i+'" style="align-self:flex-start">reveal the next beat</button>';
       html += '</div></div>';
+      html += supportImgHTML({src:'media/frames/melies-glass-studio.jpg', alt:'The interior of Méliès’s glass-roofed Star-Film studio, crew at work', cap:'His actual studio — glass walls and a glass roof, so ordinary daylight was bright enough to film by.', credit:'MoMA · Wikimedia Commons'});
       html += '<div class="frame-pair" style="margin-top:14px">';
       html += '<div>'+photoFrame('media/frames/escamotage-present.jpg','She is there','tilt-l')+'<div class="fp-cap">SHE’S THERE</div></div>';
       html += '<div>'+photoFrame('media/frames/escamotage-gone.jpg','She is gone','tilt-r')+'<div class="fp-cap">SHE’S GONE</div></div>';
@@ -1307,6 +1322,7 @@
       if (s.sub) html += '<div class="subline">'+s.sub+'</div>';
       if (s.callout) html += '<div class="callout">'+s.callout+'</div>';
       if (s.supportImg) html += supportImgHTML(s.supportImg);
+      if (s.supportImgs) s.supportImgs.forEach(function(si){ html += supportImgHTML(si); });
       if (s.bgGraphic) html += '<div class="beat-graphic">'+ICONS[s.bgGraphic]+'</div>';
 
       if (s.kind === 'dual'){
