@@ -277,3 +277,105 @@ USABLE 55c04f990ffb5789807b43e67339e545e8493d36
     of independent review. Recorded here rather than left implicit so it's Eric's call whether
     a blind pass happens before this is used live, not something papered over by the AUDIT
     label alone.
+
+AUDIT 2d131042037c63de8570fb71bea75dff78486854
+USABLE 2d131042037c63de8570fb71bea75dff78486854
+- Round 3 (in progress — this entry covers commits 5aa8bd6 and 2d13104; the D group's
+  remaining 14 images are still being sourced, a further commit and AUDIT update will follow).
+  Built against a real spec, not a paraphrase: Eric ran the round-5 deck on a projector with
+  real children and wrote up specific findings in Film_Teaching/LOOP-STATE.md
+  (docs/week-01-deck-v2-plan, read in full, read-only, commit f4ddeea at time of reading).
+  - **A — two class-breaking bugs, both confirmed against the actual code before fixing**:
+    (1) game-grid thumbnails (screen 20) overflowed their cards and covered the reveal-answer
+    link — root-caused to `.clip-stage{width:min(460px,88vw,42vh)}`, a fixed-width rule shared
+    with single-clip screens, leaking into the 3-column grid where each column only has ~280px.
+    Fixed with a scoped `.game-slot .clip-stage{width:100%;min-width:0}` override. (2) opening
+    a video jumped the deck back to slide 1 — root-caused to an emergent interaction, not an
+    explicit bug: native browser video-fullscreen plus the native Escape-to-exit convention,
+    colliding with this deck's own global Escape handler (which opens the overview grid, one
+    click from slide 1). No `goTo(0)` call existed anywhere — the fix was architectural
+    (eliminate reliance on native fullscreen via a proper in-page lightbox), not a patch on the
+    handler, so it can't regress the next time a browser changes fullscreen behaviour.
+  - **C — universal video lightbox**, one mechanism for self-hosted `<video>` and YouTube
+    `<iframe>`: ≥90vw/85vh centered, dimmed backdrop, `innerHTML=''` teardown on close (stops
+    playback for both element types without needing the YouTube Player API), arrow keys inert
+    while open via an early-return guard placed first in the shared keydown handler. All 5
+    sub-requirements verified in-browser with real navigation and real `KeyboardEvent`
+    dispatch, across 1280x720/1366x768/1920x1080/1024x768, not just code-read. Found and fixed
+    a real defect while wiring it up: the 6 game-grid clips (g1-g6) had no `title` field, so the
+    new lightbox's iframe rendered `title="undefined"` — fetched real titles via YouTube oEmbed
+    for all 6 and added them.
+  - **B — background illustration**, all 32 screens: reuses the existing small icon-badge SVG
+    cast at 70vh via pure CSS scaling (`opacity:.09`) — no new artwork, per the spec's explicit
+    "reuse the cast, not 32 new drawings." A segment-default array (`SEG_BG`) plus per-slide
+    `bgIcon`/`icon` fallback chain assigns all 32 screens with only 7 manual overrides. Contrast
+    proven by construction, not sampled: computed the WCAG ratio in JS for the theoretical
+    worst case (dark ink text directly over the illustration's own darkest silhouette pixel) —
+    12.77:1 against the spec's 4.5:1 floor.
+  - **D2 — screen-2 portrait loop**: 4 illustrated portraits Eric supplied, already
+    normalised/compressed by the peer, cycling 1→2→3→4→1 at 0.7s continuously while the screen
+    is active. Eager unconditional preload at script-init (not on first visit), hold-last-frame
+    on load failure, timer started/stopped exclusively from `goTo()` (verified no stacked
+    timer on leave-and-return), `prefers-reduced-motion` honoured (shows frame 1 static).
+    **Closes one of three "waiting on Eric" gaps — screen 2 no longer waiting.** Screens 9 and
+    31 remain open.
+  - **Mid-arc policy change, verified directly against Film_Teaching/LOOP-STATE.md before
+    acting on it**: Eric lifted the copyright/licence constraint for this deck's media
+    ("internal classroom teaching, not public teaching... pick the best picture, full stop").
+    Clips may now be self-hosted/trimmed even if copyrighted. Still constrains: Cloudflare
+    Pages' 25MB/file cap; the route staying private/noindex, which is now explicitly
+    load-bearing to the whole decision and not something to change without going back to Eric;
+    credits stay where pedagogically useful, not because the licence requires them.
+  - **D (part 1 of 2) — 5 of 19 support pictures**, the "free by age" historical set (screens
+    23, 24, 25, 30, 32), sourced via a background agent from Wikimedia Commons and
+    independently viewed by me before integration, not taken on the agent's manifest alone:
+    screen 23 gained the actual surviving Cinématographe camera (alongside the existing 1896
+    poster); screen 24's supportImg was replaced (the Lumière-brothers portrait now sits there
+    instead of the 1896 poster, which was redundant with screen 23); screen 25 gained a 1941
+    London cinema-queue photo; screen 30 gained Méliès's glass-roofed studio interior; screen
+    32 gained a second Chaplin image (the Tramp walking away, 1915) alongside the existing
+    seated portrait. Introduced a `supportImgs` (plural) field + render-loop for the two-image
+    cases, reusing the existing `supportImgHTML`/`photoFrame` helpers unchanged.
+  - **Disclosed judgment call, not silently resolved**: screen 25's cinema-queue photo is dated
+    1941 — later than the deck's other 1895-1915 material, since no photo of the actual first
+    (1895) audience survives and the agent's search for an earlier queue photo came up short on
+    quality/resolution. Accepted rather than escalated (reads unambiguously "old" to a
+    six-year-old, and the brief was "pick the best picture, full stop"), but a peer session
+    caught a real gap in that reasoning: an *un*captioned 1941 photo beside an "1895" headline
+    quietly asserts something false to any adult in the room who can date 1940s coats and cars,
+    even though a child can't. Fixed per that note: built a reusable `.photo-date-tag` overlay
+    (visible on the photo itself, not just in body text) plus led the caption with the same
+    disclosure in words. Checked the same rule against the other 4 period images — none needed
+    it (23's Cinématographe photo is a modern photograph of the genuine 1895 artifact, which
+    doesn't misrepresent the era; 24/30/32 are all period-matched to their screens).
+  - **Real bug found and fixed while verifying** (same discipline as every round — checked
+    after every change, not assumed): the new screen-30 glass-studio card pushed that screen
+    past the viewport at both 1280x720 and 1366x768. The existing `max-height:760px` breakpoint
+    (from round 6's screen-11 fix) doesn't cover 768 — confirmed this gap by testing 768
+    specifically, not by assuming the existing breakpoint was sufficient. Scoped a *separate*
+    `max-height:800px` rule to just the screen-30 portrait photo, rather than widening the
+    shared 760px breakpoint and risking a regression on screen 11's already-verified fix.
+    Re-verified 0 overflow on all 5 touched screens (23, 24, 25, 30, 32) at all 3 standard
+    resolutions after the fix, 0 console errors.
+  - **Independently confirmed by the peer session, not by me — recorded with that attribution**:
+    the peer verified this build's bug-1/bug-2/lightbox fixes themselves on the deployed
+    preview (thumbnails contained, slide index held through open/close, arrow keys inert,
+    iframe count drops to zero on close) before passing the checkpoint to Eric, rather than
+    taking my report on trust. They also got real YouTube playback inside the lightbox
+    (Paddington actually played) — closing a gap that has been open and unverifiable from this
+    sandbox for five rounds running, since backgrounded-tab media throttling here blocks any
+    first-hand check of literal real-time playback.
+  - Self-verified (指挥层复核, not blind audit) by me for everything not attributed to the peer
+    above: `node --check` clean after every edit batch; `npm run build` succeeds; rebuilt and
+    served via `vite preview`; `git diff origin/main --stat -- src` empty both commits; no
+    `git add -A` used, files staged explicitly and reviewed via `git status`/`git diff --cached
+    --stat` before each commit.
+  - **Still open**: 14 of the D group's 19 images (screens 4, 5×2, 8, 9×2, 10, 11, 12, 13, 14,
+    15, 16, 17) — in progress via a second background agent; 2 of its early deliveries were
+    independently viewed, found not to match the brief or not appropriate for the classroom,
+    and sent back for a re-source rather than integrated as-is (see PR body / peer report for
+    detail). Screens 9 and 31 still waiting on material only Eric can supply. LOOP-STATE and PR
+    body will get a further update once the remaining D images are integrated.
+  - **Review-grade, unchanged from every prior round**: self-verification (指挥层复核) only.
+    No blind audit (真盲审) has happened on this deck at any point. Whether one happens before
+    it runs live in front of the actual class is still Eric's call, not mine to assume.
