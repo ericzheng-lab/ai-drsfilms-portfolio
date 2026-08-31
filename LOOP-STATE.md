@@ -539,3 +539,25 @@ USABLE c8db98d
   call whether one runs before this goes live.
 - **D-group provenance status unchanged from 7ec51f4/572a85a** — this round touched sizing and
   layout only, no new source images, no credit-line changes.
+- **Addendum — independent peer verification, second path, after this block was written**: a
+  peer session re-checked c8db98d against the deployed Cloudflare preview (not this worktree's
+  local server — a genuinely separate deploy/render path) and confirmed the CSS rule is live,
+  the row layout is genuinely side-by-side, and all 22 support images (19 from this D-group plus
+  3 pre-existing — chameleon-cc, melies-portrait, chaplin-tramp) return HTTP 200 with real bytes.
+  This upgrades the resize fix specifically from self-verified-only to independently confirmed
+  on a second path — still not a blind audit (the peer has full context on this deck), but a
+  step past 指挥层复核 for this one piece.
+  - **Final tally on the 572a85a-era 4-item dispute, stated explicitly by the peer**: 2 of 4
+    original contact-sheet flags held up (cel band, flipbook re-crop, both already fixed); 2
+    did not (boom-operator.jpg, lighting-setup.jpg — peer opened boom-operator.jpg at full
+    resolution and confirmed the recordist/pole/windscreen directly, and confirmed
+    lighting-setup.jpg reads fine at the new render size). Both images stay as sourced, no
+    re-crop, no re-source.
+  - **Shared process lesson, hit independently by both sides**: the peer nearly reported the two
+    disputed images as broken on first load — they rendered as tall empty boxes while still
+    downloading (350-700KB × 22 files) — until checking HTTP status before concluding anything.
+    This is the same shape of trap as this session's own `w:9,h:252` mis-measurement earlier in
+    this round (images not yet `.complete`, read before load rather than after) and the "pale
+    screenshot" mid-animation captures from the same session. Worth carrying forward on this
+    deck specifically: **verify loaded/settled state before reading any measurement or
+    screenshot from this preview, every time, not just when something looks obviously wrong.**
