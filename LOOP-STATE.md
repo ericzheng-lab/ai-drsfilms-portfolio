@@ -130,6 +130,77 @@ USABLE 3d5dbadc96594326b815f25facf6c31b2c12a3b8
     the new local clip's readyState/duration, confirmed the navigate-away fix with a direct
     before/after repro. `git diff origin/main --stat -- src` still empty.
 
+AUDIT 4e753f6a8f6182078d05d50479af86e4a9a5ea62
+USABLE 4e753f6a8f6182078d05d50479af86e4a9a5ea62
+- Round 5 ("v2 rebuild"), Eric's decision after judging the 17-screen deck couldn't sustain a
+  60-minute class. Full-scope rebuild per the written spec in `Film_Teaching/LOOP-STATE.md`
+  (branch `docs/week-01-deck-v2-plan`, read-only, read in full before starting, never switched
+  to), not incremental feedback like rounds 2-4. 17 screens -> 32, in 5 timed segments matching
+  the spec's minute boundaries exactly (ends at 7/33/43/55/60).
+  - Full visual-identity replacement ("童趣"/childlike, per spec): 5 per-segment background
+    tints; a recurring hand-drawn character cast built on one shared SVG turbulence/displacement
+    filter (#wob) so every character/doodle shares one hand-drawn line quality; the 4 prior
+    geometric category icons redrawn as characters (camera/pencil/puppet/binoculars, each with
+    the same dot-eyes+smile grammar) instead of logos; one consistent photo treatment (torn-frame
+    border + tape corners) applied everywhere a photo appears; zero emoji anywhere (checked with
+    a regex sweep, not spot-check - one ambiguous Unicode arrow character replaced with plain
+    text out of caution even though it likely wasn't a true match).
+  - New sourced/license-verified assets: Muybridge motion-study plate + loop (Wikimedia Commons,
+    file page read directly), Melies "Escamotage" vanishing-trick before/after frame pair
+    (archive.org licenseurl, PD; visually confirmed both frames share identical camera framing
+    before trusting them as a pair), Chaplin portrait (Wikimedia, PD), and a 24-frame/1-second
+    sequence extracted from the already-committed already-PD Steamboat Willie clip at native
+    ~24fps for the "24 drawings = one second" screen - deliberately one consecutive second, not
+    frames spread across the clip, to match the actual arithmetic being taught.
+  - Rejected one sourced candidate on editorial grounds, not licensing: a CC BY-SA wildlife-
+    photographer photo was correctly licensed but framed as a heroic adventure portrait, which
+    contradicts the spec's explicit "must look uncomfortable and boring" intent for that beat.
+    Used the spec's own pre-authorized drawn-diagram fallback instead of forcing a mismatched
+    photo just because it cleared the license bar.
+  - Screens 2, 9, 31 need material only Eric can supply. Per an explicit peer follow-up
+    instruction, built as finished drawn illustrations (not grey boxes/"pending" placeholders):
+    screen 2 a clapperboard/camera illustration, screen 9 a labelled overhead set diagram
+    (actors/camera/boom/lights/crew - deliberately not attempted as a real photo since a labelled
+    drawing may beat a chaotic real set photo for this age group), screen 31 a phone propped on
+    books pointed at toys. All three still flagged below as open, not quietly finalized.
+  - Removed the "open on YouTube" fallback link (idle-state escape hatch carried since round 1):
+    every clip id is now independently oEmbed-verified embeddable and the spec's DoD reads "zero
+    links that open elsewhere" literally. Cleaned up the now-dead CSS and click-handler branch
+    that went with it.
+  - Real bugs found and fixed while testing, each confirmed via getBoundingClientRect/DOM
+    checks rather than visual guessing: (1) several character icons collapsed to 0 height -
+    sizing was on the wrapper div but not the raw child <svg>, one consolidated CSS rule fixes
+    every instance; (2) the Lumiere poster (tall portrait image, no height cap) overflowed the
+    viewport both above and below, hiding the headline - fixed with a height-capped rule plus a
+    global default safety-net for any other bare photo use; (3) the sorting-game grid overflowed
+    ~45px past the right edge at 1920x1080 only - a CSS Grid min-width:auto trap on the grid
+    children, fixed with explicit min-width:0; (4) 4 of 11 interaction screens were missing
+    their on-screen prompt line - 2 had the text in data but the render branch never emitted it,
+    2 had no prompt in the data at all. All 11 interaction screens re-verified to render a
+    non-empty prompt after the fix.
+  - Self-verified (指挥层复核, not blind audit): rebuilt dist, confirmed all 32 screens present
+    in the correct 6/12/3/7/4 per-segment distribution via direct array inspection (not a total
+    count - the spec's own DoD warns a matching total can hide one thing fixed and one thing
+    broken); re-measured overflow-free at 1366x768/1920x1080/1280x720 (the 1920 case is what
+    caught the game-grid bug above); confirmed 0 console errors across a full interaction battery
+    (all 32 screens, notes, overview grid, every clip type including simultaneous multi-clip
+    teardown, the new flipbook and beat-reveal interactions); confirmed zero emoji and zero
+    Chinese characters by sweep, not spot-check; confirmed complete alt-text and on-screen-prompt
+    coverage; confirmed headline/body type sizes clear the spec's 48px/28px floor at the 1920px
+    reference; visually spot-checked (screenshot, settled) every screen carrying new media or a
+    new drawn illustration, including the three Eric-material placeholders; confirmed
+    `git diff origin/main --stat -- src` empty, `_redirects`/`_headers` unchanged and correct,
+    `public/starx-week-1/media/` contains only PD-sourced files (no accidental self-host of
+    copyrighted material - copyrighted clips remain embed-only throughout).
+  - NOT independently verified (same standing caveats as prior rounds, unchanged): literal
+    real-time playback of the YouTube iframes under this sandbox's background-tab media
+    throttling - relied on oEmbed 200 + correct embed-URL construction + clean console/network
+    instead, as in every prior round. The English presenter-note register is a transcreation by
+    me, not back-translated or checked by a separate pass.
+  - Four content decisions the spec flagged as open (live-action clip title, Shaun-vs-Kubo,
+    whether to include a modern animated film, whether Eric appears in his own deck) were built
+    per the spec's own stated recommendations, left provisional, not quietly finalized.
+
 AUDIT d772388bdadeea0e16b7eaf72f757301a2b64ce0
 USABLE d772388bdadeea0e16b7eaf72f757301a2b64ce0
 - Round 4, Eric's third pass (relayed), then his own one-word follow-up "以此类推": not
