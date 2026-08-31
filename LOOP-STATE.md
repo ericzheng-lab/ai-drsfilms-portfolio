@@ -370,12 +370,72 @@ USABLE 2d131042037c63de8570fb71bea75dff78486854
     served via `vite preview`; `git diff origin/main --stat -- src` empty both commits; no
     `git add -A` used, files staged explicitly and reviewed via `git status`/`git diff --cached
     --stat` before each commit.
-  - **Still open**: 14 of the D group's 19 images (screens 4, 5×2, 8, 9×2, 10, 11, 12, 13, 14,
-    15, 16, 17) — in progress via a second background agent; 2 of its early deliveries were
-    independently viewed, found not to match the brief or not appropriate for the classroom,
-    and sent back for a re-source rather than integrated as-is (see PR body / peer report for
-    detail). Screens 9 and 31 still waiting on material only Eric can supply. LOOP-STATE and PR
-    body will get a further update once the remaining D images are integrated.
+  - **Screens 9 and 31 still waiting on material only Eric can supply** — the D-group images on
+    screen 9 (boom operator, lighting setup) supplement the labelled diagram, they don't
+    replace the "waiting on Eric" tag; his own set photo may still end up sitting beside them.
+
+AUDIT 7ec51f4ffc3deeac02cebc20aee4aee2af4df851
+USABLE 7ec51f4ffc3deeac02cebc20aee4aee2af4df851
+- Round 3, D group part 2 of 2 — completes all 19 of 19 support pictures across the 17 named
+  screens (4, 5×2, 8, 9×2, 10, 11, 12, 13, 14, 15, 16, 17, plus part 1's 23, 24, 25, 30, 32).
+  Sourced by a second background agent (14 items), independently viewed and confirmed by me
+  before integration, same discipline as part 1 — not taken on the agent's manifest alone.
+  - **2 of the agent's early deliveries were rejected and sent back for a re-source, not
+    integrated as-is**: screen 11's cel photo was originally a fan holding a framed, signed
+    animation cel at what looked like a comic-shop signing event (people, an autograph, a
+    retail setting) — the brief needed a clean shot of a painted cel's artwork, not a person
+    holding a collectible. Screen 12's flipbook photo had the correct action (a hand thumbing
+    pages) but the visible cover carried "Enjoy Responsibly" next to sports-sponsor-style
+    branding — almost certainly alcohol or gambling promotional material, not appropriate to
+    put on screen in front of 6-8-year-olds regardless of the licence question. Flagged both to
+    the agent by name while it was still active (not after it finished), so the re-source
+    folded into the same run. Both replacements independently viewed and confirmed clean: 11 is
+    now an uncluttered Heritage Auctions catalog photo of a real painted Ariel cel; 12 is now
+    cropped tight to just the hand-thumbing action with the branded cover excluded entirely.
+  - **Replaced 2 drawn fallbacks with real photos now that they exist**: screen 10 (animator's
+    desk, a real Disney Archives exhibit photo) and screen 13 (puppet armature, a real
+    workbench of stop-motion skeletons with metal ball joints visible) — both previously shown
+    as drawn placeholders per round 5's disclosed fallback, now upgraded.
+  - **Provenance is partial, disclosed explicitly rather than smoothed over — per the peer's
+    direct instruction to record this and name which items**: the sourcing agent hit a context
+    compaction mid-task and lost its own source-URL trail for several images; rather than
+    fabricate citations, it marked what it could and couldn't re-confirm, and I read its
+    manifest in full (not just the completion summary) before writing a single credit line.
+    Credit text is tiered to match exactly what's confirmed, never overstated:
+    - Exact source URL confirmed (3): screen 8 (Wikimedia Commons/Flickr, CC BY 2.0), screen 10
+      (Flickr, CC BY-NC-ND 2.0), screen 12 (Wikimedia Commons, CC BY-SA 3.0).
+    - Photographer/site identity confirmed, exact page not re-pinned (4): screen 11 (Heritage
+      Auctions — also visible baked into the image itself), screen 13 (Instagram @13fingerfx —
+      visible watermark), screen 16 (Hari Patibanda, Flickr — visible watermark), screen 15
+      (gigazine.net).
+    - Not re-confirmed at all (6): screens 4, 5×2 (zoetrope, projector), 9×2 (boom operator,
+      lighting setup), 14 (miniature set — the agent's own film-identity guess for this one was
+      hedged as unconfirmed too, so it's treated as unknown, not asserted). These carry a bare
+      "photo" credit — honest and non-alarming on a live classroom screen, but making no claim
+      the manifest doesn't support.
+  - **Two real overflow bugs found and fixed while verifying, same discipline as every prior
+    fix in this round**: (1) screen 5 (motion) overflowed 89px at 1280×720 once the 2 new
+    support cards stacked below its existing hero photo + loop row. Fixed by laying the 2 new
+    cards side-by-side (`.support-img-row`) instead of stacked, plus a height cap on the hero
+    photo at short viewports. First attempt at that cap had zero effect — `.motion-block
+    .torn-frame img`'s existing two-class specificity beat my single-class override regardless
+    of the media query matching; caught by checking the computed style directly rather than
+    assuming the CSS took effect, fixed by matching specificity. (2) screen 11 (drawings24)
+    overflowed 36px at 1366×768 once the new cel photo was added — the round-6 fix for this
+    same screen was scoped to `max-height:760px`, which doesn't cover 768 (the same gap that
+    hit screen 30 in part 1). Widened that screen-only breakpoint to 800px after confirming via
+    grep the affected classes are used nowhere else in the deck.
+  - Self-verified (指挥层复核, not blind audit): re-verified 0 overflow across all 17
+    touched/re-checked screens (this batch's 12 + part 1's 5) at 1280×720/1366×768/1920×1080 —
+    every screen re-measured after every fix, not assumed from the first pass; 0 console
+    errors; every one of the 19 images confirmed actually loaded via DOM inspection
+    (`img.complete`/`naturalWidth`, not just src-attribute presence) with correct alt text,
+    caption, and credit content, not just image count; `node --check` clean after every edit
+    batch; `npm run build` succeeds; `git diff origin/main --stat -- src` empty; files staged
+    explicitly per commit, no `git add -A`.
+  - **D group complete. Round 3 (A, B, C, D, D2) now fully landed and pushed** across commits
+    5aa8bd6, 2d13104, 2647f47, 7ec51f4. Only screens 9 and 31 remain waiting on Eric's own
+    material — everything else in the round-3 spec is built, verified, and on the branch.
   - **Review-grade, unchanged from every prior round**: self-verification (指挥层复核) only.
     No blind audit (真盲审) has happened on this deck at any point. Whether one happens before
     it runs live in front of the actual class is still Eric's call, not mine to assume.
