@@ -222,6 +222,8 @@
   }
 
   .support-img{display:flex;align-items:center;gap:13px;width:100%;max-width:460px;margin-top:2px}
+  .support-img-row{display:flex;gap:14px;width:100%;max-width:460px}
+  .support-img-row .support-img{max-width:none;flex:1;margin-top:0}
   .support-img .torn-frame{padding:4px}
   .support-img img{width:clamp(52px,6vw,70px);height:clamp(52px,6vw,70px);object-fit:cover}
   .support-img .si-text{text-align:left}
@@ -479,13 +481,13 @@
     #segbar{max-width:46vw}
     .reveal-pair{grid-template-columns:1fr}
   }
-  @media (max-height:760px){
+  @media (max-height:800px){
     .huge-num{font-size:clamp(2.4rem,7vh,4rem)}
     .flip-preview{width:min(200px,70vw)}
     .flip-grid{max-width:400px;gap:4px}
-  }
-  @media (max-height:800px){
     .accident-portrait img{max-height:20vh}
+    .motion-block .motion-hero img{max-height:22vh}
+    .motion-loop-row img{width:80px}
   }
 </style>
 </head>
@@ -758,6 +760,7 @@
       headline:'So what <em>is</em> a film,<br>exactly?',
       sub:'A big pile of still pictures, shown one after another — fast enough that your eyes think they’re moving.',
       synonyms:['Film','Movie','Motion picture','Moving image'],
+      supportImg:{src:'media/frames/filmstrip-35mm.jpg', alt:'A coiled black-and-white 35mm film negative, sprocket holes visible', cap:'A real strip of film — sprocket holes and all. This is the physical object those words describe.', credit:'photo'},
       note:'Before we sort films into kinds, answer the question directly: “A film is a pile of still pictures, shown one after another, fast enough that it looks like they’re moving.”\nAll of these words mean the same thing — film, movie, motion picture, moving image. Different words, same idea.' },
 
     { seg:0, kind:'motion', layout:'split-rev', bgIcon:'horse',
@@ -765,6 +768,7 @@
       headline:'How does it even <em>move</em>?',
       sub:'1878. Twelve photographs of a galloping horse, one after another.',
       prompt:'Count the frames out loud — 1, 2, 3…',
+      supportImgs:[{src:'media/frames/zoetrope.jpg', alt:'A zoetrope, a spinning drum toy with a strip of running-horse images inside', cap:'A zoetrope — spin the drum, the horses gallop. Decades before there was ever a film camera.', credit:'photo'}, {src:'media/frames/film-projector.jpg', alt:'A film projector, reel spinning, mid-screening', cap:'The machine that does exactly this — one still picture after another, fast.', credit:'photo'}],
       note:'This is 1878 — seventeen years before the Lumières. Muybridge lined up twelve cameras along a racetrack; each one snapped as the horse passed a thread.\nCount the 12 frames out loud together, then run the loop — the same 12 pictures, over and over, look like a galloping horse. That is the whole trick a film uses, before there was ever a movie camera.' },
 
     { seg:0, kind:'agenda', layout:'split',
@@ -790,12 +794,14 @@
       headline:'Real people.<br>A camera right beside them.',
       bullets:['Real actors','Real places','Filmed as it happens'],
       mech:{icon:'mechLive', text:'The camera is right there in the room, filming.'},
+      supportImg:{src:'media/frames/clapperboard-snap.jpg', alt:'A clapperboard, marked with production details, about to be snapped', cap:'The most recognisable sound and sight on a real film set.', credit:'Flickr · dogfrog (Matt Batchelor) · CC BY 2.0, via Wikimedia Commons'},
       note:'The point: real people were standing right there, with a camera beside them.\n(Placeholder clip — swap in whatever live-action the five kids are actually watching right now. Open decision, see report.)' },
 
     { seg:1, kind:'setdiagram', layout:'split-rev', tags:['wait'], bgIcon:'live',
       eyebrow:'1 · LOOK WHO ELSE WAS THERE',
       headline:'A film set is crowded.',
       prompt:'How many people are just outside this picture?',
+      supportImgs:[{src:'media/frames/boom-operator.jpg', alt:'A boom operator on location, holding a microphone on a pole overhead', cap:'That furry stick is a microphone on a pole — a boom operator holds it just out of frame.', credit:'photo'}, {src:'media/frames/lighting-setup.jpg', alt:'A location lighting setup with lamps on stands and an umbrella diffuser', cap:'And there are lights — big lamps on stands, aimed at the scene.', credit:'photo'}],
       note:'Every live-action shot has a whole crew standing just outside the frame — camera operator, boom-pole holder for sound, lights on stands, and everyone else who isn’t acting.\nWaiting on Eric: a real set photo where the crew is the subject, camera/boom/lights/6+ people crowding a small pool of action. Built for now as a labelled diagram — it may end up sitting beside the photo rather than being replaced by it, since a diagram lets the kids count who is who.' },
 
     { seg:1, kind:'clip', clip:'lionking', layout:'split-rev', icon:'anim', iconCls:'c-anim',
@@ -804,19 +810,21 @@
       sub:'Twelve to twenty-four drawings for every single second on screen.',
       bullets:['Nothing is filmed','Every frame hand-drawn','Comes to life on screen'],
       mech:{icon:'mechAnim', text:'Draw it. Draw it again, a little different. Repeat.'},
-      supportImg:{drawn:'anim', cap:'An animator’s desk — drawings on pegs, a lightbox glowing underneath.', credit:'drawn for this deck'},
-      note:'The point: there’s no real person in this at all — every frame was drawn by hand. This is the opening of The Lion King (1994), all hand-drawn.\nThe animator’s-desk picture is drawn rather than a photo — no clean, freely-licensed one turned up after a real search, and it fits the deck’s own hand-drawn language better than a stock photo would.' },
+      supportImg:{src:'media/frames/animator-desk.jpg', alt:'A real animator’s desk with a lit lightbox, tools, and drawings pinned up', cap:'A real animator’s desk — a lit lightbox to trace frame over frame, drawings pinned all around.', credit:'Loren Javier · Flickr · CC BY-NC-ND 2.0'},
+      note:'The point: there’s no real person in this at all — every frame was drawn by hand. This is the opening of The Lion King (1994), all hand-drawn.' },
 
     { seg:1, kind:'drawings24', layout:'split', bgIcon:'anim',
       eyebrow:'2 · 24 DRAWINGS = ONE SECOND',
       headline:'Watch how many pictures that takes.',
       prompt:'Count them. Then watch them fly by.',
+      supportImg:{src:'media/frames/animation-cel-ariel.jpg', alt:'A hand-painted animation cel of a Disney character on clear celluloid', cap:'Each drawing can be painted onto clear plastic like this — a “cel” — so it can be filmed over a background.', credit:'Heritage Auctions · HA.com'},
       note:'These are 24 real, consecutive frames from Steamboat Willie (1928) — exactly one second of the film. Count them out loud first, slowly, then hit play and watch the same 24 pictures race by in one second flat.' },
 
     { seg:1, kind:'clip', clip:'steamboat', layout:'split-rev', icon:'anim', iconCls:'c-anim', tags:['opt'],
       eyebrow:'2 · DRAWN A HUNDRED YEARS AGO',
       headline:'This one is almost a hundred years old.',
       sub:'Steamboat Willie, 1928 — the first Mickey Mouse cartoon.',
+      supportImg:{src:'media/frames/flipbook-thumb.jpg', alt:'A hand thumbing through the pages of a flipbook', cap:'The cheapest animation in the world — flip the pages fast enough, and it moves.', credit:'Josila · Wikimedia Commons · CC BY-SA 3.0'},
       note:'Optional second panel, drop it if you’re short on time. This is Steamboat Willie (1928) — public domain, which is why it’s hosted directly on this page instead of linked out. Framed here purely as an example of drawing, not as the sound-and-picture milestone — that’s Week 2’s job, and this is a deliberate one-week repeat, not a spoiler.' },
 
     { seg:1, kind:'clip', clip:'shaun', layout:'split', icon:'stop', iconCls:'c-stop',
@@ -826,19 +834,21 @@
       callout:'You will make one of these — Week 8.',
       bullets:['A real toy or model','One photo at a time','Play the photos fast — it moves'],
       mech:{icon:'mechStop', text:'Move it a little. Snap a photo. Move it again. Snap.'},
-      supportImg:{drawn:'skeletonPuppet', cap:'A stop-motion puppet can be enormous — one film’s skeleton puppet stood 18 feet tall.', credit:'drawn for this deck'},
-      note:'The point: nobody drew this, and nobody acted it. Someone moved a little figure — just a little — took a photo, moved it again, took another photo.\nThe skeleton-puppet picture is drawn, not a photo of any specific film’s design — it illustrates the general fact (giant puppets exist in stop-motion) without using anyone’s copyrighted character art. Spend extra time here — they’ll be making one of these themselves. (Raw lesson-plan note: this says Week 7, the school-facing overview says Week 8 — confirm which before class.)' },
+      supportImg:{src:'media/frames/puppet-armature.jpg', alt:'Stop-motion puppet armatures at various stages of build, metal skeletons visible', cap:'There really is a metal skeleton in there — ball joints at every knee, elbow, and knuckle.', credit:'Instagram · @13fingerfx'},
+      note:'The point: nobody drew this, and nobody acted it. Someone moved a little figure — just a little — took a photo, moved it again, took another photo.\nSpend extra time here — they’ll be making one of these themselves. (Raw lesson-plan note: this says Week 7, the school-facing overview says Week 8 — confirm which before class.)' },
 
     { seg:1, kind:'arithmetic', layout:'split-rev', bgIcon:'stop',
       eyebrow:'3 · A WHOLE DAY = TWO SECONDS',
       headline:'That’s a lot of work for a little bit of film.',
       prompt:'A full day of moving and photographing — for two seconds of film.',
+      supportImg:{src:'media/frames/miniature-set.jpg', alt:'A detailed miniature film set surrounded by full-size studio lights', cap:'A tiny world, ringed by full-size lights — the scale difference is the whole job.', credit:'photo'},
       note:'Work the arithmetic with them out loud: a stop-motion animator might spend a whole day moving a puppet a tiny bit at a time, photographing every move — and the result might only be two seconds of finished film.' },
 
     { seg:1, kind:'puppetgame', layout:'split', bgIcon:'stop',
       eyebrow:'3 · EVERYBODY BE A PUPPET',
       headline:'Stand up. You’re the puppet now.',
       prompt:'Freeze. Move an inch. Freeze again.',
+      supportImg:{src:'media/frames/phone-tripod.jpg', alt:'A phone mounted on a small tripod, recording a small toy figure on a table', cap:'Exactly what you’re about to do — a phone on a tripod, pointed at a toy.', credit:'gigazine.net'},
       note:'Physical beat — get them out of their chairs. Everyone freezes, moves an inch, freezes again, while you snap a photo on your phone each time. Play the photos back fast at the end — they just made stop-motion out of themselves.\nThe only out-of-chair beat in the hour, right around minute 30 of 60 — good timing for restless legs.' },
 
     { seg:1, kind:'clip', clip:'bbcearth', layout:'split-rev', icon:'doc', iconCls:'c-doc',
@@ -848,12 +858,14 @@
       bullets:['No actors','No script','Real life, as it happens'],
       mech:{icon:'mechDoc', text:'The camera just watches and waits.'},
       supportImg:{src:'media/frames/chameleon-cc.jpg', alt:'Panther chameleon photograph', cap:'A real chameleon, photographed in the wild.', credit:'Charles J. Sharp · CC BY-SA 4.0'},
+      supportImgs:[{src:'media/frames/harrier-flight.jpg', alt:'A harrier hawk photographed head-on in flight, wings spread, hunting', cap:'A second real animal moment — a hawk in flight, hunting.', credit:'Hari Patibanda · Flickr'}],
       note:'The point: no actors, no script. The camera crew may have waited three months in the wild just to catch this one moment.' },
 
     { seg:1, kind:'waiting', layout:'split', bgIcon:'doc',
       eyebrow:'4 · THREE MONTHS OF WAITING',
       headline:'Three months.<br>For one moment.',
       prompt:'What did the camera person do while nothing happened?',
+      supportImg:{src:'media/frames/long-lens-camera.jpg', alt:'A photographer aiming a large telephoto lens camera up into a tree', cap:'The tool for waiting — a lens long enough to stay far away and still get close.', credit:'photo'},
       note:'No clean, freely-licensed photo of a real camouflaged wildlife hide turned up that had the right feel — the ones found looked like a proud adventure portrait, not the boring, cramped waiting this is actually about. Built as a drawn diagram instead, per the fallback already agreed for this screen.' },
 
     { seg:1, kind:'dual', tags:['opt'],
@@ -1135,6 +1147,7 @@
       html += '<div class="synonym-row">';
       s.synonyms.forEach(function(w){ html += '<div class="synonym-chip">'+w+'</div>'; });
       html += '</div>';
+      html += supportImgHTML(s.supportImg);
       html += '</div>';
       html += '</div>';
 
@@ -1144,10 +1157,11 @@
       html += '<div class="text-col"><div class="eyebrow">'+s.eyebrow+'</div><h1 class="headline">'+s.headline+'</h1><div class="subline">'+s.sub+'</div>';
       html += '<div class="prompt-line">'+s.prompt+'</div></div>';
       html += '<div class="media-col"><div class="motion-block">';
-      html += photoFrame('media/frames/muybridge-grid.jpg','Muybridge 1878 galloping-horse plate, 12 frames','tilt-l');
+      html += photoFrame('media/frames/muybridge-grid.jpg','Muybridge 1878 galloping-horse plate, 12 frames','tilt-l motion-hero');
       html += '<div class="motion-loop-row">' + photoFrame('media/frames/muybridge-loop.gif','The same 12 frames, looping') +
               '<div class="ai-icon" style="width:44px;height:44px;color:var(--ink)">'+ICONS.horse+'</div>' +
               '<div class="motion-loop-label">The same 12 pictures, run in a loop.</div></div>';
+      if (s.supportImgs) html += '<div class="support-img-row">' + s.supportImgs.map(function(si){ return supportImgHTML(si); }).join('') + '</div>';
       html += '</div></div></div>';
 
     } else if (s.kind === 'agenda'){
@@ -1197,7 +1211,9 @@
       html += '<div class="slide-inner split'+revCls3+'">';
       html += '<div class="text-col"><div class="eyebrow">'+s.eyebrow+'</div><h1 class="headline">'+s.headline+'</h1>';
       html += '<div class="prompt-line">'+s.prompt+'</div>' + tagRowHTML(s.tags) + '</div>';
-      html += '<div class="media-col">' + setDiagramHTML() + '</div>';
+      html += '<div class="media-col">' + setDiagramHTML();
+      if (s.supportImgs) s.supportImgs.forEach(function(si){ html += supportImgHTML(si); });
+      html += '</div>';
       html += '</div>';
 
     } else if (s.kind === 'drawings24'){
@@ -1209,7 +1225,9 @@
       html += '<button class="flip-play-btn" data-flip="'+i+'">▶ play the 24 frames</button>';
       html += '<div class="flip-grid" style="margin-top:8px">';
       for (var fi=1; fi<=24; fi++){ html += '<img src="media/frames/steamboat24/f'+String(fi).padStart(2,'0')+'.jpg" alt="frame '+fi+'">'; }
-      html += '</div></div></div>';
+      html += '</div>';
+      html += supportImgHTML(s.supportImg);
+      html += '</div></div>';
 
     } else if (s.kind === 'arithmetic'){
       var revCls4 = s.layout === 'split-rev' ? ' rev' : '';
@@ -1220,7 +1238,9 @@
       html += '<div class="arith-item"><div class="ai-icon">'+ICONS.tinyHands+'</div><div class="ai-label">A WHOLE DAY<br>OF MOVING IT</div></div>';
       html += '<div class="arith-op">=</div>';
       html += '<div class="arith-item"><div class="ai-icon">'+ICONS.filmstrip+'</div><div class="ai-label" style="font-family:var(--display);font-weight:800;font-size:20px;color:var(--cherry)">2 SECONDS</div></div>';
-      html += '</div></div></div>';
+      html += '</div>';
+      html += supportImgHTML(s.supportImg);
+      html += '</div></div>';
 
     } else if (s.kind === 'puppetgame'){
       html += '<div class="slide-inner split">';
@@ -1232,13 +1252,15 @@
       html += '<div class="step-card"><div class="sc-icon">'+ICONS.stepMove+'</div><div class="sc-label">MOVE A LITTLE</div></div>';
       html += '<div class="step-arrow">'+ICONS.dArrow+'</div>';
       html += '<div class="step-card"><div class="sc-icon">'+ICONS.stepSnap+'</div><div class="sc-label">SNAP</div></div>';
-      html += '</div></div></div>';
+      html += '</div>';
+      html += supportImgHTML(s.supportImg);
+      html += '</div></div>';
 
     } else if (s.kind === 'waiting'){
       html += '<div class="slide-inner split">';
       html += '<div class="text-col"><div class="eyebrow">'+s.eyebrow+'</div><h1 class="headline">'+s.headline+'</h1>';
       html += '<div class="prompt-line">'+s.prompt+'</div></div>';
-      html += '<div class="media-col">' + drawnCard('hideBlind','lg') + '</div>';
+      html += '<div class="media-col">' + drawnCard('hideBlind','lg') + supportImgHTML(s.supportImg) + '</div>';
       html += '</div>';
 
     } else if (s.kind === 'answercards'){
