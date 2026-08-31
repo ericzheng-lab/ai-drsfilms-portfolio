@@ -360,12 +360,17 @@
     color:var(--cherry);text-align:center}
   /* A gallery row costs ~150px of height, and the presenter chrome owns the top
      and bottom ~30px of the viewport, so the column above gives all of that back.
-     Measured on the rendered page at 1280x720, not read off these numbers. */
-  .slide-inner.with-gallery{padding:26px 0 30px}
+     Measured on the rendered page at 1280x720, not read off these numbers.
+     The support photo is NOT one of the things that gives room back — round 3 fixed
+     it at a 70px/6.5vh regression once already, and DoD v4 restates the 22vh floor
+     explicitly for exactly this reason. Trim the clip-stage and padding instead. */
+  .slide-inner.with-gallery{padding:18px 0 20px}
   .slide-inner.with-gallery .media-col{gap:5px}
-  .slide-inner.with-gallery .media-col .clip-stage{width:min(430px,100%,29vh)}
-  .slide-inner.with-gallery .support-img img{height:clamp(72px,10vh,105px)}
-  .slide-inner.with-gallery .gallery-block{gap:3px}
+  .slide-inner.with-gallery .media-col .clip-stage{width:min(430px,100%,24vh);flex-shrink:1}
+  .slide-inner.with-gallery .support-img{flex-shrink:0}
+  .slide-inner.with-gallery .support-img img{height:clamp(158px,22vh,230px);flex-shrink:0;min-height:158px}
+  .slide-inner.with-gallery .support-img .torn-frame{flex-shrink:0}
+  .slide-inner.with-gallery .gallery-block{gap:3px;flex-shrink:0}
   .slide-inner.with-gallery .support-img .si-text{max-width:270px}
   .slide-inner.with-gallery .support-img .si-cap{font-size:clamp(10px,1.02vw,11.5px)}
   .slide-inner.with-gallery .gal-thumb{padding:3px 3px 0}
