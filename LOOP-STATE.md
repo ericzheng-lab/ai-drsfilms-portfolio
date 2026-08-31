@@ -130,6 +130,40 @@ USABLE 3d5dbadc96594326b815f25facf6c31b2c12a3b8
     the new local clip's readyState/duration, confirmed the navigate-away fix with a direct
     before/after repro. `git diff origin/main --stat -- src` still empty.
 
+AUDIT d772388bdadeea0e16b7eaf72f757301a2b64ce0
+USABLE d772388bdadeea0e16b7eaf72f757301a2b64ce0
+- Round 4, Eric's third pass (relayed), then his own one-word follow-up "以此类推": not
+  just more/better clips — wants explicit teaching content (definition + diagram) paired
+  with every concept beat, traced to a pattern in his own Gamma reference deck this build
+  never adopted. Then extended by his own instruction to the historical slides too, using
+  judgment on what "definition" means for a historical fact vs. a category.
+  - New slide 2 ("What is a Film?"): plain-language definition, filmstrip SVG diagram,
+    4-word synonym row. 16 slides -> 17.
+  - 4 kind-of-film slides: added a 3-item fact-bullet row (explicit definitional facts)
+    and an original mechanism-diagram + caption (distinct from the 4 identity icons
+    already in use) to each — kept the existing poetic headline/sub/callout, definition
+    and hook now coexist rather than one replacing the other.
+  - 4 historical slides (usine/train/arroseur/lune): added a compact fact-line (year,
+    place, one distinguishing historical detail) — same density upgrade, different content
+    register, per Eric's own framing of the extension.
+  - Deliberately skipped, per the same instruction's explicit carve-out: game slide,
+    agenda, opening/think-back/next-week bookends — logistics/transition, not concept
+    teaching. Judgment call recorded so it's visible, not silent.
+  - No new media downloads this round — everything is text + original inline SVG, so no
+    new sourcing/provenance question like round 3's.
+  - Separately: the peer relaying this round also referenced "movie title swaps from my
+    last message" (Lion King/Kubo/HTTYD) that never actually arrived in this session —
+    did NOT guess at specifics (which slide, which clip id, timestamps); flagged the gap
+    back to the peer instead of fabricating parameters for a message I don't have.
+  - Self-verified (指挥层复核, not blind audit): rebuilt, fresh tab, all 17 slides
+    re-measured overflow-free at 1366x768/1280x720/1024x768 — including the documentary
+    slide, which now stacks 3 media-column elements (clip-stage + mech-diagram +
+    support-img) and still clears with 161-187px margin at every size. Confirmed exact
+    counts/content of all new elements (4 synonym chips, 12 fact-bullets, 4 mech-diagrams,
+    4 fact-lines) via direct DOM inspection, not just visual spot-check. Full 17-slide
+    keyboard walk + overview grid (17 cards) + game-slot multi-open/close all reconfirmed
+    working. 0 console output throughout. `git diff origin/main --stat -- src` still empty.
+
 AUDIT 4e753f6a8f6182078d05d50479af86e4a9a5ea62
 USABLE 4e753f6a8f6182078d05d50479af86e4a9a5ea62
 - Round 5 ("v2 rebuild"), Eric's decision after judging the 17-screen deck couldn't sustain a
@@ -201,36 +235,45 @@ USABLE 4e753f6a8f6182078d05d50479af86e4a9a5ea62
     whether to include a modern animated film, whether Eric appears in his own deck) were built
     per the spec's own stated recommendations, left provisional, not quietly finalized.
 
-AUDIT d772388bdadeea0e16b7eaf72f757301a2b64ce0
-USABLE d772388bdadeea0e16b7eaf72f757301a2b64ce0
-- Round 4, Eric's third pass (relayed), then his own one-word follow-up "以此类推": not
-  just more/better clips — wants explicit teaching content (definition + diagram) paired
-  with every concept beat, traced to a pattern in his own Gamma reference deck this build
-  never adopted. Then extended by his own instruction to the historical slides too, using
-  judgment on what "definition" means for a historical fact vs. a category.
-  - New slide 2 ("What is a Film?"): plain-language definition, filmstrip SVG diagram,
-    4-word synonym row. 16 slides -> 17.
-  - 4 kind-of-film slides: added a 3-item fact-bullet row (explicit definitional facts)
-    and an original mechanism-diagram + caption (distinct from the 4 identity icons
-    already in use) to each — kept the existing poetic headline/sub/callout, definition
-    and hook now coexist rather than one replacing the other.
-  - 4 historical slides (usine/train/arroseur/lune): added a compact fact-line (year,
-    place, one distinguishing historical detail) — same density upgrade, different content
-    register, per Eric's own framing of the extension.
-  - Deliberately skipped, per the same instruction's explicit carve-out: game slide,
-    agenda, opening/think-back/next-week bookends — logistics/transition, not concept
-    teaching. Judgment call recorded so it's visible, not silent.
-  - No new media downloads this round — everything is text + original inline SVG, so no
-    new sourcing/provenance question like round 3's.
-  - Separately: the peer relaying this round also referenced "movie title swaps from my
-    last message" (Lion King/Kubo/HTTYD) that never actually arrived in this session —
-    did NOT guess at specifics (which slide, which clip id, timestamps); flagged the gap
-    back to the peer instead of fabricating parameters for a message I don't have.
-  - Self-verified (指挥层复核, not blind audit): rebuilt, fresh tab, all 17 slides
-    re-measured overflow-free at 1366x768/1280x720/1024x768 — including the documentary
-    slide, which now stacks 3 media-column elements (clip-stage + mech-diagram +
-    support-img) and still clears with 161-187px margin at every size. Confirmed exact
-    counts/content of all new elements (4 synonym chips, 12 fact-bullets, 4 mech-diagrams,
-    4 fact-lines) via direct DOM inspection, not just visual spot-check. Full 17-slide
-    keyboard walk + overview grid (17 cards) + game-slot multi-open/close all reconfirmed
-    working. 0 console output throughout. `git diff origin/main --stat -- src` still empty.
+AUDIT 55c04f990ffb5789807b43e67339e545e8493d36
+USABLE 55c04f990ffb5789807b43e67339e545e8493d36
+- Round 6, a peer session's independent review of the round-5 v2 rebuild (not Eric directly;
+  peer stated it verified structure/licensing/type-floors itself before flagging these). Two
+  real issues, both confirmed against the actual code/render before fixing, not taken on the
+  peer's word alone:
+  - Screen 6 (agenda, "Four stops today") was a plain grey numbered list — thin rules, grey
+    ordinal numbers, no color, no illustration — while every other screen in the deck carries
+    the childlike sticker-card identity. Confirmed by reading the render branch and CSS
+    directly: this was real, not a false positive. Fixed by giving each of the 4 agenda rows
+    the same illustrated-card treatment used elsewhere (colored `.kind-icon` badge + ink
+    border + offset shadow), reusing the existing live/anim/stop/doc cast in order rather than
+    drawing new art. Checked the 3 sibling screens the peer flagged as likely-same-failure (7,
+    19, 22): all three already use the correct card+icon treatment — confirmed via direct code
+    read and a settled screenshot of each, no change needed.
+  - 10 eyebrows used circled numerals (①②③④). Confirmed count via grep before touching
+    anything. Replaced with plain digits plus the "N · LABEL" separator convention already
+    used elsewhere in the deck (e.g. "1895 · WHAT A CINEMA WAS"), rather than a bare
+    "1 LABEL" run-together. Re-verified 0 circled numerals remain and the new eyebrows render
+    correctly in the mono display face (no font-fallback mismatch).
+  - Found one more real bug while re-verifying, not flagged by the peer: screen 11
+    (drawings24 — giant "24" + frame preview + 24-thumbnail grid) overflowed the viewport at
+    1280x720 specifically (fine at 1366x768 and 1920x1080 — an ~8-9px top+bottom overflow that
+    only shows up at the shorter 720px height). Reproduced with real app navigation and a
+    screenshot, not just the bulk DOM sweep that first flagged it. Fixed with a
+    `max-height:760px` breakpoint that shrinks the three elements together; confirmed via grep
+    that `huge-num`/`flip-preview`/`flip-grid` are used only on this one screen, so the fix has
+    no effect elsewhere. Re-verified 0 overflow at 1280x720 via real navigation after the fix.
+  - Self-verified (指挥层复核, not blind audit): rebuilt; re-confirmed all three fixes with
+    real app navigation (overview grid + keyboard), not a synthetic DOM-only check — a first
+    attempt at a bulk 32-screen overflow sweep via direct `classList` manipulation corrupted
+    the page's own active-slide state (an artifact of the test method, not the app), so the
+    screen-11 fix was re-verified after a fresh reload instead. 0 console errors; `git diff
+    origin/main --stat -- src` still empty.
+  - **Review-grade disclosure, on the record per the peer's explicit request**: every round on
+    this deck, including this one, has been self-verification (指挥层复核) by whichever Claude
+    session did the work. None has been a 真盲审 (a cold reader with no context, handed the
+    files fresh). This deck executes JavaScript in front of a live K-3 classroom, so that
+    distinction matters — five (now six) rounds of self-review should not read as five rounds
+    of independent review. Recorded here rather than left implicit so it's Eric's call whether
+    a blind pass happens before this is used live, not something papered over by the AUDIT
+    label alone.
