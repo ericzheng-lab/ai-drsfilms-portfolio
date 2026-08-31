@@ -599,3 +599,72 @@ USABLE c8db98d
     screenshot" mid-animation captures from the same session. Worth carrying forward on this
     deck specifically: **verify loaded/settled state before reading any measurement or
     screenshot from this preview, every time, not just when something looks obviously wrong.**
+
+AUDIT 8c4bc00
+USABLE 8c4bc00
+- **Cold-read of round 4** (432eddc/7d4e4c1/f4a8da4/026ae20), requested by the session that
+  built it, against `Film_Teaching/LOOP-STATE.md`'s "DoD — v4" checklist. Graded honestly:
+  this is 指挥层复核 (I have full context on this deck across 6+ prior rounds), not 真盲审 —
+  stated here so the grade isn't overclaimed downstream.
+- **Confirmed regression, now fixed**: `.slide-inner.with-gallery .support-img img` was
+  `clamp(72px,10vh,105px)` — the same shrink c8db98d already fixed once at the deck-wide
+  level, reintroduced locally when 432eddc needed to fit the new gallery strip under the
+  existing text/media row and trimmed the photo instead of the chrome around it. Measured
+  ~68px/9.5vh on screens 8/10/13/16 (0-indexed 7/9/12/15) via `getBoundingClientRect` on the
+  deployed preview — under half DoD v4's restated 22vh floor. Fixed in 8c4bc00: floor restored
+  to `clamp(158px,22vh,230px)`, room reclaimed from `.with-gallery` padding (26px 0 30px →
+  18px 0 20px) and the clip-stage cap (29vh → 24vh) instead of the photo. Verified clean at
+  1280×720 / 1366×768 / 1920×1080 on all 4 gallery screens (1080p lands on the clamp's own
+  230px/21.3vh ceiling by design, not a shortfall — nowhere near the original bug's territory);
+  full 32-screen overflow + broken-image sweep and console-error check at 720p, zero flags.
+- **Debugging note worth carrying forward, a second instance of the exact lesson recorded
+  just above this block**: three successive fix attempts before 8c4bc00 (padding/clip-stage
+  trim; flex-shrink+min-height; grid-template-rows+align-self) all appeared to fail —
+  `getComputedStyle` confirmed every property landed, but `getBoundingClientRect` kept
+  reporting the image ~8-13% short regardless. Root cause: the active slide carries
+  `.enter-play`'s `popIn` entrance animation (`animation:popIn .55s ... .07s both`), and every
+  measurement was catching `media-col` frozen at the `from` keyframe (`scale(.9) rotate(-2deg)`
+  — matched the observed transform matrix exactly) rather than its settled `to` state
+  (`scale(1) rotate(0)`). Once a `*{animation:none;transition:none;transform:none}` override
+  was injected before measuring, the *original* clamp(158px,22vh,230px) fix (attempt 1, before
+  any of the flex-shrink/grid additions) turned out to already be correct — the two later
+  attempts were chasing a phantom. Removed the confirmed-inert `grid-template-rows`/
+  `align-self:start` pair from the final diff (directly re-tested with them stripped: byte-
+  identical measurements); left flex-shrink/min-height in place as reasonable, low-cost
+  belt-and-suspenders rather than re-litigating every line. **Same failure shape as the
+  addendum above (measure-before-settled), just animation instead of image-load — on this
+  deck specifically, neutralize `.enter-play`/`popIn` before trusting any `getBoundingClientRect`
+  call, not just image `.complete`.**
+- **Orphan-file count was under-reported**: 432eddc's own AUDIT block names 3 orphaned files
+  (boom-operator.jpg, filmstrip-35mm.jpg, lighting-setup.jpg). Re-swept with a check for
+  false positives (this repo's doodle/frame filenames are template-constructed from arrays,
+  which trips naive grep) and confirmed 2 more genuine orphans not in that list:
+  `media/frames/harrier-flight.jpg` and `media/frames/flipbook-thumb.jpg` (superseded by
+  flipbook-metal.jpg), both 0 references in index.html, both still present on disk. **Not
+  deleted** — per both the round-4 peer's explicit instruction and this repo's standing rule,
+  that decision is Eric's alone. Correcting the count here so the record is accurate; the
+  actual 5-file list needs Eric's disposition call, not just the 3 originally named.
+- **LOOP-STATE.md structural note, not fixed, flagged only**: this file's AUDIT blocks are not
+  in append-only/chronological order. `AUDIT 432eddc...` sits at line ~52, immediately after
+  the round-1 block, even though 432eddc was committed chronologically *after* c8db98d (this
+  session's resize-fix block, which sits near line 524) — confirmed via
+  `git log --format='%h %ai %s'`. The round-4 session inserted near the top rather than
+  appending. Left as-is rather than reordering unilaterally (this is exactly the kind of
+  structural edit that isn't mine to make without Eric's say-so); noting it so the ordering
+  is understood as an editorial accident, not a sign the round-4 work predates this round's.
+- **Everything else in DoD v4 checked out, judged directly rather than by checkbox**: viewed
+  all 20 gallery images and confirmed genuine visual distinctness within every category set
+  (no two share a look, matching Eric's "很多的图片都太垃圾了" complaint directly rather than
+  formally); confirmed `do-chameleon.jpg` is a different file from the pre-existing
+  `frames/chameleon-cc.jpg` (md5 differs, not an accidental duplicate); screen 9's own
+  `.support-img-row.wide` sizing (unaffected by the with-gallery bug) still measures
+  correctly; mascot PNG has real alpha transparency; `kids-crew-bookcover.jpg` has no visible
+  title text baked in; Wonka embed opens the lightbox correctly (not an inline iframe, matching
+  the deck's established video architecture) and its channel provenance resolves to Warner
+  Bros. UK & Ireland via oEmbed, distinct from a reupload channel; zero emoji, zero Chinese
+  text, zero circled/enclosed numerals, zero Grand Budapest Hotel references anywhere in the
+  deck; 32 screens confirmed against the 6-12-3-7-4 segment split; zero console errors at
+  1280×720 across the full deck. Screen 30's pre-existing chip-overlap defect (out of round-4
+  scope) and the 4 provisional content decisions are unchanged — not re-litigated here.
+- No blind audit (真盲审) on this deck at any point across all rounds — still Eric's call
+  whether one runs before this goes live.
