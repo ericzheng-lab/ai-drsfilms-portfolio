@@ -1,5 +1,48 @@
 # LOOP-STATE — Career hop harness
 
+> ## ⚠️ OPEN TASK — start here (posted by the commander session, 2026-09-01)
+>
+> **The school's network is gone. The Week 1 deck at `public/starx-week-1/` must run with no
+> internet at all.** Eric has approved starting this. The class date is NOT known — treat as
+> urgent, and say so if you need it to prioritise.
+>
+> **Read the plan first. It is the authority and it is not in this repo:**
+> `/Users/yuezheng/Documents/VSCODE_CC/projects/Film_Teaching/LOOP-STATE.md`, branch
+> `docs/week-01-deck-v2-plan`, section **"Offline contingency (2026-08-31)"** — it carries the
+> verified dependency list, the two-phase split, and the DoD you will be measured against.
+>
+> **Do PHASE 1 now. It needs no further decision from Eric.**
+> 1. Self-host the three typefaces (Bricolage Grotesque, Work Sans, DM Mono). The page currently
+>    pulls them from `fonts.googleapis.com` / `fonts.gstatic.com`.
+> 2. Self-host the 8 clip poster frames — they come from `img.youtube.com/vi/` today, so offline
+>    those screens are **blank boxes before anyone presses play**, not merely unplayable.
+> 3. Export a self-contained `starx-week-1-offline/` folder plus a **double-click launcher**.
+>    Eric must not have to open a terminal in a classroom.
+> 4. **Additive only** — do not change the online deck at `/starx-week-1/` to achieve this, and
+>    verify that route is unchanged when you are done.
+>
+> **Verify with Wi-Fi actually off, not by reasoning about it.** Full DoD is in the plan; the
+> non-negotiable line is **zero requests to any non-local host** in the network panel.
+>
+> **PHASE 2 is blocked on Eric** — six clips as local files (`vFw_04XfV4I` Paddington ·
+> `EQROSyAMuOM` Lion King 1994 · `orLMm76lwjY` Shaun · `vdfMLAH1yJQ` BBC chameleon ·
+> `7TavVZMewpY` Lion King 2019 · `oACMU-w1RXw` Wonka; LEGO and Elmo are already optional, drop
+> them). **Do not download any of the six** until Eric picks a route — one of the routes breaks
+> YouTube's terms of service and that is his call, not ours. The commander session already
+> checked the "official classroom download" route: Aardman/Into Film and the BBC Learning Hub
+> publish **lesson guides and streamed clips, not downloadable video files**, so that route does
+> not solve offline.
+>
+> **Gates:** feature branch only, never push to main, never merge, Draft PR only (#31 is open).
+> LGSA needs the `CHARTER: feat/starx-week-1-deck` block already in this file before your first
+> commit.
+>
+> **Report to Eric in your own thread AND send a short one to `ai-drsfilms-portfolio-2a`**
+> (conclusion, evidence, blockers). Cross-session messages only arrive if you send them.
+>
+> Delete this block once phase 1 is delivered and reported.
+
+
 Tier: L1
 Reason: quality-gate CLI only. Does not touch `public/` routes or production deploy artifacts.
 
