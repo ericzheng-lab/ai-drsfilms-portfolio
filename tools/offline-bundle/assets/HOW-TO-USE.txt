@@ -1,0 +1,73 @@
+LITTLE FILMMAKERS - WEEK 1 PRESENTER DECK
+Offline copy. Runs with the Wi-Fi off.
+==========================================================
+
+TO START IT
+-----------
+Double-click  START-THE-DECK.html
+It opens in your browser. That is the whole thing. Nothing to install,
+no password, no terminal.
+
+
+TO PUT IT ON THE CLASSROOM LAPTOP
+---------------------------------
+Copy the WHOLE folder - not just the START-THE-DECK file. The pictures
+and the five old films live in the "media" folder beside it, and the deck
+is blank without them.
+
+The folder is about 40 MB. That is small enough for AirDrop, a USB stick,
+or a Google Drive download. Three ways, easiest first:
+
+  1. AirDrop the folder from your Mac to the classroom Mac.
+  2. Drag the folder onto a USB stick, plug it into the laptop, then drag
+     it OFF the stick onto the Desktop. Do not run it from the stick.
+  3. Zip it, upload it to Drive, download and unzip on the laptop.
+
+Then double-click START-THE-DECK.html on that laptop, and step through a
+few screens before the children arrive.
+
+
+WHAT WORKS WITH NO NETWORK
+--------------------------
+  - All 32 screens, correct type, correct colours
+  - Every photograph and every gallery, full size
+  - The five old films play: Lumiere x3, Melies, Steamboat Willie
+    (that is minutes 43-60, the whole history section)
+  - Presenter notes, the segment clock, the overview grid, the lightbox
+
+
+WHAT STILL NEEDS A CONNECTION
+-----------------------------
+Eight clips stream from YouTube: Paddington, The Lion King (1994),
+Shaun the Sheep, the BBC chameleon, the Lion King 2019 trailer, Wonka,
+and the two optional ones (LEGO, Elmo).
+
+With no connection you still see the correct picture for each one, plus a
+line telling you what to do. The deck checks for itself whether YouTube
+can be reached, so it behaves correctly even on a school Wi-Fi that is
+switched on but has no internet behind it. Two ways round it:
+
+  1. Phone hotspot. Only these eight clips need it, so it is a few
+     minutes of video, not a whole website.
+  2. Skip them. Every category still shows five films as pictures in its
+     gallery. The lesson gets shorter; it does not fall apart.
+
+
+IF SOMETHING LOOKS WRONG
+------------------------
+The headlines should be a chunky rounded face, not Times or Helvetica.
+If the type looks like a plain word processor, the file was copied without
+its folder - go back and copy the whole folder.
+
+If a picture is a grey box, same cause.
+
+
+KEYS
+----
+  Right arrow / Space   next screen
+  Left arrow            back
+  N                     presenter notes on and off
+  Enter                 play the clip on this screen
+  1 - 6                 the six clips in the guessing game
+  Esc                   close a clip or a picture;
+                        with nothing open, shows the grid of all 32 screens

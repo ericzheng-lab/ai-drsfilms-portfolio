@@ -3,3 +3,4 @@ dist
 .npm-cache
 .DS_Store
 harness/fixtures/**/reports/
+dist-offline
