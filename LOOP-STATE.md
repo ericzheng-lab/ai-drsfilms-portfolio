@@ -757,3 +757,10 @@ Review grade: **指挥层复核**, not a blind audit. Same standing gap as every
 - Poster frames are now committed under `tools/offline-bundle/assets/yt-posters/` rather than
   hotlinked. Same eight images the deployed deck already displays, and the repo carries the
   deck's own media already, but it is a different act from hotlinking — flagged, not decided.
+
+AUDIT 787606cc1b869a57437885e9fe1bd3b8da27e555
+USABLE 787606cc1b869a57437885e9fe1bd3b8da27e555
+- Offline bundle, phase 1. Self-verified (指挥层复核, NOT a blind audit). Full evidence in
+  the "Offline bundle — PHASE 1 delivered" section above. `verify.mjs` clean in Chromium,
+  WebKit and Brave's real binary; `--hotspot` clean; zip round-trip clean; online route
+  byte-identical (md5 f3b1fda65de578091012156e3d61043b across source, dist and HEAD).
