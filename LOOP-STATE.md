@@ -1,48 +1,5 @@
 # LOOP-STATE — Career hop harness
 
-> ## ⚠️ OPEN TASK — start here (posted by the commander session, 2026-09-01)
->
-> **The school's network is gone. The Week 1 deck at `public/starx-week-1/` must run with no
-> internet at all.** Eric has approved starting this. The class date is NOT known — treat as
-> urgent, and say so if you need it to prioritise.
->
-> **Read the plan first. It is the authority and it is not in this repo:**
-> `/Users/yuezheng/Documents/VSCODE_CC/projects/Film_Teaching/LOOP-STATE.md`, branch
-> `docs/week-01-deck-v2-plan`, section **"Offline contingency (2026-08-31)"** — it carries the
-> verified dependency list, the two-phase split, and the DoD you will be measured against.
->
-> **Do PHASE 1 now. It needs no further decision from Eric.**
-> 1. Self-host the three typefaces (Bricolage Grotesque, Work Sans, DM Mono). The page currently
->    pulls them from `fonts.googleapis.com` / `fonts.gstatic.com`.
-> 2. Self-host the 8 clip poster frames — they come from `img.youtube.com/vi/` today, so offline
->    those screens are **blank boxes before anyone presses play**, not merely unplayable.
-> 3. Export a self-contained `starx-week-1-offline/` folder plus a **double-click launcher**.
->    Eric must not have to open a terminal in a classroom.
-> 4. **Additive only** — do not change the online deck at `/starx-week-1/` to achieve this, and
->    verify that route is unchanged when you are done.
->
-> **Verify with Wi-Fi actually off, not by reasoning about it.** Full DoD is in the plan; the
-> non-negotiable line is **zero requests to any non-local host** in the network panel.
->
-> **PHASE 2 is blocked on Eric** — six clips as local files (`vFw_04XfV4I` Paddington ·
-> `EQROSyAMuOM` Lion King 1994 · `orLMm76lwjY` Shaun · `vdfMLAH1yJQ` BBC chameleon ·
-> `7TavVZMewpY` Lion King 2019 · `oACMU-w1RXw` Wonka; LEGO and Elmo are already optional, drop
-> them). **Do not download any of the six** until Eric picks a route — one of the routes breaks
-> YouTube's terms of service and that is his call, not ours. The commander session already
-> checked the "official classroom download" route: Aardman/Into Film and the BBC Learning Hub
-> publish **lesson guides and streamed clips, not downloadable video files**, so that route does
-> not solve offline.
->
-> **Gates:** feature branch only, never push to main, never merge, Draft PR only (#31 is open).
-> LGSA needs the `CHARTER: feat/starx-week-1-deck` block already in this file before your first
-> commit.
->
-> **Report to Eric in your own thread AND send a short one to `ai-drsfilms-portfolio-2a`**
-> (conclusion, evidence, blockers). Cross-session messages only arrive if you send them.
->
-> Delete this block once phase 1 is delivered and reported.
-
-
 Tier: L1
 Reason: quality-gate CLI only. Does not touch `public/` routes or production deploy artifacts.
 
@@ -711,3 +668,92 @@ USABLE 8c4bc00
   scope) and the 4 provisional content decisions are unchanged — not re-litigated here.
 - No blind audit (真盲审) on this deck at any point across all rounds — still Eric's call
   whether one runs before this goes live.
+
+---
+
+## Offline bundle — PHASE 1 delivered (2026-09-01)
+
+Task brief: Film_Teaching `LOOP-STATE.md`, branch `docs/week-01-deck-v2-plan`, section
+"Offline contingency (2026-08-31)". The school has no network; the deck at `/starx-week-1/`
+pulled three typefaces from Google Fonts and eight clip poster frames from `img.youtube.com`,
+so with the Wi-Fi off it lost its type and showed blank boxes on every external-clip screen
+**before anyone pressed play**.
+
+### What shipped — all of it additive, `public/` and `src/` untouched
+- `tools/offline-bundle/fetch-assets.sh` — pulls the three typefaces (latin + latin-ext, 8
+  unique woff2 after de-duplicating the shared variable files, 236 KB) and the 8 clip poster
+  frames. Results are committed, so the build works with the network off.
+- `tools/offline-bundle/build.mjs` — reads `public/starx-week-1/index.html`, never writes back
+  to it, and emits `dist-offline/starx-week-1-offline/` (gitignored). It refuses to build if
+  the three code sites it rewrites have changed, or if the deck has gained a clip id with no
+  downloaded poster.
+- `tools/offline-bundle/verify.mjs` — the machine check behind the DoD below.
+
+Three rewrites, all bundle-only:
+1. Typefaces embedded as `data:` URIs. Google's own `font-weight` / `unicode-range` descriptors
+   are kept verbatim, so the browser resolves the same face per weight it resolves online — a
+   `font-weight: 400 800` range face would have been half the size but renders the deck's ten
+   `font-weight:700` usages at 700 instead of the 800 the online deck gets. Sibling `.woff2`
+   files were rejected: Chrome and Safari refuse cross-origin font loads under `file://`, and
+   the classroom path is a double-clicked local file. HTML 124 KB -> 946 KB, which is nothing
+   off local disk.
+2. `ytThumb()` returns `media/yt-posters/<id>.jpg`. Same `hqdefault.jpg` bytes the online deck
+   fetches, so the poster frames render pixel-identically.
+3. The eight embeds now settle: poster frame first, then the YouTube player **only once
+   YouTube is proven reachable**, by a cache-busted one-image probe with a 3 s timeout.
+   `navigator.onLine` is consulted for the instant path but not trusted alone — a laptop joined
+   to a school Wi-Fi with no uplink reports itself online, which is the likeliest shape of
+   "the network is gone". Unreachable leaves the poster up with one line of presenter
+   instruction instead of the browser's error page.
+
+Output: `dist-offline/starx-week-1-offline/` (120 files, 40.0 MB) with `START-THE-DECK.html`
+as the Finder double-click, an identical `index.html` for anyone serving the folder, and
+`HOW-TO-USE.txt` carrying the copy-to-laptop steps. Also zipped to
+`dist-offline/starx-week-1-offline.zip` (39 MB) for AirDrop.
+
+### DoD — offline bundle
+- [x] Page opens and all 32 screens render with the network blocked
+- [x] Zero requests to any non-local host at idle
+- [x] All three typefaces render correctly — measured against the online deck
+- [x] The five PD clips play start to finish, offline
+- [x] All 8 external-clip screens show a real poster frame, never a blank box
+- [x] Launcher opens the deck by double-click, no terminal
+- [x] Presenter notes, timer, overview grid, galleries and lightbox all work offline
+- [x] `/starx-week-1/` online byte-identical to before
+- [x] Bundle size and copy-to-laptop steps written down for Eric
+
+### Evidence
+`node tools/offline-bundle/verify.mjs` — clean in three engines: Chromium, WebKit (Safari's
+engine), and **Brave's real binary**, which is Eric's default `.html` handler on this machine.
+Chromium runs with the context held offline *and* every http(s) request aborted, so a leak
+fails the run rather than merely erroring. It checks, per engine: zero non-local requests at
+idle; each typeface measured against `serif` so a silent fallback cannot pass (Bricolage
+966.2 px vs serif 926.1 px — the same 966.2 px the online deck measures); 32 screens with zero
+broken images and zero overflow at 1280x720; every `.ext-frame` thumb sourced from
+`media/yt-posters/`; all five `.mp4` files loading, playing and advancing the playhead; the
+`n` key, the Esc overview grid and the running segment clock; the clip stand-in settling on
+the presenter instruction; Esc pressed mid-probe leaving the lightbox closed and empty; zero
+console and page errors.
+
+`node tools/offline-bundle/verify.mjs --hotspot` — the opposite check, and the one that would
+catch the fallback swallowing the working case: with a real connection the probe is sent, it
+succeeds, and the YouTube player loads. Clean. This is the ladder's rung 2.
+
+Also verified: the bundle re-checked after a zip / unzip round trip (clean); side-by-side
+1280x720 screenshots of screens 1, 2, 4, 7, 12, 20, 24, 32 online vs offline — identical
+apart from the running clock; `md5` of `public/starx-week-1/index.html`, `dist/`'s built copy
+and `git show HEAD:` all `f3b1fda65de578091012156e3d61043b`; `npm run build` clean and
+`/starx-week-1/` returns 200; `git diff origin/main --stat -- public src` empty.
+
+Review grade: **指挥层复核**, not a blind audit. Same standing gap as every round on this deck
+— no cold reader has ever seen it.
+
+### Still open
+- **PHASE 2 is Eric's.** Six clips as local files (`vFw_04XfV4I` Paddington · `EQROSyAMuOM`
+  Lion King 1994 · `orLMm76lwjY` Shaun · `vdfMLAH1yJQ` BBC chameleon · `7TavVZMewpY` Lion King
+  2019 · `oACMU-w1RXw` Wonka). Nothing downloaded — one of the routes breaks YouTube's terms of
+  service and that call is his.
+- **Class date still unknown.** It sets whether phase 2 is worth starting at all.
+- Poster frames are now committed under `tools/offline-bundle/assets/yt-posters/` rather than
+  hotlinked. Same eight images the deployed deck already displays, and the repo carries the
+  deck's own media already, but it is a different act from hotlinking — flagged, not decided.
