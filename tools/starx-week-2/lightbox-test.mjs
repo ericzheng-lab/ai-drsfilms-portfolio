@@ -20,7 +20,9 @@ if (!/^https?:/.test(ROOT)){
 }
 const URL = base+'/starx-week-2/';
 const browser = await chromium.launch({channel:'chrome', args:['--autoplay-policy=no-user-gesture-required']});
-const ctx = await browser.newContext({viewport:{width:1280,height:720}, extraHTTPHeaders:{Referer:'https://ai.drsfilms.com/starx-week-2/'}});
+// no forced Referer here: system Chrome answers a header-overridden iframe navigation with
+// ERR_BLOCKED_BY_CLIENT, and every focus check would then run against an error page
+const ctx = await browser.newContext({viewport:{width:1280,height:720}});
 const page = await ctx.newPage();
 const errors = []; page.on('pageerror', e=>errors.push(String(e))); page.on('console', m=>{ if (m.type()==='error') errors.push(m.text()); });
 await page.goto(URL, {waitUntil:'load'});
@@ -34,6 +36,10 @@ await page.keyboard.press('Enter'); await page.waitForTimeout(300);
 let r = {};
 r.open = await page.evaluate(()=>document.getElementById('lightbox').classList.contains('open'));
 r.src = await page.evaluate(()=>{ const f=document.querySelector('#lightbox-media iframe'); return f? f.getAttribute('src') : null; });
+await page.waitForTimeout(1500);
+r.frameUrl = (page.frames().find(f=>f !== page.mainFrame()) || {url:()=>null}).url();
+r.frameIsPlayer = /^https:\/\/www\.youtube\.com\/embed\//.test(r.frameUrl || '');
+if (!r.frameIsPlayer) errors.push('FAIL: the embed frame did not load the player: '+r.frameUrl);
 await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight');
 r.indexWhileOpen = await idx();
 await page.keyboard.press('Escape'); await page.waitForTimeout(100);
