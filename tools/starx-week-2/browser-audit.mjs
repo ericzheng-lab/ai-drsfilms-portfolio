@@ -8,7 +8,7 @@ function loadPlaywright(){ try { return require('playwright'); } catch (e) { ret
 const { chromium } = loadPlaywright();
 const ROOT = process.argv[2];            // public/ dir  OR  https://… base URL
 const SHOTS = process.argv[3] || '';     // dir for screenshots (optional)
-const VIEWPORTS = [[1280,720],[1366,768],[1920,1080]];
+const VIEWPORTS = process.env.VIEWPORTS ? process.env.VIEWPORTS.split(',').map(s=>s.split('x').map(Number)) : [[1280,720],[1366,768],[1920,1080]];
 const MIME = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.mp4':'video/mp4','.jpg':'image/jpeg','.png':'image/png','.woff2':'font/woff2','.gif':'image/gif','.webp':'image/webp'};
 let base = ROOT, server = null;
 if (!/^https?:/.test(ROOT)){

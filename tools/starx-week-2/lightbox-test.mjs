@@ -49,6 +49,14 @@ await page.mouse.click(fb.x + fb.width*0.5, fb.y + fb.height*0.85); await page.w
 results.focusAfterClick = await page.evaluate(()=>document.activeElement && document.activeElement.tagName);
 await page.keyboard.press('Escape'); await page.waitForTimeout(150);
 results.escClosesWithPlayerFocus = !(await page.evaluate(()=>document.getElementById('lightbox').classList.contains('open')));
+if (results.focusAfterClick !== 'BUTTON' || !results.escClosesWithPlayerFocus) results.errors = (results.errors||[]).concat(['FAIL: focus not handed back to the deck after a click in the player']);
+// close button must be visible and clickable, and the backdrop must close too
+await page.keyboard.press('Enter'); await page.waitForTimeout(400);
+results.closeBtnVisible = await page.evaluate(()=>{ const b=document.getElementById('lightbox-close'); const r=b.getBoundingClientRect(); const e=document.elementFromPoint(r.x+r.width/2, r.y+r.height/2); return e===b || b.contains(e); });
+await page.click('#lightbox-close'); await page.waitForTimeout(150);
+results.closeBtnCloses = !(await page.evaluate(()=>document.getElementById('lightbox').classList.contains('open')));
+await page.keyboard.press('Enter'); await page.waitForTimeout(400); await page.mouse.click(8,8); await page.waitForTimeout(150);
+results.backdropCloses = !(await page.evaluate(()=>document.getElementById('lightbox').classList.contains('open')));
 // --- muted pill: screen 9 (index 8) — key 2 → mute=1 on the embed
 await goto(8);
 await page.keyboard.press('2'); await page.waitForTimeout(200);
@@ -63,14 +71,14 @@ await goto(10);
 await page.keyboard.press('3'); await page.keyboard.press('5'); await page.keyboard.press('5'); await page.waitForTimeout(50);
 results.charades = await page.evaluate(()=>[...document.querySelectorAll('.slide.active .game-slot')].map(s=>s.classList.contains('opened')?1:0).join(''));
 
-// --- local path with end: screen 13 (index 12), key 1 = up to the moment
+// --- local path with end (CLIPS.keatonUpTo.end): screen 13 (index 12), key 1 = up to the moment
 await goto(12);
 await page.keyboard.press('1');
 r = {};
 r.hasVideo = await page.waitForSelector('#lightbox-media video', {timeout:3000}).then(()=>true).catch(()=>false);
 r.canPlayH264 = await page.evaluate(()=>{ const v=document.createElement('video'); return v.canPlayType('video/mp4; codecs="avc1.42E01E"'); });
 await page.evaluate(()=>{ const v=document.querySelector('#lightbox-media video'); v.muted = true; return v.play().catch(e=>String(e)); });
-// wait until it pauses on its own (end=19.45) — poll up to 30 s
+// wait until it pauses on its own (end = CLIPS.keatonUpTo.end) — poll up to 30 s
 const t0 = Date.now(); let paused=false, ct=null, dur=null;
 while (Date.now()-t0 < 32000){
   const s = await page.evaluate(()=>{ const v=document.querySelector('#lightbox-media video'); return v? {p:v.paused, t:v.currentTime, d:v.duration, rs:v.readyState, ended:v.ended} : null; });
