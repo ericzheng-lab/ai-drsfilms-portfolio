@@ -42,6 +42,13 @@ r.mediaAfterEsc = await page.evaluate(()=>document.getElementById('lightbox-medi
 r.indexAfterEsc = await idx();
 results.ext = r;
 
+// --- ext path with the player focused: a click inside the iframe, then Esc must still close
+await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+const fr = await page.$('#lightbox-media iframe'); const fb = await fr.boundingBox();
+await page.mouse.click(fb.x + fb.width*0.5, fb.y + fb.height*0.85); await page.waitForTimeout(300);
+results.focusAfterClick = await page.evaluate(()=>document.activeElement && document.activeElement.tagName);
+await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+results.escClosesWithPlayerFocus = !(await page.evaluate(()=>document.getElementById('lightbox').classList.contains('open')));
 // --- muted pill: screen 9 (index 8) — key 2 → mute=1 on the embed
 await goto(8);
 await page.keyboard.press('2'); await page.waitForTimeout(200);

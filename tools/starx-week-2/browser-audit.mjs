@@ -54,7 +54,7 @@ for (const [w,h] of VIEWPORTS){
       });
       const fs = sel=>[...act.querySelectorAll(sel)].filter(vis).map(el=>parseFloat(getComputedStyle(el).fontSize));
       const min = a=>a.length?Math.min(...a):null;
-      const imgs = [...act.querySelectorAll('.support-img img')].filter(vis).map(el=>Math.round(el.getBoundingClientRect().height/H*1000)/10);
+      const imgs = [...act.querySelectorAll('.support-img img, .frame-card img, .frame-pair img, .reveal-pair img')].filter(vis).map(el=>Math.round(el.getBoundingClientRect().height/H*1000)/10);
       const sc = act.scrollHeight - act.clientHeight;
       const bg = getComputedStyle(act).backgroundImage + '|' + getComputedStyle(act).backgroundColor;
       const tint = getComputedStyle(act).getPropertyValue('--seg-tint').trim();
@@ -62,7 +62,7 @@ for (const [w,h] of VIEWPORTS){
       const bad = {emoji: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(txt), cjk: /[一-鿿]/.test(txt), circled: /[①-⓿❶-➓]/.test(txt)};
       return {label, seg:[...act.classList].find(c=>/^seg-/.test(c)), tint, mode:act.dataset.mode, overflow:over.slice(0,6), overflowCount:over.length, scrollOver:sc,
         headline:min(fs('.headline, .title-slide h1')), body:min(fs('.subline, .prompt-line, .fact-bullet, .callout')),
-        labels:min(fs('.fr-text, .fc-label, .ac-label, .gs-label, .tl-label, .tl-answer, .rp-cap, .beat-item, .a-t, .tagline')),
+        labels:min(fs('.fr-text, .fc-label, .ac-label, .gs-label, .tl-label, .tl-answer, .rp-cap, .beat-item, .a-t, .a-d, .dual-label, .fp-cap, .tagline')),
         supportVh: imgs, bad};
     }, label);
   };

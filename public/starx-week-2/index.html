@@ -833,7 +833,7 @@
   .beat-list{max-width:520px}
   .callout{font-size:clamp(1rem,1.5vw,1.8rem)}
   .agenda-row .a-t{font-size:clamp(16px,1.6vw,32px)}
-  .agenda-row .a-d{font-size:clamp(13px,1.3vw,24px)}
+  .agenda-row .a-d{font-size:clamp(13px,1.5vw,30px)}
   .title-slide .tagline{font-size:clamp(1.1rem,2.3vw,1.8rem)}
   .frame-pair .fp-cap{font-size:clamp(13px,1.5vw,28px);font-family:var(--display);font-weight:700;color:var(--ink)}
   /* screen 14: beats, the mid-fall frame and the diagram sit in one non-wrapping row */
@@ -848,6 +848,12 @@
   /* screen 22: the two door frames read at a glance */
   .oz-pair .torn-frame img{height:clamp(120px,22vh,240px);width:auto;max-height:none}
   .oz-pair{gap:16px}
+  /* blind-audit fixes (2026-09-02): children-facing text at the 28px floor; the four pictures scale with the screen */
+  .two-stage .dual-label{font-family:var(--display);font-weight:800;font-size:clamp(15px,1.5vw,30px);letter-spacing:0;text-transform:none;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+  .frames-row{display:flex;justify-content:center;align-items:flex-start;gap:clamp(10px,1.4vw,22px);width:auto;max-width:none}
+  .frame-card{flex:0 0 auto;width:auto}
+  .frame-card .torn-frame{width:auto}
+  .frame-card .torn-frame img{height:clamp(140px,23vh,290px);width:auto;aspect-ratio:16/10;object-fit:cover;max-height:none}
 
 </style>
 </head>
@@ -908,7 +914,7 @@
 
   // one big background illustration per segment — a screen's own `bgIcon` or its
   // clip `icon` overrides the segment default when the subject is more specific
-  var SEG_BG = ['clapper','bowlerCane','mouthShut','wallWindow','gramophone','paintbrush'];
+  var SEG_BG = ['piano','piano','mouthShut','wallWindow','gramophone','paintbrush'];
 
   // ================================================================
   // SECTION 2 of 6: ICONS — hand-drawn character cast + doodles
@@ -1093,7 +1099,7 @@
   ICONS.cardLemon = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wob)"><path d="M12 50 Q12 22 50 22 Q88 22 88 50 Q88 78 50 78 Q12 78 12 50 Z" fill="#E0A02A"/><circle cx="12" cy="50" r="6" fill="#E0A02A"/><circle cx="88" cy="50" r="6" fill="#E0A02A"/></g><path d="M34 44 Q40 40 46 44 M54 44 Q60 40 66 44" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="50" cy="60" r="5" fill="currentColor"/></svg>';
   ICONS.trumpet = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wob)"><path d="M10 44 L58 40 L88 18 L88 82 L58 60 L10 56 Z" fill="currentColor"/></g><rect x="22" y="36" width="6" height="28" rx="2" fill="'+P+'"/><rect x="34" y="36" width="6" height="28" rx="2" fill="'+P+'"/><rect x="46" y="36" width="6" height="28" rx="2" fill="'+P+'"/></svg>';
   ICONS.tlLine = '<svg viewBox="0 0 1000 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7 Q250 2 500 7 T996 7" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M984 2 L996 7 L984 12" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-  ICONS.wallDiagram = '<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wob)"><rect x="30" y="20" width="240" height="130" rx="4" fill="currentColor"/></g><rect x="118" y="46" width="64" height="104" fill="'+P+'"/><circle cx="150" cy="96" r="12" fill="currentColor"/><rect x="141" y="110" width="18" height="40" rx="4" fill="currentColor"/><path d="M110 60 L118 60 M182 60 L190 60" stroke="#C8323F" stroke-width="4" stroke-linecap="round"/><text x="150" y="182" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="18" font-weight="700" fill="currentColor">the window falls around him</text><text x="150" y="38" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="16" font-weight="700" fill="'+P+'">the wall</text></svg>';
+  ICONS.wallDiagram = '<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wob)"><rect x="30" y="20" width="240" height="130" rx="4" fill="currentColor"/></g><rect x="118" y="46" width="64" height="104" fill="'+P+'"/><circle cx="150" cy="96" r="12" fill="currentColor"/><rect x="141" y="110" width="18" height="40" rx="4" fill="currentColor"/><path d="M110 60 L118 60 M182 60 L190 60" stroke="#C8323F" stroke-width="4" stroke-linecap="round"/><text x="150" y="182" text-anchor="middle" font-family="Bricolage Grotesque, system-ui, sans-serif" font-size="18" font-weight="700" fill="currentColor">the window falls around him</text><text x="150" y="38" text-anchor="middle" font-family="Bricolage Grotesque, system-ui, sans-serif" font-size="16" font-weight="700" fill="'+P+'">the wall</text></svg>';
   ICONS.titleScene = '<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg"><rect x="70" y="14" width="260" height="130" rx="4" fill="'+P+'" stroke="currentColor" stroke-width="4"/><g fill="currentColor"><path d="M186 58 Q186 42 200 42 Q214 42 214 58 Z"/><rect x="180" y="56" width="40" height="5" rx="2"/><circle cx="200" cy="72" r="9"/><path d="M188 82 L212 82 L216 114 L184 114 Z"/><path d="M186 114 L198 114 L196 134 L182 134 Z M202 114 L214 114 L218 134 L204 134 Z"/><ellipse cx="188" cy="136" rx="12" ry="4"/><ellipse cx="212" cy="136" rx="12" ry="4"/><path d="M218 92 Q226 92 226 100 L226 124" stroke="currentColor" stroke-width="3" fill="none"/></g><path d="M20 150 L70 14 M380 150 L330 14" stroke="currentColor" stroke-width="2" stroke-dasharray="6 6" opacity=".45"/><g fill="currentColor"><rect x="26" y="168" width="96" height="52" rx="5"/><rect x="34" y="220" width="6" height="14"/><rect x="108" y="220" width="6" height="14"/><circle cx="150" cy="176" r="10"/><path d="M142 186 L158 186 L162 222 L138 222 Z"/><path d="M144 196 L124 190 M156 196 L128 200" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></g><rect x="32" y="188" width="84" height="10" fill="'+P+'"/><g fill="currentColor" opacity=".85"><path d="M190 260 Q190 232 210 232 Q230 232 230 260 Z"/><path d="M236 260 Q236 232 256 232 Q276 232 276 260 Z"/><path d="M282 260 Q282 232 302 232 Q322 232 322 260 Z"/><path d="M328 260 Q328 232 348 232 Q368 232 368 260 Z"/></g><path d="M56 226 Q60 214 66 220 M76 214 Q80 204 86 212 M96 222 Q100 212 106 218" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>';
   ICONS.colourCamera = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wob)"><rect x="8" y="30" width="84" height="54" rx="8" fill="currentColor"/><rect x="30" y="18" width="28" height="16" rx="4" fill="currentColor"/></g><circle cx="50" cy="57" r="17" fill="#F7F5EF"/><circle cx="50" cy="57" r="9" fill="currentColor"/><circle cx="20" cy="42" r="4" fill="#C8323F"/><circle cx="80" cy="42" r="4" fill="#E0A02A"/><circle cx="80" cy="72" r="4" fill="#2C8A85"/></svg>';
 
@@ -1112,13 +1118,13 @@
     rollsQuiet: {type:'ext', id:'4DLdMa98JdM', start:8, end:38, frame:'media/frames/goldrush-rolls.jpg', title:'The Gold Rush · 1925 · thirty seconds of the dance', range:'0:08–0:38 · with music, or with no sound', credit:'Charles Chaplin Productions · 1925 · Roy Export S.A.S. (official channel)', pri:'P1', mutedBtn:true},
     machine:    {type:'ext', id:'mVUVPen3xNQ', start:50, end:125, frame:'media/frames/modern-times-machine.jpg', title:'Modern Times · 1936 · the feeding machine', range:'0:50–2:05 · plays here', credit:'Charles Chaplin Productions · 1936 · Roy Export S.A.S. · clip via Turner Classic Movies', pri:'P1'},
     gears:      {type:'ext', id:'ZdvEGPt4s0Y', start:24, end:66, frame:'media/frames/modern-times-gears.jpg', title:'Modern Times · 1936 · swallowed by the gears', range:'0:24–1:06 · only if the clock is green', credit:'Charles Chaplin Productions · 1936 · Roy Export S.A.S. (official channel)', pri:'P2'},
-    keatonUpTo: {type:'local', src:'media/keaton-steamboat-bill-wall.mp4', frame:'media/frames/keaton-wall-storm.jpg', start:0, end:19.45, title:'Steamboat Bill, Jr. · 1928 · up to the moment', range:'0:00–0:19 · stops by itself as the wall comes down', credit:'Buster Keaton Productions / United Artists · 1928 · public domain', pri:'P1'},
-    keatonWhole:{type:'local', src:'media/keaton-steamboat-bill-wall.mp4', frame:'media/frames/keaton-wall-storm.jpg', start:0, end:27, title:'Steamboat Bill, Jr. · 1928 · the whole thing', range:'0:00–0:27 · plays here', credit:'Buster Keaton Productions / United Artists · 1928 · public domain', pri:'P1'},
-    lloyd:      {type:'local', src:'media/lloyd-safety-last-clock.mp4', frame:'media/frames/lloyd-safety-last-clock.jpg', start:0, end:45, title:'Safety Last! · 1923 · Harold Lloyd on the clock', range:'0:00–0:45 · plays here', credit:'Hal Roach Studios / Pathé · 1923 · public domain', pri:'P2'},
+    keatonUpTo: {type:'local', src:'media/keaton-steamboat-bill-wall.mp4', frame:'media/frames/keaton-wall-storm.jpg', start:0, end:19.1, title:'Steamboat Bill, Jr. · 1928 · up to the moment', range:'0:00–0:19 · stops by itself as the wall comes down', credit:'Buster Keaton Productions / United Artists · 1928 · public domain', pri:'P1'},
+    keatonWhole:{type:'local', src:'media/keaton-steamboat-bill-wall.mp4', frame:'media/frames/keaton-wall-storm.jpg', start:0, end:27.1, title:'Steamboat Bill, Jr. · 1928 · the whole thing', range:'0:00–0:27 · plays here', credit:'Buster Keaton Productions / United Artists · 1928 · public domain', pri:'P1'},
+    lloyd:      {type:'local', src:'media/lloyd-safety-last-clock.mp4', frame:'media/frames/lloyd-safety-last-clock.jpg', start:0, end:45.1, title:'Safety Last! · 1923 · Harold Lloyd on the clock', range:'0:00–0:45 · plays here', credit:'Hal Roach Studios / Pathé · 1923 · public domain', pri:'P2'},
     jazz:       {type:'ext', id:'22NQuPrwbHA', start:0, end:58, frame:'media/frames/jazz-singer-jolson.jpg', title:'The Jazz Singer · 1927 · “You ain’t heard nothin’ yet”', range:'0:00–0:58 · plays here', credit:'Warner Bros. · 1927 · Warner Bros. Entertainment (official channel)', pri:'P1'},
-    steamboat:  {type:'local', src:'media/steamboat-willie.mp4', frame:'media/frames/steamboat.jpg', start:0, end:22, title:'Steamboat Willie · 1928 · Walt Disney / Ub Iwerks', range:'0:00–0:22 · plays here · play it twice', credit:'Walt Disney Studios · 1928 · public domain', pri:'P1'},
+    steamboat:  {type:'local', src:'media/steamboat-willie.mp4', frame:'media/frames/steamboat.jpg', start:0, end:22.1, title:'Steamboat Willie · 1928 · Walt Disney / Ub Iwerks', range:'0:00–0:22 · plays here · play it twice', credit:'Walt Disney Studios · 1928 · public domain', pri:'P1'},
     singin:     {type:'ext', id:'YMzV96LV6Cc', start:58, end:130, frame:'media/frames/singin-out-of-sync.jpg', title:'Singin’ in the Rain · 1952 · “Out of Sync”', range:'0:58–2:10 · plays here', credit:'MGM · 1952 · Movieclips (licensed clip channel)', pri:'P2'},
-    lune:       {type:'local', src:'media/melies-lune-colour.mp4', frame:'media/frames/melies-lune-colour.jpg', start:0, end:28, title:'Le Voyage dans la Lune · 1902 · hand-coloured', range:'0:00–0:28 · plays here', credit:'Star Film / Georges Méliès · 1902 · colour print restored 2011 · public domain', pri:'P1'},
+    lune:       {type:'local', src:'media/melies-lune-colour.mp4', frame:'media/frames/melies-lune-colour.jpg', start:0, end:28.1, title:'Le Voyage dans la Lune · 1902 · hand-coloured', range:'0:00–0:28 · plays here', credit:'Star Film / Georges Méliès · 1902 · colour print restored 2011 · public domain', pri:'P1'},
     oz:         {type:'ext', id:'YWFHeDcVNiw', start:30, end:90, frame:'media/frames/oz-door-sepia.jpg', title:'The Wizard of Oz · 1939 · Dorothy opens the door', range:'0:30–1:30 · plays here', credit:'MGM · 1939 · Warner Bros. · no official clip of the door exists; fan upload, see manifest', pri:'P1'},
     // bonus only — never inside SEGMENTS' 60 minutes
     mickey:     {type:'ext', id:'M21UsdJnkBY', start:0, end:467, frame:'media/frames/mickey-worm-turns.jpg', title:'Mickey Mouse · “The Worm Turns” · 1937', range:'7:47 · whole cartoon · only if there is time', credit:'Walt Disney Productions · 1937 · clip-channel upload, see manifest', pri:'P3'}
@@ -1235,7 +1241,7 @@
 
     {seg:5, kind:'clip', layout:'split', mode:'watch', clip:'lune', icon:'paintbrush', iconCls:'c-colour', eyebrow:'LE VOYAGE DANS LA LUNE · 1902', headline:'Painted by hand.', hero:true,
      bullets:['One frame at a time.','About 220 women in Paris.','Brushes as thin as one hair.','13,375 frames for a single copy.'],
-     supportImg:{src:'media/frames/pathe-colouring-1907.jpg', alt:'Women colouring film by hand at the Pathé works, 1907', cap:'Women colouring film by hand, Pathé, 1907.', credit:'Wikimedia Commons · public domain'},
+     supportImg:{src:'media/frames/pathe-colouring-1907.jpg', alt:'Women colouring film by hand at the Pathé works, 1907', cap:'Women colouring film by hand, Pathé, 1907.', credit:'J. David · Fondation Jérôme Seydoux-Pathé · public domain'},
      note:'Play the eye first, they know it from last week, then let it run onto the surface. Watch for the smoke and the flags: every colour is a brush stroke. Ask: how long would that take you?'},
 
     {seg:5, kind:'oz', mode:'watch', clip:'oz', eyebrow:'THE WIZARD OF OZ · 1939', headline:'Watch the door.', sub:'Don’t say anything until it opens.', callout:'In 1939 a colour film still made a whole cinema gasp.',
@@ -1586,6 +1592,15 @@
     lightboxOpen = false;
   }
 
+  // A click inside the embedded player moves keyboard focus into its frame, and every deck key
+  // (Esc included) would then be dead. Hand focus straight back to the deck's own close button.
+  window.addEventListener('blur', function(){
+    if (!lightboxOpen) return;
+    setTimeout(function(){
+      var a = document.activeElement;
+      if (a && a.tagName === 'IFRAME'){ a.blur(); window.focus(); document.getElementById('lightbox-close').focus(); }
+    }, 0);
+  });
   lightboxEl.querySelector('#lightbox-backdrop').addEventListener('click', closeLightbox);
   lightboxEl.querySelector('#lightbox-close').addEventListener('click', closeLightbox);
 

@@ -52,7 +52,7 @@ const missing = refs.filter(p=>!fs.existsSync(path.join(DECK,p)));
 ok('every media/ reference in the deck exists ('+refs.length+')', missing.length===0, missing.join(','));
 ok('zero img.youtube.com references', !/img\.youtube\.com/.test(html));
 ok('fonts self-hosted (no googleapis/gstatic)', !/fonts\.googleapis|fonts\.gstatic/.test(html) && /media\/fonts\/.*\.woff2/.test(html));
-ok('screen 13 end lands before the wall touches the ground', CLIPS.keatonUpTo.end < 19.9, 'end='+CLIPS.keatonUpTo.end+' s; ground ~19.9 s (frames inspected 18.8–20.3 s, see files/week-02-clips.md)');
+ok('screen 13 end lands before the wall touches the ground', CLIPS.keatonUpTo.end + 0.3 <= 19.69, 'end='+CLIPS.keatonUpTo.end+' s; ground at 19.69 s (frame-accurate, see files/week-02-clips.md); 0.3 s margin for timeupdate jitter');
 
 // --- files and route
 const walk = d => fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);
