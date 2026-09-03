@@ -47,7 +47,10 @@ for (const [w,h] of VIEWPORTS){
       const W = innerWidth, H = innerHeight;
       const vis = el=>{ const cs = getComputedStyle(el); if (cs.display==='none'||cs.visibility==='hidden'||+cs.opacity===0) return false; let p = el; while (p && p !== act){ const c = getComputedStyle(p); if (c.display==='none'||c.visibility==='hidden') return false; p = p.parentElement; } return true; };
       const over = [];
-      act.querySelectorAll('.slide-inner, .slide-inner *').forEach(el=>{
+      // the gallery strip and the picture strip hang off the section as siblings of
+      // .slide-inner, so they have to be in this sweep or a row that spills off the
+      // bottom of the screen would never be seen by the overflow check
+      act.querySelectorAll('.slide-inner, .slide-inner *, .gallery-block, .gallery-block *, .picstrip, .picstrip *').forEach(el=>{
         if (!vis(el)) return; const r = el.getBoundingClientRect(); if (r.width===0&&r.height===0) return;
         const o = Math.max(0, r.bottom-H, r.right-W, -r.top, -r.left);
         if (o > 1) over.push({tag:el.tagName.toLowerCase()+(el.className&&typeof el.className==='string'?'.'+el.className.split(' ').slice(0,2).join('.'):''), by:Math.round(o), h:Math.round(r.height)});

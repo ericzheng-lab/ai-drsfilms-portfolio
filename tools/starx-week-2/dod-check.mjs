@@ -12,9 +12,11 @@ const results = []; const ok = (name, pass, detail='') => { results.push({name, 
 
 // --- deck data, evaluated in isolation (ICONS stubbed: the icon section is string-only but not needed)
 const script = html.match(/<script>([\s\S]*)<\/script>/)[1];
-const from = script.indexOf('var SEGMENTS'); const to = script.indexOf('// SECTION 5 of 6');
-const data = new Function('var ICONS = new Proxy({}, {get:()=>""}); ' + script.slice(from, to) + '; return {SEGMENTS, SEG_BG, CLIPS, SLIDES};')();
-const { SEGMENTS, CLIPS, SLIDES } = data;
+const from = script.indexOf('var SEGMENTS'); const to = script.indexOf('// ---------- main render ----------');
+// the slice now runs to the render loop so GALLERIES comes with it; everything between is
+// function declarations and data, with no top-level DOM access to trip over
+const data = new Function('var ICONS = new Proxy({}, {get:()=>""}); ' + script.slice(from, to) + '; return {SEGMENTS, SEG_BG, CLIPS, SLIDES, GALLERIES};')();
+const { SEGMENTS, CLIPS, SLIDES, GALLERIES } = data;
 
 ok('SLIDES.length === 24', SLIDES.length === 24, String(SLIDES.length));
 ok('SEGMENTS ends 5/20/28/40/50/60', JSON.stringify(SEGMENTS.map(s=>s.end)) === '[5,20,28,40,50,60]', SEGMENTS.map(s=>s.end).join('/'));
@@ -37,6 +39,45 @@ ok('no lead/body string counts its own items', selfCount.length===0, selfCount.m
 const onScreen = strings.map(x=>x[2]).join(' ') + Object.values(CLIPS).map(c=>c.title+' '+c.range).join(' ');
 ok('no emoji / CJK / circled numerals in on-screen strings', !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}一-鿿①-⓿❶-➓]/u.test(onScreen));
 ok('Oz copy never says "the first colour film"', !/first colou?r film/i.test(html));
+
+// --- pictures (Film_Teaching deck convention, Eric 2026-09-03: no screen bare, every
+// picture clickable, and the count never goes down week over week). Counted screen by
+// screen off the slide data, mirroring the fields the render actually turns into a
+// picture; tools/starx-week-2/lightbox-test.mjs then opens every one in a real browser.
+const picsOf = s => {
+  const out = []; const push = o => { if (o && o.src) out.push(o); };
+  push(s.reveal); push(s.photo); push(s.supportImg); push(s.midfall);
+  (s.frames||[]).forEach(push); (s.pair||[]).forEach(push); (s.pics||[]).forEach(push);
+  if (s.gallery) (GALLERIES[s.gallery].items||[]).forEach(push);
+  return out;
+};
+const perScreen = SLIDES.map(picsOf);
+const totalPics = perScreen.reduce((a,p)=>a+p.length, 0);
+const bare = perScreen.map((p,i)=>p.length?null:i+1).filter(Boolean);
+ok('no screen without a teaching picture', bare.length===0, bare.length?('bare: '+bare.join(',')):perScreen.map(p=>p.length).join('/'));
+ok('at least 60 teaching pictures in the deck', totalPics >= 60, String(totalPics));
+const noAlt = [].concat(...perScreen).filter(p=>!p.alt || p.alt.length < 8).map(p=>p.src);
+ok('every picture has a real alt description', noAlt.length===0, noAlt.slice(0,4).join(' '));
+const noCap = [].concat(...perScreen).filter(p=>!(p.cap||p.note)).map(p=>p.src);
+ok('every picture has a caption Eric can read aloud', noCap.length===0, noCap.slice(0,4).join(' '));
+const noCredit = [].concat(...perScreen).filter(p=>!p.credit || p.credit.length < 6).map(p=>p.src);
+ok('every picture records its source and rights', noCredit.length===0, noCredit.slice(0,4).join(' '));
+ok('four galleries carried over from Week 1', Object.keys(GALLERIES).length >= 4 && Object.values(GALLERIES).every(g=>g.lead && g.items.length>=4 && g.items.every(i=>i.t && i.y)), Object.keys(GALLERIES).map(k=>k+':'+GALLERIES[k].items.length).join(' '));
+
+// --- click to enlarge: the wiring, asserted in the source so it cannot be deleted as unused
+ok('every picture renders as a focusable button carrying data-pic',
+   /function photoFrame\([\s\S]{0,700}?<button type="button" class="torn-frame/.test(script) &&
+   /class="gal-thumb'\+\(it\.video\?' has-video':''\)\+'" data-pic=/.test(script));
+ok('the lightbox has a picture path (openPicture + stepPicture)', /function openPicture\(/.test(script) && /function stepPicture\(/.test(script));
+ok('a click on any data-pic opens the lightbox', /var picBtn = e\.target\.closest\('\[data-pic\]'\)/.test(script) && /openPicture\(parseInt\(pa\[0\],10\), parseInt\(pa\[1\],10\)\)/.test(script));
+ok('arrows step inside the screen\'s picture set and never reach the deck',
+   /picState && e\.key === 'ArrowRight'\)\{ stepPicture\(1\)/.test(script) && /picState && e\.key === 'ArrowLeft'\)\{ stepPicture\(-1\)/.test(script));
+ok('Esc and the backdrop clear the picture state', /picState = null;/.test(script.slice(script.indexOf('function closeLightbox'))));
+ok('Enter on a focused picture is left to the browser, not doubled onto a clip', /focused\.closest\('\[data-pic\]'\)\) return;/.test(script));
+ok('a picture opens to at least 80% of the viewport height', /#lightbox-media img,#lightbox-media \.lb-imgwrap video\{display:block;position:static;height:80vh;/.test(html));
+ok('the Week 1 gallery-video hotfix is still in that rule', /\.lb-imgwrap video\{display:block;position:static;/.test(html));
+ok('decoration is never a picture: the drawn cast and doodles carry no data-pic',
+   !/drawn-placeholder[^']*data-pic/.test(script) && !/dz sticker[^']*data-pic/.test(script) && !/class="mascot"[^']*data-pic/.test(script));
 
 // --- clips
 ok('every CLIPS entry declares start and end', Object.values(CLIPS).every(c=>typeof c.start==='number' && typeof c.end==='number' && c.end>c.start));

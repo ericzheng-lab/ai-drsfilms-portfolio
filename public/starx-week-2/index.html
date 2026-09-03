@@ -203,6 +203,10 @@
     background:var(--seg-tint,var(--paper));
   }
   .slide.active{display:flex}
+  /* a gallery strip or picture strip stacks under .slide-inner as a sibling; every
+     decoration on a slide (bg illustration, margin doodles, mascot) is absolutely
+     positioned, so this gap only ever separates real content */
+  .slide{gap:clamp(6px,1.4vh,16px)}
 
   /* treated ground: paper grain + soft palette wash on every screen, zero bare backgrounds */
   .slide::before{
@@ -384,6 +388,25 @@
     padding:2px 7px;border-radius:3px;pointer-events:none;
   }
 
+  /* ===== every teaching picture opens full size on click (deck convention, Eric 2026-09-03) =====
+     A picture is a <button>, so it is in the tab order and Enter activates it natively.
+     Decoration is never one: the drawn SVG cast, the margin doodles and the mascot
+     carry no data-pic and are not focusable. */
+  button.torn-frame{font:inherit;color:inherit;text-align:inherit;cursor:zoom-in}
+  button.torn-frame:hover{box-shadow:5px 7px 0 rgba(20,30,54,.28)}
+  button.torn-frame:focus-visible{outline:3px solid var(--cherry);outline-offset:3px}
+  .gal-thumb{cursor:zoom-in}
+
+  /* the small clickable row carrying a screen's extra pictures. Deliberately cheaper in
+     height than a gallery strip -- no lead line and no labels, because the caption is
+     read off the lightbox when Eric opens one. The tape marks are dropped at this size. */
+  .picstrip{position:relative;z-index:1;display:flex;gap:clamp(6px,.9vw,12px);
+    justify-content:center;align-items:flex-start;width:100%;max-width:1180px;flex-wrap:nowrap}
+  .picstrip button.torn-frame{padding:4px;flex:0 1 auto;min-width:0;box-shadow:3px 4px 0 rgba(20,30,54,.15)}
+  .picstrip button.torn-frame::before,.picstrip button.torn-frame::after{display:none}
+  .picstrip img{height:clamp(56px,9.5vh,116px);width:auto;max-width:100%;max-height:none;object-fit:cover}
+  .picstrip.tall img{height:clamp(70px,13vh,158px)}
+
   .support-img{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;margin-top:10px}
   .support-img-row{display:flex;gap:20px;width:100%;justify-content:center;align-items:flex-start;margin-top:10px;flex-wrap:nowrap}
   .support-img-row .support-img{width:auto;min-width:0;margin-top:0}
@@ -509,7 +532,33 @@
   .slide-inner.split.with-gallery .text-col{grid-area:txt}
   .slide-inner.split.with-gallery .media-col{grid-area:med}
   .slide-inner.split.rev.with-gallery{grid-template-areas:'med txt' 'gal gal'}
-  .gallery-block{grid-area:gal;width:100%;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .gallery-block{grid-area:gal;width:100%;max-width:1180px;display:flex;flex-direction:column;align-items:center;gap:5px}
+  /* this deck hangs the gallery under .slide-inner as a sibling rather than inside the
+     split grid, so the give-backs below are keyed off the section instead of the grid.
+     The support photo is NOT one of the things that gives room back -- the 22vh floor
+     is a DoD line and Week 1 broke it here once already. Trim padding and the stage. */
+  /* Asymmetric on purpose. A screen carrying a gallery or a picture strip is the tallest
+     kind in the deck, and .slide centres its content, so at 1280x720 the top of the column
+     rose under the counter and segment chips (both at top:18px, ~33px tall) while the bottom
+     row printed through the hint chip (bottom:16px). 52px / 34px keeps both ends clear;
+     measured on the rendered page, not read off these numbers. */
+  .slide.has-gallery{padding:52px min(6vw,80px) 34px}
+  .slide.has-gallery .slide-inner{gap:clamp(5px,1.1vh,12px)}
+  /* the 44vh term is what pays for the gallery row on a 720p projector: the stage narrows
+     only where the viewport is short, and is untouched at 1080p where 44vh exceeds 430px */
+  .slide.has-gallery .media-col .clip-stage{width:min(430px,100%,32vh)}
+  /* 22.5vh, not Week 1's clamp(158px,22vh,230px): at 1080p that 230px cap computes to
+     21.3vh and quietly breaks the DoD's own 22vh floor. Measured, not read off the numbers. */
+  .slide.has-gallery .support-img img{height:clamp(158px,22.5vh,264px);min-height:158px}
+  /* a four-item strip would otherwise stretch each thumbnail to ~295px wide and stand
+     60px taller than Week 1's six-item strip; cap the thumb so every gallery is one height */
+  .gallery-strip .gal-thumb{max-width:clamp(96px,min(11.5vw,18vh),190px)}
+  /* screen 9's text column is the tall one and its media column has room to spare under the
+     clip, so that gallery hangs there instead of under everything: it costs no height at all */
+  .media-col .gallery-block{margin-top:2px}
+  .slide.has-gallery .support-img .si-text{max-width:270px}
+  .slide.has-gallery .gallery-block{position:relative;z-index:1}
+  .slide.has-picstrip{padding:52px min(6vw,80px) 34px}
   .gal-lead{font-family:var(--display);font-weight:700;font-size:clamp(10px,1.02vw,12.5px);
     color:var(--cherry);text-align:center}
   /* A gallery row costs ~150px of height, and the presenter chrome owns the top
@@ -548,7 +597,7 @@
     color:var(--ink);line-height:1.16;margin-top:4px}
   .gal-y{font-family:var(--mono);font-size:clamp(8.5px,.82vw,10px);color:rgba(20,30,54,.55);padding-bottom:5px}
   /* image mode for the lightbox that already carries the clips */
-  #lightbox-stage.image{width:auto;max-width:92vw;height:auto;max-height:90vh;aspect-ratio:auto;
+  #lightbox-stage.image{width:auto;max-width:92vw;height:auto;max-height:97vh;aspect-ratio:auto;
     background:var(--paper);display:flex;flex-direction:column;align-items:stretch}
   /* every gallery image is shown at the same height whatever its source resolution,
      so stepping through a set does not make the frame jump around */
@@ -561,16 +610,20 @@
      the caption line. Images were never affected; this selector is the only sizing
      rule that has ever applied to them. That over-broad video,iframe rule below is
      a separate, pre-existing cleanup, left alone today -- not today's fix. */
-  #lightbox-media img,#lightbox-media .lb-imgwrap video{display:block;position:static;height:min(62vh,480px);width:auto;max-width:88vw;object-fit:contain}
-  .lb-cap{padding:12px 18px 14px;text-align:center;background:var(--paper);color:var(--ink);
+  /* 80vh, not the old min(62vh,480px): Eric's note on the built deck was "太小了" and a
+     480px cap on a 1080p projector is 44% of the height. With height:80vh and a 88vw cap,
+     a tall picture is 80vh high and a very wide one is 88vw wide -- either way it clears
+     the "85% of width or 80% of height" line at every viewport. */
+  #lightbox-media img,#lightbox-media .lb-imgwrap video{display:block;position:static;height:80vh;width:auto;max-width:88vw;object-fit:contain}
+  .lb-cap{padding:8px 18px 10px;text-align:center;background:var(--paper);color:var(--ink);
     max-width:min(760px,88vw);margin:0 auto}
-  .lb-cap .lb-title{font-family:var(--display);font-weight:800;font-size:clamp(17px,2.1vw,27px);line-height:1.15}
+  .lb-cap .lb-title{font-family:var(--display);font-weight:800;font-size:clamp(17px,1.8vw,24px);line-height:1.15}
   .lb-cap .lb-note{display:block;font-family:var(--body);font-size:clamp(13px,1.4vw,17px);
     color:rgba(20,30,54,.78);margin-top:5px}
   .lb-cap .lb-credit{display:block;font-family:var(--mono);font-size:clamp(9.5px,.95vw,11px);
     color:rgba(20,30,54,.5);margin-top:4px}
   .lb-cap .lb-step{display:block;font-family:var(--mono);font-size:clamp(10px,1vw,12px);
-    color:rgba(20,30,54,.45);margin-top:8px;letter-spacing:.08em}
+    color:rgba(20,30,54,.45);margin-top:5px;letter-spacing:.08em}
 
   /* screen 9 — three pictures of a crowded set earn the full width */
   .setcrowd-head{display:flex;align-items:center;gap:clamp(16px,3vw,44px);width:100%}
@@ -1145,19 +1198,27 @@
   // ================================================================
   var SLIDES = [
     // ---------- 0-5 OPENING ----------
-    {seg:0, kind:'title', mode:'tell', mascot:true,
+    {seg:0, kind:'title', mode:'tell', mascot:true, picsCls:'tall',
+     pics:[
+       {src:'media/frames/cinema-interior-regent-1918.jpg', alt:'The inside of a cinema in 1918: rows of seats facing a lit screen, with the organ down in the pit', cap:'A cinema in 1918. The screen is lit, the seats are full, and the music comes from the pit at the front.', credit:'Photo Ross Dunn · Regent Theatre, Ottawa, 1918 · CC BY-SA 2.0'},
+       {src:'media/frames/cinema-interior-bagdad-1927.jpg', alt:'The inside of a cinema in 1927, a wide auditorium with a screen at the far end', cap:'Another one, 1927. This is the room the whole town sat in to watch a film with no sound.', credit:'Walter P. Miller · Bagdad Theatre, Seattle · MOHAI · public domain'}
+     ],
      note:'Say hello and nothing else yet. The drawing is the first hint: the film made no sound, the music was in the room. Thirty seconds, then on.'},
 
     {seg:0, kind:'frames', mode:'do', eyebrow:'LAST WEEK', headline:'Last week, in pictures.', prompt:'Which kind is each one? Shout it out.', hideLabels:true,
      frames:[
-       {src:'media/frames/paddington-el-dorado.jpg', alt:'Paddington in Peru', label:'Live action', icon:'live'},
-       {src:'media/frames/lionking-circle-of-life.jpg', alt:'The Lion King', label:'Animation', icon:'anim'},
-       {src:'media/frames/shaun-gone-to-dogs.jpg', alt:'Shaun the Sheep', label:'Stop-motion', icon:'stop'},
-       {src:'media/frames/bbc-chameleon.jpg', alt:'A chameleon, BBC Earth', label:'Documentary', icon:'doc'}
+       {src:'media/frames/paddington-el-dorado.jpg', alt:'Paddington in Peru', label:'Live action', icon:'live', cap:'Real people, filmed at a real table. The bear is the only thing in the room that was not really there.', credit:'STUDIOCANAL · 2024 · frame of the Week 1 clip'},
+       {src:'media/frames/lionking-circle-of-life.jpg', alt:'The Lion King', label:'Animation', icon:'anim', cap:'Drawn by hand, one sheet of paper at a time. Nobody was filmed for this.', credit:'Walt Disney Pictures · 1994 · frame of the Week 1 clip'},
+       {src:'media/frames/shaun-gone-to-dogs.jpg', alt:'Shaun the Sheep', label:'Stop-motion', icon:'stop', cap:'Clay over a metal skeleton, moved a little bit at a time by somebody’s hands.', credit:'Aardman · frame of the Week 1 clip'},
+       {src:'media/frames/bbc-chameleon.jpg', alt:'A chameleon, BBC Earth', label:'Documentary', icon:'doc', cap:'A real chameleon. Nobody told it where to walk.', credit:'BBC Earth · frame of the Week 1 clip'}
+     ],
+     pics:[
+       {src:'media/frames/lionking-2019-photoreal.jpg', alt:'A photoreal computer-made mandrill face from The Lion King, 2019', t:'The hard one', cap:'This one caught you last week. It looks like a photograph of a real animal. Not one hair of it was filmed.', credit:'Walt Disney Pictures · 2019 · frame of the Week 1 game clip'},
+       {src:'media/frames/wonka-arcade.jpg', alt:'Wonka walking through a bright arcade full of people, 2023', t:'The other hard one', cap:'And this one caught you the other way. Real people, on a real set that was built to look drawn.', credit:'Warner Bros. · 2023 · frame of the Week 1 game clip'}
      ],
      note:'Point at one picture at a time and wait for the shout.\nPress R to show the four names once every picture has an answer.\nWrong answer: ask "was anybody filmed for this one?" and let them fix it.'},
 
-    {seg:0, kind:'faces', mode:'do', eyebrow:'NO SOUND', headline:'How do you know he is angry?', prompt:'Show me angry. No words allowed.',
+    {seg:0, kind:'faces', mode:'do', eyebrow:'NO SOUND', headline:'How do you know he is angry?', prompt:'Show me angry. No words allowed.', gallery:'faces',
      faces:[['faceAngry','ANGRY'],['faceHappy','HAPPY'],['faceScared','SCARED'],['faceSad','SAD']],
      note:'Ask the question first and take two answers, then call "show me angry" and make the face yourself.\nCall happy, scared, sad the same way, three seconds each, and point at the best one.\nEnd on: you all did it without a word. That is today.'},
 
@@ -1169,39 +1230,72 @@
        {icon:'gramophone', cls:'c-anim',   t:'The screen speaks',      d:'The night the pictures talked.'},
        {icon:'paintbrush', cls:'c-colour', t:'The screen gets colour', d:'Painted first. Filmed later.'}
      ],
+     pics:[
+       {src:'media/frames/goldrush-boot-still.jpg', alt:'Chaplin eating a boiled boot from a plate, The Gold Rush', t:'Chaplin', cap:'Stop one. This man is eating his own shoe, and he is not joking about it.', credit:'Charles Chaplin Productions · 1925 · public domain'},
+       {src:'media/frames/keaton-steamboat-two-men.jpg', alt:'Buster Keaton and Ernest Torrence facing each other on a boat deck, arms out', t:'No talking allowed', cap:'Stop two. Two men arguing. Watch the arms; that is the whole argument.', credit:'Buster Keaton Productions / United Artists · 1928 · public domain'},
+       {src:'media/frames/keaton-wall-flat.jpg', alt:'The front wall of a house lying flat on the ground with its window and door openings', t:'A wall falls on a man', cap:'Stop three. This wall was standing up a second ago. Somebody was under it.', credit:'Buster Keaton Productions / United Artists · 1928 · frame of the clip on screen 13'},
+       {src:'media/frames/jazz-singer-blue-skies.jpg', alt:'Al Jolson singing at a piano to his mother in The Jazz Singer, 1927', t:'The screen speaks', cap:'Stop four. This is the moment a film first talked out loud to a room full of people.', credit:'Warner Bros. · 1927 · CC BY-SA 4.0 (Goldmic90)'},
+       {src:'media/frames/lune-rocket-landed.jpg', alt:'A hand-coloured 1902 frame: an orange rocket lying on the moon among yellow rocks', t:'The screen gets colour', cap:'Stop five. Every colour here was painted on with a brush, in 1902.', credit:'Star Film / Georges Méliès · 1902 · public domain'}
+     ],
      note:'One line per stop, no more: Chaplin, the game, the wall, the night the screen spoke, the day it got colour. Sixty seconds.'},
 
     // ---------- 5-20 CHAPLIN: NO WORDS, BIG LAUGHS ----------
     {seg:1, kind:'silhouette', mode:'do', eyebrow:'REMEMBER HIM?', headline:'Who is this?', prompt:'The hat. The cane. The shoes. Who is it?',
      reveal:{src:'media/frames/chaplin-tramp.jpg', alt:'Charlie Chaplin as the Tramp', cap:'Charlie Chaplin. 1915. Not one word. The whole world laughed.', credit:'Photo by P.D. Jankels · 1915 · public domain'},
+     pics:[
+       {src:'media/frames/chaplin-portrait-1920.jpg', alt:'Studio portrait of Charlie Chaplin in a suit and bow tie, about 1920', t:'The same man', cap:'No hat, no cane, no moustache. This is him. Would you have guessed?', credit:'Publicity photograph · about 1920 · public domain'},
+       {src:'media/frames/goldrush-cabin-still.jpg', alt:'The Tramp sitting in a wooden cabin in the snow, holding his cane', t:'The Tramp, sitting', cap:'Same hat, same cane, same shoes. He wore them in film after film for thirty years.', credit:'Charles Chaplin Productions · 1924 · public domain'},
+       {src:'media/frames/chaplin-tramp-street.jpg', alt:'The Tramp standing in a snowy street outside a wooden dance hall', t:'The Tramp, walking', cap:'And this is how he walks away at the end. Feet out, back straight, chin up.', credit:'Charles Chaplin Productions · 1925 · frame of the public-domain print'}
+     ],
      note:'Leave the shadow up and take guesses; a hand goes up before anyone says the name.\nPress R to show the photograph and say the line under it.\nAsk who has seen him before, then straight on to the clip.'},
 
     {seg:1, kind:'clip', layout:'split', mode:'watch', clip:'rolls', icon:'bowlerCane', iconCls:'c-live', eyebrow:'THE GOLD RUSH · 1925', headline:'Happy, or sad?', sub:'How do you know? He never said.', hero:true,
+     pics:[
+       {src:'media/frames/goldrush-rolls-close.jpg', alt:'Close view of two bread rolls stuck on forks, held above a table', t:'Two forks, two rolls', cap:'That is all it is. Two bread rolls, two forks, and his hands.', credit:'Charles Chaplin Productions · 1925 · frame of the public-domain print'},
+       {src:'media/frames/goldrush-rolls-dance.jpg', alt:'Chaplin at a table making two bread rolls on forks dance like legs', t:'The dance', cap:'The rolls are the feet and his hands are the hips. Watch his face while they dance.', credit:'Charles Chaplin Productions · 1925 · frame of the public-domain print'},
+       {src:'media/frames/goldrush-dinner-dream.jpg', alt:'Chaplin at a candlelit table with Georgia, both wearing paper hats', t:'Why he is dancing', cap:'He is dreaming this dinner. The girl he likes came, and he is showing off.', credit:'Charles Chaplin Productions · 1925 · frame of the public-domain print'},
+       {src:'media/frames/goldrush-poster-1925.jpg', alt:'Colour poster for The Gold Rush, 1925, with Chaplin sitting in furs', t:'The poster', cap:'This went up outside the cinema in 1925. People queued round the block.', credit:'Charles Chaplin Productions / United Artists · 1925 · public domain'},
+       {src:'media/frames/goldrush-klondike-set.jpg', alt:'Chaplin lying in the snow beside a camera crew filming him', t:'How it was made', cap:'Real snow, a real camera, and a crew standing in the cold. Find Chaplin lying down.', credit:'Charles Chaplin Productions · 1924 · public domain'}
+     ],
      note:'Play it once, nobody talks. Watch for the two forks going in, and the little bow at the end. Then ask: happy or sad? How do you know, when he never said a word?'},
 
     {seg:1, kind:'frames', mode:'do', eyebrow:'HOW DID HE DO IT?', headline:'Face. Hands. Feet.', prompt:'What is he feeling? Where did you look?',
      frames:[
-       {src:'media/frames/chaplin-face.jpg', alt:'Chaplin, the face', label:'FACE'},
-       {src:'media/frames/chaplin-hands.jpg', alt:'Chaplin, the hands', label:'HANDS'},
-       {src:'media/frames/chaplin-feet.jpg', alt:'Chaplin, the feet', label:'FEET'},
-       {src:'media/frames/chaplin-body.jpg', alt:'Chaplin, the whole body', label:'THE WHOLE BODY'}
+       {src:'media/frames/chaplin-face.jpg', alt:'Chaplin, the face', label:'FACE', cap:'Only the face. Cover the rest of him and you still know how he feels.', credit:'Charles Chaplin Productions · 1925 · public-domain print'},
+       {src:'media/frames/chaplin-hands.jpg', alt:'Chaplin, the hands', label:'HANDS', cap:'Only the hands. They are doing the talking now.', credit:'Charles Chaplin Productions · 1925 · public-domain print'},
+       {src:'media/frames/chaplin-feet.jpg', alt:'Chaplin, the feet', label:'FEET', cap:'Only the feet. Big shoes, turned out. You can tell it is him from the shoes alone.', credit:'Charles Chaplin Productions · 1925 · public-domain print'},
+       {src:'media/frames/chaplin-body.jpg', alt:'Chaplin, the whole body', label:'THE WHOLE BODY', cap:'All of him at once. Face, hands and feet saying the same thing together.', credit:'Charles Chaplin Productions · 1925 · public-domain print'}
      ],
      note:'Point at each picture and ask where they looked to know what he felt.\nRound one: name a feeling, they show it with the face only. Round two: hands only. Round three: feet only.\nPick the best of each round and say what that child did.'},
 
     {seg:1, kind:'dual', mode:'watch', eyebrow:'MODERN TIMES · 1936', headline:'Is he in trouble?', sub:'How do you know?', clips:['machine','gears'], labels:['THE FEEDING MACHINE','THE GEARS'], lateIdx:1,
+     picsCls:'tall',
+     pics:[
+       {src:'media/frames/modern-times-machine.jpg', alt:'Chaplin strapped into a feeding machine in a factory', t:'The feeding machine', cap:'A machine built to feed him so he never has to stop working. It goes wrong.', credit:'Charles Chaplin Productions · 1936 · frame of the clip on this screen'},
+       {src:'media/frames/modern-times-gears.jpg', alt:'Chaplin lying between the huge turning gears of a machine', t:'The gears', cap:'The machine swallows him and he keeps working while he goes round.', credit:'Charles Chaplin Productions · 1936 · frame of the clip on this screen'},
+       {src:'media/frames/modern-times-poster-1936.jpg', alt:'Poster for Modern Times, 1936, Chaplin in overalls holding a machine part', t:'The poster', cap:'1936. Eleven years after the bread rolls, and still not one word out loud.', credit:'Charles Chaplin Productions / United Artists · 1936 · public domain'}
+     ],
      note:'Play the feeding machine first. Watch for the corn on the cob: that is where the machine stops being polite. Ask: is he in trouble? How do you know? The gears only if the clock is still green.'},
 
-    {seg:1, kind:'piano', mode:'do', eyebrow:'THERE WAS A PIANO IN THE ROOM', headline:'The film had no sound.', sub:'A person in the room played, live. Every cinema sounded different.', prompt:'Be the piano. Hum, clap, tap along.', clip:'rollsQuiet',
+    {seg:1, kind:'piano', mode:'do', eyebrow:'THERE WAS A PIANO IN THE ROOM', headline:'The film had no sound.', sub:'A person in the room played, live. Every cinema sounded different.', prompt:'Be the piano. Hum, clap, tap along.', clip:'rollsQuiet', gallery:'sound', galleryIn:'media',
      supportImg:{src:'media/frames/fotoplayer-1922.jpg', alt:'Ben Turpin trying a Fotoplayer, a cinema music machine, 1922', cap:'A Fotoplayer, 1922: the machine a cinema used to play music for a silent film. The man trying it is Ben Turpin, a film comedian.', credit:'Trade-magazine photograph · 1922 · public domain'},
      note:'Say it once: the film had no sound, the music came from a person in the room.\nPress 2 for no sound and let them hum, clap, tap; then press 1 for the music. Two rounds at most.\nAsk: was it better with a room full of piano players?'},
 
     // ---------- 20-28 NO TALKING ALLOWED ----------
     {seg:2, kind:'answercards', mode:'do', eyebrow:'A GAME', headline:'No talking allowed.', prompt:'One actor. No words, no sounds. Everyone else guesses.', cols:'three',
      cards:[{label:'MOUTH SHUT', icon:'mouthShut', cls:'c-rule'},{label:'FACE', icon:'faceHappy', cls:'c-vote'},{label:'HANDS AND FEET', icon:'handsFeet', cls:'c-vote2'}],
+     pics:[
+       {src:'media/frames/keaton-steamboat-two-men.jpg', alt:'Two men on a boat deck leaning at each other with their arms out', t:'Hands and feet', cap:'Neither of them is saying a word. You can still tell who is winning.', credit:'Buster Keaton Productions / United Artists · 1928 · public domain'},
+       {src:'media/frames/goldrush-three-men.jpg', alt:'A crowded dance hall, a big man striding at another man while people watch', t:'The whole body', cap:'One man is angry and one man is not. Look at the shoulders, not the mouths.', credit:'Charles Chaplin Productions · 1925 · public domain'},
+       {src:'media/frames/goldrush-bow.jpg', alt:'Chaplin at a table, eyes wide, hands up holding two forks', t:'The face', cap:'Eyebrows up, eyes wide, mouth small. That is surprise, with no sound at all.', credit:'Charles Chaplin Productions · 1925 · frame of the public-domain print'}
+     ],
      note:'Show the rules by doing them: mouth shut, big face, big hands and feet.\nPick the first actor now, the boldest one, so the shy ones see it work.\nSay the guessing rule: point at a card, no shouting.'},
 
     {seg:2, kind:'charades', mode:'do', eyebrow:'ACT IT OUT', headline:'Act it out.', prompt:'Point at the card you think it is.',
      cards:[{icon:'cardLift', label:'A very slow lift'},{icon:'cardGum', label:'Gum on your shoe'},{icon:'cardSmell', label:'A terrible smell'},{icon:'cardNoLaugh', label:'Trying not to laugh'},{icon:'cardBag', label:'A very heavy bag'},{icon:'cardLemon', label:'A very sour lemon'}],
+     pics:[
+       {src:'media/frames/the-kid-doorway-1921.jpg', alt:'Chaplin and a small boy peering round a wall past a policeman', t:'Hiding', cap:'Same game, a hundred years ago. Both of them are hiding, and neither one says so.', credit:'Charles Chaplin Productions · 1921 · public domain'}
+     ],
      note:'Whisper the card to the actor, or point to it on your phone. The others point at a card to guess.\nGuessed: press that card\'s number to mark it done, and swap actor.\nLast round: everybody acts one at once. Older children get a "not on the cards" round if there is time.'},
 
     // ---------- 28-40 KEATON: THE WALL WAS REAL ----------
@@ -1212,19 +1306,35 @@
 
     {seg:3, kind:'wall', mode:'do', eyebrow:'STEAMBOAT BILL, JR. · 1928', headline:'The wall is coming down.', sub:'A real wall. He is really standing there.', prompt:'What should he do? Vote.', clip:'keatonUpTo', whole:'keatonWhole',
      cards:[{label:'RUN', icon:'runFigure', cls:'c-vote'},{label:'STAND STILL', icon:'standFigure', cls:'c-vote2'}],
+     pics:[
+       {src:'media/frames/keaton-wall-storm.jpg', alt:'A storm tearing at a wooden building, boards flying', t:'The storm', cap:'A storm has been pulling the town apart for a whole minute before this.', credit:'Buster Keaton Productions / United Artists · 1928 · frame of the clip on this screen'},
+       {src:'media/frames/keaton-storm-running.jpg', alt:'Keaton running past a kennel as debris blows across the yard', t:'Running', cap:'He has been blown off his feet twice already. He is looking for somewhere safe.', credit:'Buster Keaton Productions / United Artists · 1928 · frame of the clip on this screen'},
+       {src:'media/frames/keaton-wall-midfall.jpg', alt:'The house front halfway down with Keaton standing still beneath it', t:'Halfway down', cap:'This is the moment. Two tons of wall, and he has not moved a foot.', credit:'Buster Keaton Productions / United Artists · 1928 · frame of the clip on this screen'}
+     ],
      note:'Press 1: it stops itself a beat before the wall lands. Watch for his face; it does not move.\nVote: hands up for RUN, hands up for STAND STILL, count out loud.\nPress 2 for the whole thing, then once more with nobody talking. They will ask.'},
 
     {seg:3, kind:'beats', mode:'tell', eyebrow:'IT WAS REAL', headline:'It was real.',
      beats:['A real wall. About two tons.', 'The window missed him by about two inches on each side.', 'Some of the crew would not watch. They turned away.'],
      midfall:{src:'media/frames/keaton-wall-midfall.jpg', alt:'The house front halfway down, Keaton standing still', cap:'The wall, halfway down.', credit:'Buster Keaton Productions · 1928 · public domain'},
+     pics:[
+       {src:'media/frames/keaton-wall-flat.jpg', alt:'The fallen wall lying flat, with one open window and one open door', t:'The wall, down', cap:'There it is on the ground. One window is open, and it is not very big.', credit:'Buster Keaton Productions / United Artists · 1928 · frame of the clip on screen 13'},
+       {src:'media/frames/keaton-wall-after.jpg', alt:'Keaton walking away from the fallen wall, past the open doorway he stood in', t:'He walks away', cap:'He was standing right there, and he walks off as if nothing happened.', credit:'Buster Keaton Productions / United Artists · 1928 · frame of the clip on screen 13'}
+     ],
      callout:'Today there is a job for this: someone whose whole job is keeping actors safe. Who? Week 4.',
      note:'Press R for each beat, one at a time, and let each one land before the next. The diagram shows the gap: about two inches each side. End on the callout: someone whose whole job is keeping actors safe. Week 4.'},
 
     {seg:3, kind:'clip', layout:'split', mode:'watch', clip:'lloyd', tags:['late'], icon:'wallWindow', iconCls:'c-doc', eyebrow:'SAFETY LAST! · 1923', headline:'One more that was real.', sub:'Harold Lloyd, high above the street, holding on to a clock.', hero:true,
+     pics:[
+       {src:'media/frames/lloyd-clock-hanging.jpg', alt:'Harold Lloyd hanging from the hands of a large clock high on a building', t:'On the clock', cap:'He is holding on to the minute hand. There is nothing under his feet.', credit:'Hal Roach Studios / Pathé · 1923 · frame of the clip on this screen'},
+       {src:'media/frames/lloyd-clock-face.jpg', alt:'Lloyd swinging out from the clock face with the street far below', t:'The clock comes away', cap:'The clock face is coming off the wall while he is still holding it.', credit:'Hal Roach Studios / Pathé · 1923 · frame of the clip on this screen'},
+       {src:'media/frames/lloyd-street-below.jpg', alt:'Looking straight down from a ledge at a street full of cars and people', t:'The street below', cap:'This is what is under him. Cars, tram lines, and people the size of ants.', credit:'Hal Roach Studios / Pathé · 1923 · frame of the clip on this screen'},
+       {src:'media/frames/lloyd-safety-last-poster-1923.jpg', alt:'Poster for Safety Last!, 1923, with a crowd looking up at a climbing figure', t:'The poster', cap:'The poster puts the crowd in the street looking up. That is where you are sitting.', credit:'Hal Roach Studios / Pathé · 1923 · public domain'},
+       {src:'media/frames/lloyd-safety-last-card-1923.jpg', alt:'Cinema lobby card for Safety Last! showing Lloyd on a narrow ledge', t:'The cinema card', cap:'A card like this stood in the cinema doorway to bring people in.', credit:'Hal Roach Studios / Pathé · 1923 · public domain'}
+     ],
      note:'Skip if the clock is red. Otherwise play it and watch for the minute hand giving way. Ask: is he really up there? Yes: a real building, a real height, and no camera tricks.'},
 
     // ---------- 40-50 THE SCREEN SPEAKS ----------
-    {seg:4, kind:'timeline', mode:'do', eyebrow:'VOTE', headline:'Which came first: talking, or colour?', prompt:'Hands up for talking. Hands up for colour.',
+    {seg:4, kind:'timeline', mode:'do', eyebrow:'VOTE', headline:'Which came first: talking, or colour?', prompt:'Hands up for talking. Hands up for colour.', gallery:'dates',
      cards:[{label:'TALKING', icon:'gramophone', cls:'c-vote'},{label:'COLOUR', icon:'paintbrush', cls:'c-vote2'}],
      timeline:[{year:'1902', label:'Colour, painted by hand', icon:'paintbrush'},{year:'1927', label:'The screen talks', icon:'gramophone'},{year:'1935', label:'Colour cameras', icon:'colourCamera'},{year:'1939', label:'The Wizard of Oz', icon:'doorColour'}],
      answer:'Colour came first — but somebody painted it. Real colour cameras came after talking.',
@@ -1232,34 +1342,71 @@
 
     {seg:4, kind:'clip', layout:'split', mode:'watch', clip:'jazz', icon:'gramophone', iconCls:'c-anim', eyebrow:'THE JAZZ SINGER · 1927', headline:'Nobody in that room had ever heard a film talk.', sub:'New York, 6 October 1927.', hero:true,
      supportImg:{src:'media/frames/jazz-singer-poster-1927.jpg', alt:'Poster for The Jazz Singer, 1927', cap:'The poster, 1927.', credit:'Warner Bros. · 1927 · public domain'},
+     pics:[
+       {src:'media/frames/jazz-singer-blue-skies.jpg', alt:'Al Jolson at a piano singing to his mother, who sits beside him', t:'At the piano', cap:'He sits down at the piano, plays for his mother, and then he talks to her. Out loud.', credit:'Warner Bros. · 1927 · CC BY-SA 4.0 (Goldmic90)'},
+       {src:'media/frames/jazz-singer-lobby-1927.jpg', alt:'Cinema lobby card for The Jazz Singer, 1927, with a row of dancers', t:'The cinema card', cap:'Cinemas put this in the doorway. Nobody walking past had ever heard a film speak.', credit:'Warner Bros. · 1927 · public domain'}
+     ],
      note:'Before: nobody in that room had ever heard a film talk. Watch for the moment he stops singing and speaks; the line is "you ain\'t heard nothin\' yet". After: what did the audience do? They went wild.'},
 
     {seg:4, kind:'clip', layout:'split', mode:'do', clip:'steamboat', icon:'trumpet', iconCls:'c-anim', eyebrow:'STEAMBOAT WILLIE · 1928', headline:'Watch his mouth. Listen.', sub:'Do they match?', prompt:'Play it again. Everyone whistles along.', hero:true,
+     pics:[
+       {src:'media/frames/mickey-concept-1928.jpg', alt:'A sheet of early pencil sketches working out how Mickey Mouse should look', t:'Working him out', cap:'Somebody had to decide what this mouse looked like. Here they are still deciding.', credit:'Ub Iwerks · about 1928 · public domain'},
+       {src:'media/frames/mickey-inbetween-drawing.jpg', alt:'A single clean pencil drawing of Mickey Mouse standing', t:'One drawing', cap:'One drawing. The film needs twenty-four of these for every single second.', credit:'Walt Disney / Ub Iwerks · 1928 · public domain'},
+       {src:'media/frames/mickey-animation-drawing.jpg', alt:'A pencil animation drawing of Mickey and Pete on the boat deck', t:'A drawing from this film', cap:'This exact drawing is in the film you are about to watch. Somebody drew it by hand.', credit:'Ub Iwerks · 1928 · public domain'},
+       {src:'media/frames/iwerks-drawing-mickey-1930.jpg', alt:'Ub Iwerks sitting at a drawing board drawing Mickey Mouse', t:'The man drawing him', cap:'Ub Iwerks, at his desk, drawing the mouse. This is the whole job.', credit:'Publicity photograph · 1930 · public domain'},
+       {src:'media/frames/willie-steam-whistles.jpg', alt:'Three cartoon steam whistles on a boat, one bent over', t:'The whistles', cap:'These are what you hear first. Watch them move exactly when the sound comes.', credit:'Walt Disney Studios · 1928 · frame of the clip on this screen'}
+     ],
      note:'Play it once: watch for his mouth and the whistle landing together; the first film where sound and picture lock.\nPlay it again and everyone whistles or hums along.\nCallback: these are the drawings from the twenty-four frames screen last week.'},
 
     {seg:4, kind:'clip', layout:'split', mode:'watch', clip:'singin', tags:['late'], icon:'mouthShut', iconCls:'c-stop', eyebrow:'SINGIN’ IN THE RAIN · 1952', headline:'Whose voice is coming out of whose mouth?', sub:'A film about the day films learned to talk, and what went wrong.', hero:true,
+     pics:[
+       {src:'media/frames/singin-out-of-sync.jpg', alt:'A scene from Singin in the Rain where the sound has slipped out of time with the picture', t:'Out of sync', cap:'The sound has slipped behind the picture. The mouths and the words no longer match.', credit:'MGM · 1952 · frame of the clip on this screen'},
+       {src:'media/frames/singin-lina-lamont.jpg', alt:'Lina Lamont smiling under a wide white hat', t:'Lina Lamont', cap:'This is the film star whose voice is the problem. Remember the face.', credit:'MGM · 1952 · trailer frame · public domain'},
+       {src:'media/frames/singin-lobby-1952.jpg', alt:'Bright cinema lobby card for Singin in the Rain, 1952', t:'The cinema card', cap:'1952. Films had been talking for twenty-five years, and this one laughs about the first day.', credit:'MGM · 1952 · public domain'},
+       {src:'media/frames/singin-poster-1952.jpg', alt:'Colour poster for Singin in the Rain, 1952, three dancers with umbrellas', t:'The poster', cap:'Colour, sound, dancing, all at once. Look how far the screen has come.', credit:'MGM · 1952 · public domain'}
+     ],
      note:'Skip if late, unless they are laughing; then this is the one to keep. Watch for the sound slipping behind the picture, then the man speaking in the woman\'s voice. Ask: whose voice is coming out of whose mouth?'},
 
     // ---------- 50-60 THE SCREEN GETS COLOUR ----------
     {seg:5, kind:'revealpair', mode:'do', eyebrow:'COLOUR IT IN', headline:'What colour should the moon be?', prompt:'The moon. The sky. The rocket. Call it out.',
-     pair:[{src:'media/frames/lune-eye.jpg', alt:'The moon with the rocket in its eye, black and white', cap:'LAST WEEK · BLACK AND WHITE'},{src:'media/frames/lune-eye-colour.jpg', alt:'The same frame, hand-coloured', cap:'THE SAME FRAME · PAINTED BY HAND'}],
+     pair:[{src:'media/frames/lune-eye.jpg', alt:'The moon with the rocket in its eye, black and white', cap:'LAST WEEK · BLACK AND WHITE', note:'This is the copy you saw last week. Grey sky, grey moon, grey rocket.', credit:'Star Film / Georges Méliès · 1902 · public domain'},{src:'media/frames/lune-eye-colour.jpg', alt:'The same frame, hand-coloured', cap:'THE SAME FRAME · PAINTED BY HAND', note:'The same second of the same film, with the colour brushed on afterwards.', credit:'Star Film / Georges Méliès · 1902 · colour print restored 2011 · public domain'}],
+     pics:[
+       {src:'media/frames/lune-surface-colour.jpg', alt:'A hand-coloured 1902 frame of the yellow rocky surface of the moon under a green sky', t:'The ground', cap:'Yellow rocks, green sky. Somebody chose those colours and painted them in.', credit:'Star Film / Georges Méliès · 1902 · colour print restored 2011 · public domain'},
+       {src:'media/frames/lune-rocket-landed.jpg', alt:'The orange rocket lying on the moon among yellow rocks, hand-coloured', t:'The rocket', cap:'Orange. Not silver, not grey. What colour would you have made it?', credit:'Star Film / Georges Méliès · 1902 · colour print restored 2011 · public domain'},
+       {src:'media/frames/lune-selenites-colour.jpg', alt:'Two figures in green and pink beside the rocket on the hand-coloured moon', t:'The people', cap:'One green coat, one pink one. Every single frame had to be painted the same way.', credit:'Star Film / Georges Méliès · 1902 · colour print restored 2011 · public domain'}
+     ],
      note:'Point at the black-and-white moon and take colours for the moon, the sky, the rocket.\nPress R to show the painted frame beside it.\nAsk: who was right? Then say how it was painted; that is the next screen.'},
 
     {seg:5, kind:'clip', layout:'split', mode:'watch', clip:'lune', icon:'paintbrush', iconCls:'c-colour', eyebrow:'LE VOYAGE DANS LA LUNE · 1902', headline:'Painted by hand.', hero:true,
      bullets:['One frame at a time.','About 220 women in Paris.','Brushes as thin as one hair.','13,375 frames for a single copy.'],
      supportImg:{src:'media/frames/pathe-colouring-1907.jpg', alt:'Women colouring film by hand at the Pathé works, 1907', cap:'Women colouring film by hand, Pathé, 1907.', credit:'J. David · Fondation Jérôme Seydoux-Pathé · public domain'},
+     gallery:'workshop',
      note:'Play the eye first, they know it from last week, then let it run onto the surface. Watch for the smoke and the flags: every colour is a brush stroke. Ask: how long would that take you?'},
 
     {seg:5, kind:'oz', mode:'watch', clip:'oz', eyebrow:'THE WIZARD OF OZ · 1939', headline:'Watch the door.', sub:'Don’t say anything until it opens.', callout:'In 1939 a colour film still made a whole cinema gasp.',
-     pair:[{src:'media/frames/oz-door-sepia.jpg', alt:'Dorothy at the door, in sepia', cap:'BEFORE THE DOOR'},{src:'media/frames/oz-colour.jpg', alt:'Dorothy stepping out into colour', cap:'AFTER THE DOOR'}],
+     pair:[{src:'media/frames/oz-door-sepia.jpg', alt:'Dorothy at the door, in sepia', cap:'BEFORE THE DOOR', note:'Brown. Everything in the house is brown, and it has been for twenty minutes.', credit:'MGM · 1939 · frame of the clip on this screen'},{src:'media/frames/oz-colour.jpg', alt:'Dorothy stepping out into colour', cap:'AFTER THE DOOR', note:'She opens one door and the whole world turns on. Same film, same second.', credit:'MGM · 1939 · frame of the clip on this screen'}],
+     pics:[
+       {src:'media/frames/technicolor-three-strip-camera.jpg', alt:'A three-strip Technicolor camera from the 1930s with two big film magazines', t:'The camera that did it', cap:'A camera like this one. Three strips of film inside, one for each colour, all at once.', credit:'Photo Marcin Wichary · CC BY 2.0 · not the Oz camera itself'},
+       {src:'media/frames/oz-glinda-dorothy-1939.jpg', alt:'Glinda in a pale gown standing beside Dorothy on the Oz set, 1939', t:'What it gave them', cap:'This is a photograph from the set. The dresses were really those colours.', credit:'Clarence Sinclair Bull · MGM · 1939 · public domain'}
+     ],
      note:'Before: watch the door, do not say anything until it opens. Watch for the room going from brown to colour in one step. After: what happened? Then the line: in 1939 a colour film still made a whole cinema gasp.'},
 
     {seg:5, kind:'faces', mode:'tell', mascot:true, eyebrow:'NEXT WEEK', headline:'Next week.', sub:'Why some films make you laugh, some make you cry, and some make you scared to sleep alone.',
      faces:[['faceLaugh','LAUGH'],['faceCry','CRY'],['faceScared','SCARED']],
+     picsCls:'tall',
+     pics:[
+       {src:'media/frames/keaton-steamboat-lobby-1928.jpg', alt:'Bright cinema card for Steamboat Bill, Jr. with Keaton and the crew of a boat', t:'Laugh', cap:'Some films are built to make you laugh. You have watched two of those today.', credit:'Buster Keaton Productions / United Artists · 1928 · public domain'},
+       {src:'media/frames/the-kid-1921.jpg', alt:'Chaplin sitting on a step beside a small boy, both looking down', t:'Cry', cap:'Some are built to make you sad. This man and this boy made a whole cinema cry in 1921.', credit:'Charles Chaplin Productions · 1921 · public domain'},
+       {src:'media/frames/keaton-haunted-house-1921.jpg', alt:'Poster for the 1921 comedy The Haunted House, Keaton sitting looking startled', t:'Scared', cap:'And some are built to give you a fright. A gentle one. This is a comedy about a haunted house.', credit:'Joseph M. Schenck Productions / Metro Pictures · 1921 · public domain'}
+     ],
      note:'Forty-five seconds. Read the line, point at the faces, and send them out with: next week we find out why.'},
 
     // ---------- AFTER 60 · IF THERE IS TIME (outside SEGMENTS) ----------
     {seg:-1, bonus:true, kind:'clip', layout:'split', mode:'watch', clip:'mickey', tags:['opt'], icon:'trumpet', iconCls:'c-colour', eyebrow:'IF THERE IS TIME · AFTER THE HOUR', headline:'The same mouse, nine years later.', sub:'Now he talks. And he is in colour.', hero:true,
+     pics:[
+       {src:'media/frames/mickey-1928-bw.jpg', alt:'Mickey Mouse at the wheel of a steamboat, black and white, 1928', t:'1928', cap:'The mouse you just watched. Black and white, and he whistles instead of talking.', credit:'Walt Disney / Ub Iwerks · 1928 · public domain'},
+       {src:'media/frames/mickey-worm-turns.jpg', alt:'Mickey Mouse in colour, 1937', t:'1937', cap:'The same mouse, nine years later. Now he is in colour, and now he talks.', credit:'Walt Disney Productions · 1937 · frame of the clip on this screen'}
+     ],
      note:'Runs 7:47, whole, outside the hour. Watch for his first words: the mouse from the whistle screen, now talking, now in colour.'}
   ];
 
@@ -1316,9 +1463,95 @@
     return h + '</div>';
   }
 
-  // real photo, wrapped in the deck's one consistent edge treatment (thick drawn border + tape + tilt)
-  function photoFrame(src, alt, tiltCls, dateTag){
-    return '<div class="torn-frame'+(tiltCls?' '+tiltCls:'')+'"><img src="'+src+'" alt="'+alt+'" loading="lazy">'+(dateTag?'<span class="photo-date-tag">'+dateTag+'</span>':'')+'</div>';
+  // ================================================================
+  // Every teaching picture opens full size on click (Film_Teaching deck convention,
+  // Eric 2026-09-03: 「以后所有图片必须点击可以放大」). Each screen owns one ordered
+  // picture set; the lightbox's arrows step inside that set and can never reach the
+  // deck underneath. Registration happens while a slide's HTML is being built, so the
+  // index a button carries is exactly the index the lightbox reads back.
+  // ================================================================
+  var PICSETS = [];
+  var picSlide = -1;
+  function picRegister(p){
+    var set = PICSETS[picSlide] || (PICSETS[picSlide] = []);
+    set.push(p);
+    return set.length - 1;
+  }
+  function attr(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+  // real photo, wrapped in the deck's one consistent edge treatment (thick drawn border + tape + tilt).
+  // It is a <button> so the keyboard reaches it and Enter opens it without any extra handler.
+  function photoFrame(src, alt, tiltCls, dateTag, meta){
+    meta = meta || {};
+    var i = picRegister({src:src, alt:alt, t:meta.t||'', y:meta.y||'', note:meta.cap||meta.note||alt, credit:meta.credit||''});
+    return '<button type="button" class="torn-frame'+(tiltCls?' '+tiltCls:'')+'" data-pic="'+picSlide+':'+i+'"' +
+      ' aria-label="Open full size: '+attr(alt)+'"><img src="'+src+'" alt="'+attr(alt)+'" loading="lazy">' +
+      (dateTag?'<span class="photo-date-tag">'+dateTag+'</span>':'') + '</button>';
+  }
+
+  // ================================================================
+  // GALLERIES — the Week 1 round-4 component, carried into this deck as the standing
+  // way to show range inside one idea. Four sets: the faces they learn to read, what a
+  // silent film actually sounded like, one picture per date on the timeline, and the
+  // room where 1902's colour was painted on by hand.
+  // ================================================================
+  var GALLERIES = {
+    faces:{
+      lead:'Five faces from a hundred years ago. Not one of them says a word.',
+      items:[
+        {src:'media/frames/face-chaplin-1921.jpg', alt:'Studio portrait of Charlie Chaplin without his Tramp make-up, 1921', t:'Charlie Chaplin', y:'1921', note:'Look at the eyes and the mouth. He is thinking about something, and he has not said a thing.', credit:'Strauss-Peyton Studio · 1921 · public domain'},
+        {src:'media/frames/face-keaton-1920.jpg', alt:'Studio portrait of Buster Keaton with a flat, still expression, about 1920', t:'Buster Keaton', y:'about 1920', note:'This face is doing nothing at all. That was on purpose, and it made people laugh.', credit:'Bain News Service · Library of Congress · public domain'},
+        {src:'media/frames/face-lloyd-1920.jpg', alt:'Harold Lloyd laughing, head back, eyes shut, 1920', t:'Harold Lloyd', y:'1920', note:'Wide open mouth, eyes shut, head back. You can hear this face without any sound.', credit:'Who’s Who on the Screen · 1920 · public domain'},
+        {src:'media/frames/face-gish-1921.jpg', alt:'Portrait of Lillian Gish in a wide hat, looking down and away, 1921', t:'Lillian Gish', y:'1921', note:'Soft eyes, chin down. She looks like she is about to cry, and nobody told you so.', credit:'Bain News Service · 1921 · public domain'},
+        {src:'media/frames/face-pickford-1918.jpg', alt:'Profile portrait of Mary Pickford with long curls, about 1918', t:'Mary Pickford', y:'about 1918', note:'She is looking away at something. Follow her eyes and you look too.', credit:'Alfred Robert Lindstedt · about 1918 · public domain'}
+      ]},
+    sound:{
+      lead:'There was no sound in the film. All of this was in the room instead.',
+      items:[
+        {src:'media/frames/cinema-organist-1926.jpg', alt:'A woman seated at a large theatre organ console inside a cinema, 1926', t:'A cinema organist', y:'1926', note:'A real person, playing while the film ran. When the film changed, the music changed with it.', credit:'Webster & Stevens · Fifth Avenue Theatre, Seattle · MOHAI · public domain'},
+        {src:'media/frames/cinema-organ-coliseum-1920.jpg', alt:'A theatre organ with its rows of pipes inside the Coliseum Theatre, about 1920', t:'The organ in the room', y:'about 1920', note:'This is the whole instrument. All those pipes were behind the wall of the cinema.', credit:'Webster & Stevens · Coliseum Theatre, Seattle · MOHAI · public domain'},
+        {src:'media/frames/cinema-organ-console.jpg', alt:'Close view of a lit theatre organ console with two keyboards and rows of stops', t:'The keys, close up', y:'built 1927', note:'Two sets of keys, pedals for the feet, and rows of little switches for thunder, birds and a train whistle.', credit:'Photo jmv · Orpheum Theatre Wurlitzer · CC BY 2.0'},
+        {src:'media/frames/cinema-interior-moore-1910.jpg', alt:'The inside of a cinema about 1910, seats facing a screen with a space at the front for musicians', t:'A cinema, inside', y:'about 1910', note:'The screen at the front, the seats, and a place down at the front for the music.', credit:'Webster & Stevens · Moore Theater, Seattle · MOHAI · public domain'},
+        {src:'media/frames/sheet-music-movie-1915.jpg', alt:'Printed sheet music cover from 1915 with a drawing of a cinema audience', t:'Music to play from', y:'1915', note:'Paper music like this sat on the piano. The player picked what fitted the picture.', credit:'Knickerbocker Music Co. · 1915 · public domain'}
+      ]},
+    dates:{
+      lead:'One picture for each date on the line.',
+      items:[
+        {src:'media/frames/lune-moon-far-colour.jpg', alt:'A hand-coloured 1902 film frame: a small yellow moon face in a blue and green sky', t:'Colour, painted on', y:'1902', note:'A real frame from 1902. Somebody painted that sky with a brush, one frame at a time.', credit:'Star Film / Georges Méliès · 1902 · colour print restored 2011 · public domain'},
+        {src:'media/frames/vitaphone-demo-1926.jpg', alt:'Two engineers demonstrating the Vitaphone sound-on-disc machine, 1926', t:'Sound on a disc', y:'1926', note:'The machine that made the screen talk. The sound was on a big record, spinning beside the film.', credit:'Vitaphone / Western Electric · 1926 · public domain'},
+        {src:'media/frames/technicolor-three-strip-camera.jpg', alt:'A three-strip Technicolor camera from the 1930s with two large film magazines on top', t:'A colour camera', y:'1930s', note:'Three strips of film inside one camera, one for each colour. It weighed about as much as you do.', credit:'Photo Marcin Wichary · CC BY 2.0'},
+        {src:'media/frames/oz-colour.jpg', alt:'Dorothy stepping out of the door into full colour, The Wizard of Oz', t:'The Wizard of Oz', y:'1939', note:'This is what that camera gave you. A whole cinema gasped at it.', credit:'MGM · 1939 · frame of the clip on this screen'}
+      ]},
+    workshop:{
+      lead:'This is the workshop. Every colour you just saw was put on by hand, here.',
+      items:[
+        {src:'media/frames/pathe-colouring-1912.jpg', alt:'Rows of benches in the Pathé colouring room, a woman working at each one, 1912', t:'The colouring room', y:'1912', note:'Rows of benches, and a woman at every one. Each of them painted one colour, then passed the film on.', credit:'Pathé works · 1912 · public domain'},
+        {src:'media/frames/pathe-colouring-works-1906.jpg', alt:'A wide view of the Pathé colouring floor packed with workers, 1906', t:'The whole floor', y:'1906', note:'Count the heads. That is how many people it took to colour one film.', credit:'Pathé collection · 1906 · public domain'},
+        {src:'media/frames/pathecolor-stencil-print-1907.jpg', alt:'A stencil-coloured strip of 35mm film with sprocket holes down both sides, 1907', t:'A coloured strip', y:'1907', note:'A real piece of film held up to the light. You can see the holes down the side that pull it along.', credit:'Amour d’esclave, dir. Albert Capellani · photograph Barbara Flueckiger · public domain'},
+        {src:'media/frames/pathecolor-frame.jpg', alt:'One hand-coloured film frame in reds, greens and yellows', t:'One frame, close up', y:'Pathécolor', note:'Reds, greens and yellows, all brushed on. Nothing inside the camera made this colour.', credit:'AriadnaTB · CC BY-SA 4.0'}
+      ]}
+  };
+
+  function galleryBlockHTML(key){
+    var g = GALLERIES[key];
+    var h = '<div class="gallery-block"><div class="gal-lead">' + g.lead + '</div><div class="gallery-strip">';
+    g.items.forEach(function(it){
+      var i = picRegister(it);
+      h += '<button type="button" class="gal-thumb'+(it.video?' has-video':'')+'" data-pic="'+picSlide+':'+i+'"' +
+             ' aria-label="Open full size: '+attr(it.t)+' ('+attr(it.y)+')">' +
+             '<img src="'+it.src+'" alt="'+attr(it.alt)+'" loading="lazy">' +
+             '<div class="gal-t">'+it.t+'</div><div class="gal-y">'+it.y+'</div>' +
+           '</button>';
+    });
+    return h + '</div></div>';
+  }
+
+  // the cheap row: a screen's extra pictures, thumbnail-sized, caption read off the lightbox
+  function picStripHTML(pics, cls){
+    if (!pics || !pics.length) return '';
+    var h = '<div class="picstrip'+(cls?' '+cls:'')+'">';
+    pics.forEach(function(p){ h += photoFrame(p.src, p.alt, '', p.dateTag, p); });
+    return h + '</div>';
   }
 
   // a drawn illustration standing in the same visual slot a photo would take
@@ -1332,7 +1565,7 @@
       return '<div class="support-img"><div class="torn-frame" style="padding:6px"><div class="si-icon">'+ICONS[si.drawn]+'</div></div>' +
              '<div class="si-text"><div class="si-cap">'+si.cap+'</div><div class="si-credit">'+si.credit+'</div></div></div>';
     }
-    return '<div class="support-img">'+photoFrame(si.src, si.alt, '', si.dateTag)+'<div class="si-text"><div class="si-cap">'+si.cap+'</div><div class="si-credit">'+si.credit+'</div></div></div>';
+    return '<div class="support-img">'+photoFrame(si.src, si.alt, '', si.dateTag, si)+'<div class="si-text"><div class="si-cap">'+si.cap+'</div><div class="si-credit">'+si.credit+'</div></div></div>';
   }
 
   // answer cards now take their cards as data — two, three or four of them
@@ -1353,7 +1586,7 @@
   function framesRowHTML(frames, hideLabels){
     var h = '<div class="frames-row'+(hideLabels?' hide-labels':'')+'">';
     frames.forEach(function(f){
-      h += '<div class="frame-card">'+photoFrame(f.src, f.alt, '')+
+      h += '<div class="frame-card">'+photoFrame(f.src, f.alt, '', null, {t:f.label, cap:f.cap, credit:f.credit})+
            '<div class="fr-label">'+(f.icon?'<span class="fr-icon">'+ICONS[f.icon]+'</span>':'')+'<span class="fr-text">'+f.label+'</span></div></div>';
     });
     return h + '</div>';
@@ -1389,8 +1622,10 @@
   var deck = document.getElementById('deck');
   var html = '';
   SLIDES.forEach(function(s, i){
+    picSlide = i; // every picture built below registers into this screen's own set
     var segIdx = s.seg < 0 ? 5 : s.seg; // the bonus borrows the last tint; it is outside SEGMENTS
-    var cls = 'slide seg-'+segIdx + (s.kind==='title' ? ' title-slide' : '') + (s.bonus ? ' bonus' : '');
+    var cls = 'slide seg-'+segIdx + (s.kind==='title' ? ' title-slide' : '') + (s.bonus ? ' bonus' : '') +
+              (s.gallery ? ' has-gallery' : '') + (s.pics ? ' has-picstrip' : '');
     html += '<section class="'+cls+'" data-i="'+i+'" data-mode="'+s.mode+'">';
     var bgIconKey = s.bgIcon || s.icon || SEG_BG[segIdx];
     html += '<div class="bg-illustration">'+ICONS[bgIconKey]+'</div>';
@@ -1467,7 +1702,8 @@
 
     } else if (s.kind === 'piano'){
       html += '<div class="slide-inner split"><div class="text-col">'+head()+supportImgHTML(s.supportImg)+'</div>';
-      html += '<div class="media-col">'+stageHTML(s.clip, i, false)+'</div></div>';
+      html += '<div class="media-col">'+stageHTML(s.clip, i, false) +
+              (s.galleryIn === 'media' ? galleryBlockHTML(s.gallery) : '') + '</div></div>';
 
     } else if (s.kind === 'answercards'){
       html += '<div class="slide-inner">'+head()+answerCardsHTML(s.cards, s.cols)+'</div>';
@@ -1514,14 +1750,14 @@
     } else if (s.kind === 'revealpair'){
       html += '<div class="slide-inner">'+head()+'<div class="reveal-pair">';
       s.pair.forEach(function(p, j){
-        html += '<div class="rp-item'+(j===1?' hidden-frame':'')+'">'+photoFrame(p.src, p.alt, j===0?'tilt-l':'tilt-r')+'<div class="rp-cap">'+p.cap+'</div></div>';
+        html += '<div class="rp-item'+(j===1?' hidden-frame':'')+'">'+photoFrame(p.src, p.alt, j===0?'tilt-l':'tilt-r', null, {t:p.cap, cap:p.note, credit:p.credit})+'<div class="rp-cap">'+p.cap+'</div></div>';
       });
       html += '</div>'+revealBtn(i, 'show the painted frame')+'</div>';
 
     } else if (s.kind === 'oz'){
       html += '<div class="slide-inner split"><div class="text-col">'+head()+'<div class="frame-pair oz-pair">';
       s.pair.forEach(function(p, j){
-        html += '<div>'+photoFrame(p.src, p.alt, j===0?'tilt-l':'tilt-r')+'<div class="fp-cap">'+p.cap+'</div></div>';
+        html += '<div>'+photoFrame(p.src, p.alt, j===0?'tilt-l':'tilt-r', null, {t:p.cap, cap:p.note, credit:p.credit})+'<div class="fp-cap">'+p.cap+'</div></div>';
       });
       html += '</div></div><div class="media-col">'+stageHTML(s.clip, i, false);
       if (s.callout) html += '<div class="callout">'+s.callout+'</div>';
@@ -1530,6 +1766,11 @@
     } else {
       html += '<div class="slide-inner">'+head()+'</div>';
     }
+
+    // a gallery strip or a picture strip hangs under .slide-inner as a sibling, so no
+    // screen's existing layout is rewritten to make room for the pictures added today
+    if (s.gallery && s.galleryIn !== 'media') html += galleryBlockHTML(s.gallery);
+    if (s.pics) html += picStripHTML(s.pics, s.picsCls);
 
     html += '</section>';
   });
@@ -1567,8 +1808,42 @@
   var lightboxMedia = document.getElementById('lightbox-media');
   var lightboxOpen = false;
 
+  // A picture borrows the same lightbox the clips use — one mechanism, as Week 1 settled.
+  // picState is non-null only while a picture is showing, and it is what makes the arrows
+  // step inside that screen's set instead of moving the deck.
+  var picState = null;
+
+  function openPicture(slideIdx, picIdx){
+    var set = PICSETS[slideIdx];
+    if (!set || !set[picIdx]) return;
+    var it = set[picIdx];
+    picState = {s:slideIdx, i:picIdx};
+    lightboxStage.classList.remove('portrait');
+    lightboxStage.classList.add('image');
+    var media = it.video ?
+      '<video src="'+it.video+'" autoplay playsinline controls></video>' :
+      '<img src="'+it.src+'" alt="'+attr(it.alt)+'">';
+    var title = it.t || it.note || it.alt;
+    var note = (it.note && it.note !== title) ? it.note : '';
+    lightboxMedia.innerHTML =
+      '<div class="lb-imgwrap">'+media+'</div>' +
+      '<div class="lb-cap"><div class="lb-title">'+title+(it.y?' <span style="opacity:.55">'+it.y+'</span>':'')+'</div>' +
+      (note ? '<span class="lb-note">'+note+'</span>' : '') +
+      (it.credit ? '<span class="lb-credit">'+it.credit+'</span>' : '') +
+      '<span class="lb-step">'+(picIdx+1)+' of '+set.length+'  \u00b7  \u2190 \u2192 to step  \u00b7  Esc to close</span></div>';
+    lightboxEl.classList.add('open');
+    lightboxOpen = true;
+  }
+
+  function stepPicture(d){
+    if (!picState) return;
+    var n = PICSETS[picState.s].length;
+    openPicture(picState.s, (picState.i + d + n) % n);
+  }
+
   function openLightbox(clipKey, muted){
     var c = CLIPS[clipKey];
+    picState = null;
     lightboxStage.classList.remove('image');
     lightboxStage.classList.toggle('portrait', !!c.portrait);
     if (c.type === 'ext'){
@@ -1596,6 +1871,7 @@
     lightboxEl.classList.remove('open');
     lightboxStage.classList.remove('image');
     lightboxOpen = false;
+    picState = null;
   }
 
   // A click inside the embedded player moves keyboard focus into its frame, and every deck key
@@ -1667,6 +1943,12 @@
       openLightbox(playBtn.getAttribute('data-clip'), playBtn.getAttribute('data-muted') === '1');
       return;
     }
+    var picBtn = e.target.closest('[data-pic]');
+    if (picBtn){
+      var pa = picBtn.getAttribute('data-pic').split(':');
+      openPicture(parseInt(pa[0],10), parseInt(pa[1],10));
+      return;
+    }
     var slot = e.target.closest('.game-slot.card');
     if (slot){ slot.classList.toggle('opened'); return; }
     var beatBtn = e.target.closest('[data-beatnext]');
@@ -1723,6 +2005,9 @@
   document.addEventListener('keydown', function(e){
     if (lightboxOpen){
       if (e.key === 'Escape') { closeLightbox(); e.preventDefault(); }
+      // arrows step within this screen's picture set only — they must never reach the deck
+      else if (picState && e.key === 'ArrowRight'){ stepPicture(1); e.preventDefault(); }
+      else if (picState && e.key === 'ArrowLeft'){ stepPicture(-1); e.preventDefault(); }
       return; // every other key is inert while the lightbox is open — arrows must never reach the deck underneath
     }
     if (overviewOpen){
@@ -1735,6 +2020,8 @@
     else if (e.key === 'n' || e.key === 'N'){ toggleNotes(); e.preventDefault(); }
     else if (e.key === 'r' || e.key === 'R'){ revealNext(); e.preventDefault(); }
     else if (e.key === 'Enter'){
+      var focused = document.activeElement;
+      if (focused && focused.closest && focused.closest('[data-pic]')) return; // the browser activates it
       var activeSlide = slideEls[current];
       var btn = activeSlide.querySelector('.play-btn');
       if (btn) btn.click();

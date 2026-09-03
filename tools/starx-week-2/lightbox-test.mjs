@@ -110,6 +110,64 @@ results.beats = [await vis()]; await page.keyboard.press('r'); results.beats.pus
 // --- Enter on a screen with no clip is inert
 await goto(2); await page.keyboard.press('Enter'); await page.waitForTimeout(100);
 results.enterInert = !(await page.evaluate(()=>document.getElementById('lightbox').classList.contains('open')));
+// --- every teaching picture, one by one. Not a sample: the number opened has to equal
+// the number that exist, and the deck must be exactly where it was when each one closes.
+const walk = {perScreen:[], exist:0, opened:0, failures:[]};
+for (let i=0;i<await page.evaluate(()=>document.querySelectorAll('.slide').length);i++){
+  await goto(i);
+  const n = await page.evaluate(()=>document.querySelector('.slide.active').querySelectorAll('[data-pic]').length);
+  walk.perScreen.push(n); walk.exist += n;
+  for (let k=0;k<n;k++){
+    const before = await idx();
+    await page.evaluate(k=>document.querySelector('.slide.active').querySelectorAll('[data-pic]')[k].click(), k);
+    await page.waitForTimeout(80);
+    const m = await page.evaluate(()=>{
+      const el = document.querySelector('#lightbox-media img, #lightbox-media .lb-imgwrap video');
+      const cap = document.querySelector('#lightbox-media .lb-cap');
+      if (!el) return {open:false};
+      const r = el.getBoundingClientRect();
+      return {open:document.getElementById('lightbox').classList.contains('open'),
+              w:+(r.width/innerWidth*100).toFixed(1), h:+(r.height/innerHeight*100).toFixed(1),
+              cap:!!cap && cap.innerText.trim().length>0,
+              credit:!!document.querySelector('#lightbox-media .lb-credit')};
+    });
+    if (m.open) walk.opened++;
+    await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowLeft');
+    const whileOpen = await idx();
+    await page.keyboard.press('Escape'); await page.waitForTimeout(60);
+    const after = await idx();
+    const closed = await page.evaluate(()=>!document.getElementById('lightbox').classList.contains('open') && document.getElementById('lightbox-media').innerHTML.length===0);
+    // "85% of the width or 80% of the height", the line Eric's 「太小了」 turned into a rule
+    if (!m.open || !(m.w>=85 || m.h>=80) || !m.cap || !m.credit || before!==after || whileOpen!==before || !closed)
+      walk.failures.push({screen:i+1, picture:k+1, ...m, before, whileOpen, after, closed});
+  }
+}
+walk.screensWithNoPicture = walk.perScreen.map((n,i)=>n?null:i+1).filter(Boolean);
+results.pictures = walk;
+if (walk.exist !== walk.opened) errors.push('FAIL: '+walk.exist+' pictures exist, '+walk.opened+' opened');
+if (walk.exist < 60) errors.push('FAIL: only '+walk.exist+' teaching pictures in the deck');
+if (walk.screensWithNoPicture.length) errors.push('FAIL: screens with no picture: '+walk.screensWithNoPicture.join(','));
+if (walk.failures.length) errors.push('FAIL: '+walk.failures.length+' pictures did not meet the enlarge guarantees');
+
+// --- the Week 1 gallery-video hotfix. No gallery item in this deck is a video, so the rule
+// that was patched that day is proved by putting one in the image stage and measuring it:
+// under the old CSS the video kept position:absolute, .lb-imgwrap collapsed to 0 and the
+// stage clipped to the caption strip.
+await goto(2);
+await page.evaluate(()=>document.querySelector('.slide.active [data-pic]').click());
+await page.waitForTimeout(120);
+await page.evaluate(()=>{ document.querySelector('#lightbox-media .lb-imgwrap').innerHTML =
+  '<video src="media/keaton-steamboat-bill-wall.mp4" playsinline controls></video>'; });
+await page.waitForTimeout(1200);
+results.galleryVideo = await page.evaluate(()=>{
+  const v = document.querySelector('#lightbox-media .lb-imgwrap video');
+  const w = document.querySelector('#lightbox-media .lb-imgwrap');
+  return {position:getComputedStyle(v).position, videoH:Math.round(v.getBoundingClientRect().height), wrapH:Math.round(w.getBoundingClientRect().height)};
+});
+if (results.galleryVideo.position !== 'static' || results.galleryVideo.wrapH < 200)
+  errors.push('FAIL: a gallery video renders as a strip again — the round-5 hotfix is gone');
+await page.keyboard.press('Escape');
+
 results.errors = errors;
 console.log(JSON.stringify(results, null, 1));
 await browser.close(); if (server) server.close();
